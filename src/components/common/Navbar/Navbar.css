@@ -1,0 +1,63 @@
+
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 20px 50px;
+
+  background: #0f172a;
+
+  box-shadow:
+    0 0 20px rgba(0,183,216,0.4);
+}
+
+.logo {
+  /* width: 180px;
+    height: auto;
+
+  filter: drop-shadow(
+    0 0 10px #00d4ff */
+    width: 180px;
+  height: 180px;
+  object-fit: contain;
+
+  filter: drop-shadow(
+    0 0 10px #00d4ff
+  );
+}
+
+.navbar-right h1 {
+  font-size: 72px;
+  color: #00d4ff;
+
+  text-shadow:
+    0 0 10px #00d4ff;
+
+  margin: 0;
+}
+
+.navbar-right p {
+  color: #cbd5e1;
+  font-size: 20px;
+}
+
+
+
+
+
+
+
+.home-container {
+  min-height: 100vh;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eef2ff,
+      #f8fafc
+    );
+
+  padding: 20px;
+}

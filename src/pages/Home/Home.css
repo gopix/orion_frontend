@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  }
+
+.home-container {
+  min-height: 100vh;
+
+  background:
+    linear-gradient(
+      135deg,
+      #020617,
+      #111827
+    );
+
+  padding: 20px;
+}
+
+.services-section {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 30px;
+
+  margin-top: 60px;
+
+  flex-wrap: wrap;
+}

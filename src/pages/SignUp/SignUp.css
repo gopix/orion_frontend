@@ -1,0 +1,104 @@
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a;
+}
+
+.signup-box {
+  background: #1e293b;
+  padding: 40px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 450px;
+  box-shadow: 0 0 30px rgba(0, 183, 216, 0.3);
+  margin: 30px 0;
+}
+
+.signup-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.signup-box h1 {
+  color: #00d4ff;
+  font-size: 28px;
+  text-shadow: 0 0 10px #00d4ff;
+  margin: 0;
+}
+
+.signup-subtext {
+  color: #cbd5e1;
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
+}
+
+.signup-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.signup-row input {
+  width: 50%;
+}
+
+.signup-box input,
+.signup-box select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #00d4ff;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.signup-box input:focus,
+.signup-box select:focus {
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+}
+
+.signup-box select option {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.signup-box button {
+  width: 100%;
+  padding: 12px;
+  background: #00d4ff;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.signup-box button:hover {
+  background: #00b7d8;
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.5);
+}
+
+.back-to-login {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.back-to-login span {
+  color: #00d4ff;
+  cursor: pointer;
+}
+
+.back-to-login span:hover {
+  text-decoration: underline;
+}
