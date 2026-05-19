@@ -22,4 +22,10 @@ export const services = [
 
     icon: "📚",
   },
+
+  {
+  title: "Orion Accessibility & Remediation +",
+  description: "End-to-end accessibility and remediation solution helping publishers create WCAG and PDF/UA compliant digital content with automated validation, correction, and reporting.",
+  icon: "🔧",
+}
 ];

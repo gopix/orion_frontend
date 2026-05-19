@@ -7,10 +7,7 @@ function Home() {
   return (
     <div className="home-container">
       <Navbar />
-      <div className="hero-section">
-        <h2>Choose Your ORION Module</h2>
-        <p>AI-powered digital systems built for the modern publishing industry. Click a module to get started.</p>
-      </div>
+      
       <div className="services-section">
         {services.map((item, index) => (
           <ServiceCard
