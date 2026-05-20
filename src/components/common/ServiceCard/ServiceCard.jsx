@@ -1,10 +1,10 @@
-import "./ServiceCard.css";
-import { useNavigate } from "react-router-dom";
 
-function ServiceCard({ title, description, icon }) {
-  const navigate = useNavigate();
+
+import "./ServiceCard.css";
+
+function ServiceCard({ title, description, icon, onClick }) {
   return (
-    <div className="service-card" onClick={() => navigate("/login")}>
+    <div className="service-card" onClick={onClick}>
       <div className="service-icon-wrap">{icon}</div>
       <h2>{title}</h2>
       <p>{description}</p>
