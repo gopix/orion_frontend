@@ -1,6 +1,4 @@
 /* 
-
-
 .navbar {
   background: #ffffff;
   border-bottom: 1px solid #dbeafe;
@@ -9,43 +7,7 @@
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 1px 8px rgba(37,99,235,0.07);
-}
-
-.logo {
-  width: 320px;
-  height: 110px;
-  object-fit: contain;
-}
-
-.navbar-right {
-  text-align: right;
-}
-
-.navbar-right h1 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 38px;
-  font-weight: 800;
-  color: #1d4ed8;
-  letter-spacing: -1px;
-  margin: 0;
-  line-height: 1;
-}
-
-.navbar-right p {
-  font-size: 12px;
-  color: #94a3b8;
-  margin: 3px 0 0;
 } */
-
-.navbar {
-  background: #ffffff;
-  border-bottom: 1px solid #dbeafe;
-  padding: 16px 48px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 1px 8px rgba(37,99,235,0.07);
-}
 
 .logo {
   width: 180px;
@@ -56,7 +18,7 @@
   text-align: right;
 }
 
-.navbar-right h1 {
+/* .navbar-right h1 {
   font-family: 'Outfit', sans-serif;
   font-size: 38px;
   font-weight: 800;
@@ -64,10 +26,24 @@
   letter-spacing: -1px;
   margin: 0;
   line-height: 1;
-}
-
+} */
+/* 
 .navbar-right p {
   font-size: 12px;
   color: #94a3b8;
   margin: 3px 0 0;
+} */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;  /* keeps logo left, center in middle */
+  position: relative;
+}
+
+.navbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
 }

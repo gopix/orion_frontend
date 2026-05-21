@@ -6,7 +6,7 @@ function ServiceCard({ title, description, icon, onClick }) {
   return (
     <div className="service-card" onClick={onClick}>
       <div className="service-icon-wrap">{icon}</div>
-      <h2>{title}</h2>
+      <h2 style={{ whiteSpace: "pre-line" }}>{title}</h2>
       <p>{description}</p>
       <div className="card-cta">Get Started <span>→</span></div>
     </div>

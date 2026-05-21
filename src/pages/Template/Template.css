@@ -549,3 +549,50 @@
   border-top: 1px solid var(--blue-100);
   background: var(--gray-100);
 }
+/* ── Radio Cards ──────────────────────────────────────────── */
+.tp-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.tp-radio-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: var(--white);
+  border: 1.5px solid var(--blue-100);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.tp-radio-card:hover {
+  border-color: var(--blue-300);
+  background: var(--blue-50);
+}
+
+.tp-radio-card.selected {
+  border-color: var(--blue-500);
+  background: var(--blue-50);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.tp-radio-card input[type="radio"] {
+  accent-color: var(--blue-500);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tp-radio-icon { font-size: 24px; }
+
+.tp-radio-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
