@@ -550,37 +550,32 @@
   background: var(--gray-100);
 }
 /* ── Radio Cards ──────────────────────────────────────────── */
+/* ── Radio Group — plain grouped radio buttons ─────────────── */
 .tp-radio-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 4px;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 4px;
 }
 
-.tp-radio-card {
+.tp-radio-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: 4px;
+}
+
+.tp-radio-option {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px;
-  background: var(--white);
-  border: 1.5px solid var(--blue-100);
-  border-radius: var(--radius);
+  gap: 10px;
+  font-size: 14px;
+  color: var(--gray-800);
   cursor: pointer;
-  transition: var(--transition);
 }
 
-.tp-radio-card:hover {
-  border-color: var(--blue-300);
-  background: var(--blue-50);
-}
-
-.tp-radio-card.selected {
-  border-color: var(--blue-500);
-  background: var(--blue-50);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-}
-
-.tp-radio-card input[type="radio"] {
+.tp-radio-option input[type="radio"] {
   accent-color: var(--blue-500);
   width: 16px;
   height: 16px;
@@ -588,11 +583,32 @@
   flex-shrink: 0;
 }
 
-.tp-radio-icon { font-size: 24px; }
-
 .tp-radio-actions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+}
+/* ── Selected template card ───────────────────────────────── */
+.tp-card-selected {
+  border: 2px solid var(--blue-500) !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important;
+  background: #eff6ff !important;
+}
+
+.tp-card-radio {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.tp-card-radio input[type="radio"] {
+  accent-color: var(--blue-500);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.tp-card {
+  position: relative;
 }

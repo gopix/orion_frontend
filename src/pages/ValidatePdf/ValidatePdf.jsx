@@ -1,11 +1,8 @@
 
-
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../Template/Template.css";
-
-const BASE_URL = "http://localhost:8000/api/v1";
+import { validatePdf, submitManuscript } from "../../services/apiServices";
+import "./ValidatePdf.css";
 
 export default function ValidatePdf() {
   const navigate = useNavigate();
@@ -13,6 +10,12 @@ export default function ValidatePdf() {
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
   const [error, setError] = useState("");
+
+  // Submit manuscript state
+  const [submitting, setSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState(null);
+  const [submitError, setSubmitError] = useState("");
+
   const pdfInputRef = useRef(null);
 
   const handlePdfSelect = (e) => {
@@ -21,30 +24,23 @@ export default function ValidatePdf() {
     if (!file.name.endsWith(".pdf")) return alert("Please upload a PDF file");
     setPdfFile(file);
     setValidationResult(null);
+    setSubmitResult(null);
     setError("");
+    setSubmitError("");
   };
 
-  // ────────────────────────────────────────────────────────────
-  // API 3 — POST /api/v1/accessibility/run-checks
-  // Sends the PDF file to the backend as FormData
-  // Backend runs all active accessibility checks and returns results
-  // ────────────────────────────────────────────────────────────
+  // ── POST /api/v1/accessibility/run-checks ───────────────────
   const handleValidate = async () => {
     if (!pdfFile) return alert("Please upload a PDF first");
 
     setValidating(true);
     setValidationResult(null);
+    setSubmitResult(null);
     setError("");
+    setSubmitError("");
 
     try {
-      const formData = new FormData();
-      formData.append("file", pdfFile);
-
-      const response = await fetch(`${BASE_URL}/accessibility/run-checks`, {
-        method: "POST",
-        body: formData,
-        // Do NOT set Content-Type manually — browser sets it automatically for FormData
-      });
+      const response = await validatePdf(pdfFile);
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
@@ -54,10 +50,33 @@ export default function ValidatePdf() {
       const data = await response.json();
       setValidationResult(data);
 
+      // ── Auto-submit manuscript after validation ─────────────
+      // POST /api/v1/submit/manuscripts is called immediately after validation succeeds
+      await handleSubmitManuscript(data);
+
     } catch (err) {
       setError(`Error: ${err.message}`);
     } finally {
       setValidating(false);
+    }
+  };
+
+  // ── POST /api/v1/submit/manuscripts ────────────────────────
+  const handleSubmitManuscript = async (validationData) => {
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const response = await submitManuscript(pdfFile, validationData);
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || `Submit error: ${response.status}`);
+      }
+      const data = await response.json();
+      setSubmitResult(data);
+    } catch (err) {
+      setSubmitError(`Manuscript submission: ${err.message}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -77,6 +96,7 @@ export default function ValidatePdf() {
       <aside className="tp-sidebar">
         <div className="tp-logo">
           <span>Orion</span>
+          <small>Accessibility & Remediation</small>
         </div>
         <nav className="tp-nav">
           <p className="tp-nav-section">Accessibility & Remediation</p>
@@ -104,7 +124,7 @@ export default function ValidatePdf() {
           <section className="tp-validate-section">
             <h2 className="tp-section-title" style={{ marginBottom: 6 }}>Validate PDF</h2>
             <p className="tp-section-sub" style={{ marginBottom: 20 }}>
-              Upload a PDF to run all active accessibility checks on it.
+              Upload a PDF to run all active accessibility checks. The manuscript will be submitted automatically after validation.
             </p>
 
             <input ref={pdfInputRef} type="file" accept=".pdf"
@@ -124,12 +144,12 @@ export default function ValidatePdf() {
               <button className="tp-btn tp-btn-primary"
                 style={{ width: "100%", justifyContent: "center", marginTop: 12 }}
                 onClick={handleValidate}
-                disabled={validating}>
-                {validating ? "Running checks..." : "✅ Validate PDF"}
+                disabled={validating || submitting}>
+                {validating ? "Running checks..." : submitting ? "Submitting manuscript..." : "✅ Validate PDF"}
               </button>
             )}
 
-            {/* Results from backend */}
+            {/* Validation Results */}
             {validationResult && (
               <div className="tp-validation-result" style={{ marginTop: 20 }}>
                 <p className="tp-result-title">
@@ -147,17 +167,34 @@ export default function ValidatePdf() {
                   </div>
                 ))}
 
-                {/* Overall message if backend sends one */}
                 {validationResult.message && (
                   <div style={{ padding: "10px 14px", fontSize: 13, color: "#166534", borderTop: "1px solid #dbeafe" }}>
                     {validationResult.message}
                   </div>
                 )}
 
-                {/* If backend sends no recognizable structure */}
                 {getChecks().length === 0 && (
                   <div style={{ padding: "10px 14px", fontSize: 13, color: "#64748b" }}>
                     Validation complete. Raw response: {JSON.stringify(validationResult)}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Manuscript Submission Status */}
+            {(submitting || submitResult || submitError) && (
+              <div className="tp-validation-result" style={{ marginTop: 16, borderColor: submitError ? "#fca5a5" : "#86efac" }}>
+                <p className="tp-result-title" style={{ color: submitError ? "#dc2626" : "#15803d" }}>
+                  {submitting
+                    ? "⏳ Submitting manuscript..."
+                    : submitError
+                      ? `⚠ ${submitError}`
+                      : "📨 Manuscript Submitted Successfully"
+                  }
+                </p>
+                {submitResult && !submitError && (
+                  <div style={{ padding: "10px 14px", fontSize: 13, color: "#166534" }}>
+                    {submitResult.message || `Submission ID: ${submitResult.id || "N/A"}`}
                   </div>
                 )}
               </div>

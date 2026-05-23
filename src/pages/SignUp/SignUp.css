@@ -68,8 +68,9 @@
 
 /* ── Card ────────────────────────────────────────────────── */
 .signup-box {
-  width: 460px;
-  padding: 44px 40px;
+  width: 100%;
+  max-width: 420px;
+  padding: clamp(32px, 5vw, 44px) clamp(24px, 4vw, 40px);
   background: var(--white);
   border: 1.5px solid var(--blue-100);
   border-radius: var(--radius-lg);

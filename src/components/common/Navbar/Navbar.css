@@ -1,44 +1,18 @@
 /* 
-.navbar {
-  background: #ffffff;
-  border-bottom: 1px solid #dbeafe;
-  padding: 16px 48px;
+ .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #dbeafe;
+  position: relative;
   box-shadow: 0 1px 8px rgba(37,99,235,0.07);
-} */
+}
 
 .logo {
-  width: 180px;
+  width: clamp(140px, 18vw, 180px);
   height: auto;
-}
-
-.navbar-right {
-  text-align: right;
-}
-
-/* .navbar-right h1 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 38px;
-  font-weight: 800;
-  color: #1d4ed8;
-  letter-spacing: -1px;
-  margin: 0;
-  line-height: 1;
-} */
-/* 
-.navbar-right p {
-  font-size: 12px;
-  color: #94a3b8;
-  margin: 3px 0 0;
-} */
-
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;  /* keeps logo left, center in middle */
-  position: relative;
 }
 
 .navbar-center {
@@ -46,4 +20,69 @@
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
+  display: none; 
+}
+
+@media (min-width: 768px) {
+  .navbar-center {
+    display: block;
+  }
+}
+
+.navbar-center h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 800;
+  color: #1d4ed8;
+  margin: 0;
+}
+
+.navbar-center p {
+  font-size: clamp(11px, 1.8vw, 13px);
+  color: #64748b;
+  margin: 2px 0 0;
+} */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: #f0f6ff; /* matches home-container bg */
+  border-bottom: none;
+  position: relative;
+  box-shadow: none;
+}
+
+.logo {
+  width: clamp(140px, 18vw, 180px);
+  height: auto;
+}
+
+.navbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .navbar-center {
+    display: block;
+  }
+}
+
+.navbar-center h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 800;
+  color: #0a1628; /* changed from blue to black */
+  margin: 0;
+}
+
+.navbar-center p {
+  font-size: clamp(11px, 1.8vw, 13px);
+  color: #64748b;
+  margin: 2px 0 0;
 }
