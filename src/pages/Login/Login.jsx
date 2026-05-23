@@ -3,7 +3,7 @@
 import "./Login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
-import { loginUser } from "../../services/authServices";
+import { loginUser } from "../../services/apiServices.js";
 
 function Login() {
   const navigate = useNavigate();

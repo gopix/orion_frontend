@@ -2,7 +2,7 @@
 import "./SignUp.css";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { registerUser } from "../../services/authServices";
+import { registerUser } from "../../services/apiServices.js";
 
 function SignUp() {
   const navigate = useNavigate();
