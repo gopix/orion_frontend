@@ -54,6 +54,8 @@
 //   // Organization — selected template + run-checks state
 //   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
 //   const [orgProceeded, setOrgProceeded] = useState(false);
+//   const [orgRunOrgId, setOrgRunOrgId] = useState("");
+//   const [orgRunProjectId, setOrgRunProjectId] = useState("");
 //   const [checksRunning, setChecksRunning] = useState(false);
 //   const [checksResult, setChecksResult] = useState(null);
 //   const [checksError, setChecksError] = useState("");
@@ -222,16 +224,18 @@
 //   // ── Organization: Proceed → Run Checks ──────────────────────
 //   const handleOrgProceed = async () => {
 //     if (!selectedTemplateId) return alert("Please select a template first");
+//     if (!orgRunOrgId.toString().trim()) return alert("Please enter an Organization ID");
+//     if (!orgRunProjectId.trim()) return alert("Please enter a Project ID");
 //     setOrgProceeded(true);
 //     setChecksRunning(true);
 //     setChecksResult(null);
 //     setChecksError("");
 
 //     try {
-//       const response = await runAccessibilityChecks(selectedTemplateId);
+//       const response = await runAccessibilityChecks(orgRunOrgId, orgRunProjectId);
 //       if (!response.ok) {
 //         const err = await response.json().catch(() => ({}));
-//         throw new Error(err.detail || `Server error: ${response.status}`);
+//         throw new Error(err.message || err.detail || `Server error: ${response.status}`);
 //       }
 //       const data = await response.json();
 //       setChecksResult(data);
@@ -374,7 +378,30 @@
 //               {/* Proceed button — only appears after a radio is selected */}
 //               {selectedTemplateId && !orgProceeded && (
 //                 <div className="tp-radio-actions" style={{ marginTop: 20 }}>
-//                   <button className="tp-btn tp-btn-outline" onClick={() => { setSelectedTemplateId(null); setChecksResult(null); }}>
+//                   <div style={{ display: "flex", gap: 12, marginBottom: 12, width: "100%" }}>
+//                     <div style={{ flex: 1 }}>
+//                       <label className="tp-label">Organization ID * <small style={{color:"#94a3b8"}}>(number)</small></label>
+//                       <input
+//                         className="tp-input"
+//                         type="number"
+//                         value={orgRunOrgId}
+//                         onChange={e => setOrgRunOrgId(e.target.value)}
+//                         placeholder="e.g. 1"
+//                         style={{ width: "100%", marginTop: 4 }}
+//                       />
+//                     </div>
+//                     <div style={{ flex: 1 }}>
+//                       <label className="tp-label">Project ID * <small style={{color:"#94a3b8"}}>(string)</small></label>
+//                       <input
+//                         className="tp-input"
+//                         value={orgRunProjectId}
+//                         onChange={e => setOrgRunProjectId(e.target.value)}
+//                         placeholder="e.g. proj-001"
+//                         style={{ width: "100%", marginTop: 4 }}
+//                       />
+//                     </div>
+//                   </div>
+//                   <button className="tp-btn tp-btn-outline" onClick={() => { setSelectedTemplateId(null); setChecksResult(null); setOrgRunOrgId(""); setOrgRunProjectId(""); }}>
 //                     Cancel
 //                   </button>
 //                   <button className="tp-btn tp-btn-primary" onClick={handleOrgProceed}>
@@ -659,10 +686,10 @@
 
 
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Template.css";
-import { saveMasterTemplate, cloneMasterTemplate, runAccessibilityChecks } from "../../services/apiServices";
+import { saveMasterTemplate, cloneMasterTemplate, runAccessibilityChecks, getMasterAccessibilityChecks } from "../../services/apiServices";
 
 const INITIAL_TEMPLATES = [
   { id: 1, name: "Template #1", org: "Organization · Default", status: "Active" },
@@ -671,7 +698,9 @@ const INITIAL_TEMPLATES = [
 
 export default function Template() {
   const navigate = useNavigate();
-  const [activeNav, setActiveNav] = useState("organization");
+
+  // CHANGE 2: Default landing is "master" instead of "organization"
+  const [activeNav, setActiveNav] = useState("master");
   const [templates, setTemplates] = useState(INITIAL_TEMPLATES);
   const [contextMenu, setContextMenu] = useState(null);
 
@@ -711,6 +740,11 @@ export default function Template() {
   const [masterSaved, setMasterSaved] = useState(false);
   const [importing, setImporting] = useState(false);
 
+  // CHANGE 4: State for master checks loaded from API
+  const [masterChecks, setMasterChecks] = useState([]);
+  const [masterChecksLoading, setMasterChecksLoading] = useState(false);
+  const [masterChecksError, setMasterChecksError] = useState("");
+
   // Organization — selected template + run-checks state
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
   const [orgProceeded, setOrgProceeded] = useState(false);
@@ -722,6 +756,32 @@ export default function Template() {
 
   const importInputRef = useRef(null);
   const excelInputRef = useRef(null);
+
+  // CHANGE 4: Call GET API when master tab is loaded
+  useEffect(() => {
+    if (activeNav === "master") {
+      fetchMasterChecks();
+    }
+  }, [activeNav]);
+
+  const fetchMasterChecks = async () => {
+    setMasterChecksLoading(true);
+    setMasterChecksError("");
+    try {
+      const data = await getMasterAccessibilityChecks();
+      if (Array.isArray(data)) {
+        setMasterChecks(data);
+      } else if (Array.isArray(data?.checks)) {
+        setMasterChecks(data.checks);
+      } else {
+        setMasterChecks([]);
+      }
+    } catch (err) {
+      setMasterChecksError("Could not load checks from server. Is backend running?");
+    } finally {
+      setMasterChecksLoading(false);
+    }
+  };
 
   // ── Add new template ────────────────────────────────────────
   const handleAddTemplate = () => {
@@ -816,7 +876,6 @@ export default function Template() {
 
       if (response.ok) {
         setMasterSaved(true);
-        // After successful save, ask if they want to clone to Organization
         setCloneOrgId("");
         setCloneProjectId("");
         setShowCloneModal(true);
@@ -870,7 +929,6 @@ export default function Template() {
 
   const handleCloneNo = () => {
     setShowCloneModal(false);
-    // Template still shows in organization (without clone API call)
     const newTemplate = {
       id: Date.now(),
       name: "Master Template",
@@ -998,7 +1056,6 @@ export default function Template() {
                     }}
                     onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu(t.id); }}
                   >
-                    {/* Radio indicator */}
                     <div className="tp-card-radio">
                       <input
                         type="radio"
@@ -1035,7 +1092,6 @@ export default function Template() {
                 </div>
               </div>
 
-              {/* Proceed button — only appears after a radio is selected */}
               {selectedTemplateId && !orgProceeded && (
                 <div className="tp-radio-actions" style={{ marginTop: 20 }}>
                   <div style={{ display: "flex", gap: 12, marginBottom: 12, width: "100%" }}>
@@ -1070,7 +1126,6 @@ export default function Template() {
                 </div>
               )}
 
-              {/* Checks result table */}
               {orgProceeded && (
                 <div className="tp-validation-result" style={{ marginTop: 24 }}>
                   <p className="tp-result-title">
@@ -1127,50 +1182,58 @@ export default function Template() {
           {/* ── Master Template ───────────────────────────────── */}
           {activeNav === "master" && (
             <section>
-              <div className="tp-section-header">
-                <div>
-                  <h2 className="tp-section-title">Master Accessibility Check</h2>
-                  <p className="tp-section-sub">Define all accessibility checks (11 fields)</p>
+              {/* CHANGE 3 & 4: Removed heading and sub-heading. Show API data at top, then centered buttons at bottom */}
+
+              {/* CHANGE 4: Show existing checks from API */}
+              {masterChecksLoading && (
+                <div style={{ padding: "20px", color: "#64748b", fontSize: 14 }}>
+                  ⏳ Loading checks from server...
                 </div>
-              </div>
+              )}
 
-              {/* Radio options */}
-              {!masterProceeded && (
-                <>
-                  <div className="tp-radio-group">
-                    <p className="tp-radio-label">Select how you want to add checks:</p>
-                    <label className="tp-radio-option">
-                      <input
-                        type="radio"
-                        name="masterMode"
-                        value="manual"
-                        checked={masterMode === "manual"}
-                        onChange={() => setMasterMode("manual")}
-                      />
-                      📝 Define Manually — Add each accessibility check with full details
-                    </label>
-                    <label className="tp-radio-option">
-                      <input
-                        type="radio"
-                        name="masterMode"
-                        value="excel"
-                        checked={masterMode === "excel"}
-                        onChange={() => setMasterMode("excel")}
-                      />
-                      📊 Upload Excel — Bulk import from Excel file
-                    </label>
-                  </div>
+              {masterChecksError && (
+                <div style={{ padding: "10px 14px", fontSize: 13, color: "#dc2626" }}>
+                  ⚠ {masterChecksError}
+                </div>
+              )}
 
-                  {/* Proceed button — only shows after radio is selected */}
-                  {masterMode && (
-                    <div className="tp-radio-actions">
-                      <button className="tp-btn tp-btn-outline" onClick={() => setMasterMode(null)}>Cancel</button>
-                      <button className="tp-btn tp-btn-primary" onClick={handleMasterProceed}>
-                        Proceed →
-                      </button>
-                    </div>
-                  )}
-                </>
+              {!masterChecksLoading && masterChecks.length > 0 && (
+                <div style={{ marginBottom: 32 }}>
+                  <table className="tp-manual-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>WCAG</th>
+                        <th>PDF/UA</th>
+                        <th>Remediation</th>
+                        <th>Agent Code</th>
+                        <th>Active</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {masterChecks.map((row, i) => (
+                        <tr key={i}>
+                          <td>{row.check_id}</td>
+                          <td>{row.check_code}</td>
+                          <td>{row.check_name}</td>
+                          <td>{row.description}</td>
+                          <td>{row.category}</td>
+                          <td>{row.default_priority}</td>
+                          <td>{row.wcag_reference}</td>
+                          <td>{row.pdfua_reference}</td>
+                          <td>{row.remediation_guidance}</td>
+                          <td>{row.agent_code}</td>
+                          <td>{row.is_active ? "✅" : "❌"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
 
               {/* Excel file input (hidden) */}
@@ -1240,6 +1303,35 @@ export default function Template() {
                   {masterSaved && <p className="tp-success-msg">✅ Master template saved successfully!</p>}
                 </div>
               )}
+
+              {/* CHANGE 3: Options shown as centered buttons at the bottom, only when not yet proceeded */}
+              {!masterProceeded && (
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 16,
+                  marginTop: 40,
+                  paddingBottom: 40
+                }}>
+                  <button
+                    className={`tp-btn ${masterMode === "manual" ? "tp-btn-primary" : "tp-btn-outline"}`}
+                    style={{ minWidth: 320, padding: "14px 24px", fontSize: 15 }}
+                    onClick={() => { setMasterMode("manual"); setMasterProceeded(true); }}
+                  >
+                    📝 Add each accessibility check with full details
+                  </button>
+                  <button
+                    className={`tp-btn ${masterMode === "excel" ? "tp-btn-primary" : "tp-btn-outline"}`}
+                    style={{ minWidth: 320, padding: "14px 24px", fontSize: 15 }}
+                    onClick={() => { setMasterMode("excel"); setMasterProceeded(true); excelInputRef.current.click(); }}
+                  >
+                    📊 Bulk upload excel file
+                  </button>
+                </div>
+              )}
+
             </section>
           )}
         </div>
