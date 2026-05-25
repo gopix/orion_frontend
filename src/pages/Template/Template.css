@@ -60,7 +60,7 @@
   letter-spacing: 0.5px;
 }
 
-.tp-nav { flex: 1; padding: 12px 0; }
+.tp-nav { flex: 1; padding: 20px 0 12px; }
 
 .tp-nav-section {
   padding: 8px 16px 4px;
@@ -611,4 +611,308 @@
 
 .tp-card {
   position: relative;
+}
+/* ── Sidebar sub-items (new style) ────────────────────────── */
+.tp-nav-parent {
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+.tp-nav-sub {
+  margin: 2px 0 4px;
+}
+
+.tp-nav-sub-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px 7px 36px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: var(--transition);
+}
+
+.tp-nav-sub-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
+}
+
+.tp-nav-sub-item.active {
+  color: var(--blue-300);
+  border-left-color: var(--blue-400);
+  background: rgba(59,130,246,0.10);
+}
+
+.tp-sub-dot {
+  font-size: 14px;
+  opacity: 0.5;
+}
+
+/* ── Filter bar ───────────────────────────────────────────── */
+.tp-filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #f8faff;
+  border: 1px solid var(--blue-100);
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.tp-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tp-filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.tp-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tp-filter-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--blue-200);
+  background: var(--white);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tp-filter-pill:hover {
+  border-color: var(--blue-400);
+  color: var(--blue-600);
+  background: var(--blue-50);
+}
+
+.tp-filter-pill.active {
+  background: var(--blue-500);
+  border-color: var(--blue-500);
+  color: #fff;
+}
+
+/* Priority-colored pills */
+.tp-filter-pill.tp-priority-high.active  { background: #dc2626; border-color: #dc2626; }
+.tp-filter-pill.tp-priority-medium.active { background: #d97706; border-color: #d97706; }
+.tp-filter-pill.tp-priority-low.active   { background: #16a34a; border-color: #16a34a; }
+.tp-filter-pill.tp-priority-high:hover   { border-color: #dc2626; color: #dc2626; }
+.tp-filter-pill.tp-priority-medium:hover { border-color: #d97706; color: #d97706; }
+.tp-filter-pill.tp-priority-low:hover    { border-color: #16a34a; color: #16a34a; }
+
+.tp-filter-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+/* Priority badge inside table cells */
+.tp-priority-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tp-priority-badge.tp-priority-high   { background: #fee2e2; color: #dc2626; }
+.tp-priority-badge.tp-priority-medium { background: #fef3c7; color: #d97706; }
+.tp-priority-badge.tp-priority-low    { background: #dcfce7; color: #16a34a; }
+
+/* ── Master mode cards (inline, hover) ────────────────────── */
+.tp-mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 260px;
+  padding: 32px 24px;
+  background: var(--white);
+  border: 2px solid var(--blue-100);
+  border-radius: 16px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.tp-mode-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 16px 16px 0 0;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.tp-mode-card:hover::before { opacity: 1; }
+
+.tp-mode-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--blue-300);
+  box-shadow: 0 14px 36px rgba(37,99,235,0.16);
+}
+
+.tp-mode-icon {
+  font-size: 36px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tp-mode-card:hover .tp-mode-icon {
+  transform: scale(1.18);
+}
+
+.tp-mode-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blue-900);
+  transition: color 0.2s ease;
+}
+
+.tp-mode-card:hover .tp-mode-title { color: var(--blue-600); }
+
+.tp-mode-desc {
+  font-size: 12px;
+  color: var(--gray-500);
+  line-height: 1.5;
+}
+/* ── Per-row Clone Button ─────────────────────────────────── */
+.tp-btn-clone-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue-600);
+  background: var(--blue-50);
+  border: 1.5px solid var(--blue-200);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.tp-btn-clone-row:hover {
+  background: var(--blue-500);
+  color: #fff;
+  border-color: var(--blue-500);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(37,99,235,0.2);
+}
+
+/* ── Wide Modal (for clone + edit check modals) ───────────── */
+.tp-modal-wide {
+  width: 560px;
+  max-width: 95vw;
+}
+
+/* ── Clone Source Summary Box ─────────────────────────────── */
+.tp-clone-source-box {
+  background: #f0f6ff;
+  border: 1.5px solid var(--blue-100);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+}
+
+.tp-clone-source-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--blue-500);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+}
+
+.tp-clone-source-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--blue-900);
+}
+
+.tp-clone-source-desc {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ── Cloned badge on org card ─────────────────────────────── */
+.tp-badge-source {
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe !important;
+  margin-top: 4px;
+}
+
+/* ── Last-saved row highlight (flashes green then fades) ──── */
+@keyframes tp-row-flash {
+  0%   { background: #dcfce7; }
+  60%  { background: #dcfce7; }
+  100% { background: transparent; }
+}
+
+.tp-row-highlight {
+  animation: tp-row-flash 3s ease forwards;
+}
+
+.tp-row-highlight td {
+  border-top: 2px solid #16a34a;
+  border-bottom: 2px solid #16a34a;
+}
+
+.tp-row-highlight td:first-child { border-left: 2px solid #16a34a; }
+.tp-row-highlight td:last-child  { border-right: 2px solid #16a34a; }
+
+/* ── Discard ✕ — stronger visual than close ──────────────── */
+.tp-modal-discard {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #dc2626 !important;
+  border-radius: 50% !important;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tp-modal-discard:hover {
+  background: #fee2e2 !important;
+}
+
+/* ── Full-width save button in edit modal footer ─────────── */
+.tp-btn-save-full {
+  width: 100%;
+  justify-content: center;
+  font-size: 14px;
+  padding: 10px 0;
 }
