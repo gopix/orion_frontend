@@ -1,5 +1,4 @@
 
-
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/common/Navbar/Navbar";
 import ServiceCard from "../../components/common/ServiceCard/ServiceCard";
@@ -10,17 +9,10 @@ function Home() {
   const navigate = useNavigate();
 
   const handleCardClick = (index) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      localStorage.removeItem("token");
-      if (index === 3) {
-        navigate("/template");
-      } else {
-        navigate("/login");
-      }
-    } else {
-      navigate(`/login?card=${index}`); // pass which card was clicked
-    }
+    // Every card click always goes to the login page first.
+    // We pass which card was clicked so Login knows what to do
+    // after the user successfully signs in.
+    navigate(`/login?card=${index}`);
   };
 
   return (
