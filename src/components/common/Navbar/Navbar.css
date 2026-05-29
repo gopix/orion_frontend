@@ -1,20 +1,19 @@
-
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: clamp(10px, 2vw, 16px) clamp(14px, 3vw, 24px);
   background: #f0f6ff;
   border-bottom: none;
   position: relative;
-  box-shadow: none;
 }
 
 .logo {
-  width: clamp(140px, 18vw, 180px);
+  width: clamp(100px, 16vw, 160px);
   height: auto;
 }
 
+/* Center block: visible only on wider screens */
 .navbar-center {
   position: absolute;
   left: 50%;
@@ -23,26 +22,25 @@
   display: none;
 }
 
-@media (min-width: 768px) {
-  .navbar-center {
-    display: block;
-  }
+@media (min-width: 640px) {
+  .navbar-center { display: block; }
 }
 
 .navbar-center h1 {
   font-family: 'Outfit', sans-serif;
-  font-size: clamp(32px, 5vw, 52px); /* ← ORION SIZE: change these values to resize (min, fluid, max) */
+  font-size: clamp(24px, 4.5vw, 52px);
   font-weight: 800;
-  /* Gradient matching the ORION logo — bright blue left to navy right */
   background: linear-gradient(to right, #2563eb, #1e3a8a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin: 0;
+  white-space: nowrap;
 }
 
 .navbar-center p {
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(10px, 1.5vw, 13px);
   color: #64748b;
   margin: 2px 0 0;
+  white-space: nowrap;
 }

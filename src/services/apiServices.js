@@ -24,6 +24,17 @@
 // };
 
 
+// // ── Master Setup ─────────────────────────────────────────────
+
+// // GET all organizations  (GET /api/v1/master-setup/organizations)
+// export const getOrganizations = async () => {
+//   const response = await fetch(`${BASE_URL}/master-setup/organizations`, {
+//     method: "GET",
+//     headers: { "Content-Type": "application/json" }
+//   });
+//   return response.json();
+// };
+
 // // ── Template ─────────────────────────────────────────────────
 
 // // GET all checks from master table
@@ -90,7 +101,6 @@
 //   return response;
 // };
 
-
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 // ── Auth ─────────────────────────────────────────────────────
@@ -154,6 +164,19 @@ export const cloneMasterTemplate = async (organizationId, projectId) => {
     body: JSON.stringify({ organization_id: Number(organizationId), project_id: projectId })
   });
   return response;
+};
+
+// GET organization-wise cloned template entries
+// GET /api/v1/accessibility/master_accessibility_check/OrganizationWiseTemplate/{organization_id}
+export const getOrganizationWiseTemplate = async (organizationId) => {
+  const response = await fetch(
+    `${BASE_URL}/accessibility/master_accessibility_check/OrganizationWiseTemplate/${organizationId}`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    }
+  );
+  return response.json();
 };
 
 // POST run accessibility checks
