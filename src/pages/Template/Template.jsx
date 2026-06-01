@@ -1244,7 +1244,6 @@ export default function Template() {
   const confirmBatchClone = async () => {
     if (!batchSelected.length) return alert("Please select at least one check to clone.");
     if (!selectedOrgId)        return alert("Please select an organization to clone into.");
-    if (!cloneProjectId.trim()) return alert("Please enter a Project ID.");
 
     const org = organizations.find((o) =>
       String(o.id ?? o.organization_id ?? o.org_id) === String(selectedOrgId)
@@ -1858,7 +1857,8 @@ export default function Template() {
                       <thead>
                         <tr>
                           <th>Code</th><th>Name</th><th>Description</th><th>Category</th>
-                          <th>Priority</th><th>WCAG</th><th>PDF/UA</th><th>Remediation</th><th>Active</th><th></th>
+                          <th>Priority</th><th>WCAG</th><th>PDF/UA</th><th>Remediation</th><th>Active</th>
+                          <th style={{ whiteSpace: "nowrap", minWidth: 96 }}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1879,15 +1879,36 @@ export default function Template() {
                             <td><input className="tp-input" value={row.pdfua_reference} onChange={(e) => updateManualRow(i, "pdfua_reference", e.target.value)} /></td>
                             <td><input className="tp-input" value={row.remediation_guidance} onChange={(e) => updateManualRow(i, "remediation_guidance", e.target.value)} /></td>
                             <td><input type="checkbox" checked={row.is_active} onChange={(e) => updateManualRow(i, "is_active", e.target.checked)} /></td>
-                            <td><button className="tp-btn-remove" onClick={() => removeManualRow(i)}>✕</button></td>
+                            <td>
+                              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                {/* Add new row after this row */}
+                                <button
+                                  className="tp-row-action-btn tp-row-add"
+                                  title="Add row below"
+                                  onClick={() => {
+                                    const updated = [...manualItems];
+                                    updated.splice(i + 1, 0, emptyRow());
+                                    setManualItems(updated);
+                                  }}
+                                >＋</button>
+                                {/* Cancel / remove this row */}
+                                <button
+                                  className="tp-row-action-btn tp-row-remove"
+                                  title="Remove this row"
+                                  onClick={() => removeManualRow(i)}
+                                >－</button>
+                                {/* Save all rows */}
+                                <button
+                                  className="tp-row-action-btn tp-row-save"
+                                  title="Save all rows"
+                                  onClick={saveMasterManual}
+                                >💾</button>
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </div>
-                  <div className="tp-form-actions">
-                    <button className="tp-btn tp-btn-outline" onClick={addManualRow}>+ Add Row</button>
-                    <button className="tp-btn tp-btn-primary" onClick={saveMasterManual}>💾 Save</button>
                   </div>
                   {masterSaved && <p className="tp-success-msg">✅ Master template saved successfully!</p>}
                 </div>
@@ -2016,7 +2037,7 @@ export default function Template() {
                   {selectedOrgId && (
                     <div className="tp-clone-selector-col tp-clone-project-col">
                       <label className="tp-clone-org-label">
-                        Project ID <span style={{ color: "#dc2626" }}>*</span>
+                        Project ID <span style={{ color: "#94a3b8", fontWeight: 400, fontSize: "12px" }}>(optional)</span>
                       </label>
                       <input
                         className="tp-input tp-clone-org-select"
@@ -2039,7 +2060,7 @@ export default function Template() {
             <div className="tp-modal-footer">
               <button className="tp-btn tp-btn-outline" onClick={() => !cloning && setShowBatchCloneModal(false)} disabled={cloning}>Cancel</button>
               <button className="tp-btn tp-btn-primary" onClick={confirmBatchClone}
-                disabled={!batchSelected.length || !selectedOrgId || !cloneProjectId.trim() || cloning}>
+                disabled={!batchSelected.length || !selectedOrgId || cloning}>
                 {cloning ? "⏳ Cloning…" : `✅ Clone Selected (${batchSelected.length})`}
               </button>
             </div>
