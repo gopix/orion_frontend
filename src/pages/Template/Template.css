@@ -30,6 +30,12 @@
   min-height: 100vh;
   background: #f0f6ff;
   font-family: 'Inter', sans-serif;
+  width: 100%;
+}
+
+/* Ensure home page is never affected by tp-page flex */
+.home-container, .home-container * {
+  flex-shrink: unset;
 }
 
 /* ── Sidebar ──────────────────────────────────────────────── */

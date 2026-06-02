@@ -1,9 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap');
+/*  */@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap');
 
 .home-container {
   min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: #f0f6ff;
   animation: bgShift 8s ease-in-out infinite alternate;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes bgShift {
@@ -15,14 +19,12 @@
 .services-section {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 28px;
-  padding: 40px 32px 60px;
+  gap: 20px;
+  padding: 20px 24px 20px;
   width: 100%;
   box-sizing: border-box;
-  max-width: 100%;
-  margin: 0 auto;
+  flex: 1;
   align-items: stretch;
-  min-height: calc(100vh - 80px);
 }
 
 /* Stagger animation */
@@ -44,16 +46,21 @@
 @media (max-width: 1100px) {
   .services-section {
     grid-template-columns: repeat(2, 1fr);
-    padding: 28px 24px 48px;
-    gap: 22px;
-    min-height: unset;
+    padding: 20px 20px;
+    gap: 16px;
+    height: auto;
+    overflow-y: auto;
+  }
+  .home-container {
+    height: auto;
+    overflow: auto;
   }
 }
 
 @media (max-width: 640px) {
   .services-section {
     grid-template-columns: 1fr;
-    padding: 16px 16px 40px;
-    gap: 16px;
+    padding: 14px 14px;
+    gap: 14px;
   }
 }
