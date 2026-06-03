@@ -1,4 +1,4 @@
-/*  */@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap');
 
 .home-container {
   min-height: 100vh;
@@ -20,11 +20,12 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  padding: 20px 24px 20px;
+  padding: 24px 32px 28px;
   width: 100%;
   box-sizing: border-box;
   flex: 1;
   align-items: stretch;
+  min-height: 0;
 }
 
 /* Stagger animation */

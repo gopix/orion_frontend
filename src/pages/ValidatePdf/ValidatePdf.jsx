@@ -1,4 +1,759 @@
 
+// // import { useState, useRef } from "react";
+// // import { useNavigate } from "react-router-dom";
+// // import { validatePdf } from "../../services/apiServices";
+// // import "./ValidatePdf.css";
+
+// // export default function ValidatePdf() {
+// //   const navigate = useNavigate();
+
+// //   const [pdfFile, setPdfFile]       = useState(null);
+// //   const [dragOver, setDragOver]     = useState(false);
+// //   const [submitting, setSubmitting] = useState(false);
+// //   const [rawResult, setRawResult]   = useState(null);   // stores full API JSON
+// //   const [submitError, setSubmitError] = useState("");
+
+// //   const pdfInputRef = useRef(null);
+
+// //   const handlePdfSelect = (e) => {
+// //     const file = e.target.files[0];
+// //     if (!file) return;
+// //     if (!file.name.toLowerCase().endsWith(".pdf")) { alert("Please upload a PDF file (.pdf)"); return; }
+// //     setPdfFile(file); setRawResult(null); setSubmitError("");
+// //   };
+
+// //   const handleDrop = (e) => {
+// //     e.preventDefault(); setDragOver(false);
+// //     const file = e.dataTransfer.files[0];
+// //     if (!file) return;
+// //     if (!file.name.toLowerCase().endsWith(".pdf")) { alert("Please drop a PDF file (.pdf)"); return; }
+// //     setPdfFile(file); setRawResult(null); setSubmitError("");
+// //   };
+
+// //   const formatBytes = (bytes) => {
+// //     if (bytes < 1024) return `${bytes} B`;
+// //     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+// //     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+// //   };
+
+// //   const handleSubmit = async () => {
+// //     if (!pdfFile) { alert("Please upload a PDF file first."); return; }
+// //     setSubmitting(true); setRawResult(null); setSubmitError("");
+// //     try {
+// //       const response = await validatePdf(pdfFile);
+// //       if (!response.ok) {
+// //         let errMsg = `Server error: ${response.status}`;
+// //         try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
+// //         catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
+// //         throw new Error(errMsg);
+// //       }
+// //       const data = await response.json();
+// //       setRawResult(data);
+// //     } catch (err) {
+// //       setSubmitError(err.message || "Unexpected error. Please try again.");
+// //     } finally {
+// //       setSubmitting(false);
+// //     }
+// //   };
+
+// //   // ── Parse VeraPDF response ─────────────────────────────────
+// //   // Handles: { response_code, data: { report: { jobs: [{ validationResult }] } } }
+// //   const parseVeraPDF = (raw) => {
+// //     if (!raw) return null;
+
+// //     // Unwrap envelope
+// //     const report =
+// //       raw?.data?.report ??
+// //       raw?.report ??
+// //       raw;
+
+// //     // Get jobs array — VeraPDF always puts results here
+// //     const jobs = Array.isArray(report?.jobs) ? report.jobs : [];
+// //     const job  = jobs[0] ?? {};
+
+// //     const vr = job?.validationResult ?? report?.validationResult ?? null;
+
+// //     if (!vr) return { unparseable: true, raw };
+
+// //     const details       = vr.details ?? {};
+// //     const passedChecks  = Number(vr.passedChecks  ?? details.passedChecks  ?? 0);
+// //     const failedChecks  = Number(vr.failedChecks  ?? details.failedChecks  ?? 0);
+// //     const passedRules   = Number(details.passedRules ?? 0);
+// //     const failedRules   = Number(details.failedRules ?? 0);
+// //     const isCompliant   = vr.compliant ?? (failedChecks === 0 && failedRules === 0);
+// //     const profileName   = vr.profileName ?? vr.validationProfileName ?? "";
+// //     const statement     = vr.statement   ?? "";
+
+// //     // ruleSummaries holds BOTH passed and failed rules — filter failed ones
+// //     const ruleSummaries = details.ruleSummaries ?? [];
+// //     // A rule is failed when it has failures > 0
+// //     const violations = ruleSummaries.filter(r => Number(r.failures ?? r.failedChecks ?? 0) > 0);
+// //     // Passed rules = ruleSummaries with 0 failures
+// //     const passedRulesList = ruleSummaries.filter(r => Number(r.failures ?? r.failedChecks ?? 0) === 0);
+
+// //     // Group violations by specification (for categorization)
+// //     const bySpec = {};
+// //     violations.forEach(v => {
+// //       const spec = v.specification ?? "Other";
+// //       if (!bySpec[spec]) bySpec[spec] = [];
+// //       bySpec[spec].push(v);
+// //     });
+
+// //     return {
+// //       profileName,
+// //       statement,
+// //       isCompliant,
+// //       passedChecks,
+// //       failedChecks,
+// //       passedRules,
+// //       failedRules,
+// //       violations,
+// //       passedRulesList,
+// //       bySpec,
+// //       totalRuleSummaries: ruleSummaries.length,
+// //       raw,
+// //     };
+// //   };
+
+// //   const parsed = parseVeraPDF(rawResult);
+
+// //   return (
+// //     <div className="tp-page">
+
+// //       {/* ── Sidebar ─────────────────────────────────────────── */}
+// //       <aside className="tp-sidebar">
+// //         <div className="tp-logo">
+// //           <span>Orion</span>
+// //           <small>Accessibility & Remediation</small>
+// //         </div>
+// //         <nav className="tp-nav">
+// //           <p className="tp-nav-section">Accessibility & Remediation</p>
+// //           <div className="tp-nav-item" onClick={() => navigate("/template")}>
+// //             <span className="tp-nav-icon">📋</span> Template
+// //             <span className="tp-chevron">▸</span>
+// //           </div>
+// //           <div className="tp-nav-item active">
+// //             <span className="tp-nav-icon">✅</span> Validate PDF
+// //           </div>
+// //         </nav>
+// //       </aside>
+
+// //       {/* ── Main ────────────────────────────────────────────── */}
+// //       <main className="tp-main">
+// //         <div className="tp-topbar">
+// //           <div className="tp-breadcrumb">
+// //             <span>Accessibility &amp; Remediation</span>
+// //             <span className="tp-sep">›</span>
+// //             <span className="tp-active">Validate PDF</span>
+// //           </div>
+// //           {pdfFile && !submitting && (
+// //             <div className="tp-topbar-badge"><span className="tp-badge-dot"></span>PDF Ready</div>
+// //           )}
+// //           {submitting && (
+// //             <div className="tp-topbar-badge tp-topbar-badge--running"><span className="tp-badge-spin"></span>Validating…</div>
+// //           )}
+// //         </div>
+
+// //         <div className="tp-content">
+
+// //           {/* ══ CARD 1 — Upload + Run (50-50) ══ */}
+// //           <div className="vp-section-card">
+// //             <div className="vp-section-number">1</div>
+// //             <div className="vp-section-inner">
+// //               <div className="vp-section-header">
+// //                 <h2 className="vp-section-title">Upload PDF</h2>
+// //                 <p className="vp-section-sub">Select or drag-and-drop your PDF file for accessibility validation (VeraPDF / WCAG / PDF/UA).</p>
+// //               </div>
+
+// //               <input ref={pdfInputRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={handlePdfSelect} />
+
+// //               <div className="vp-upload-run-row">
+// //                 <div
+// //                   className={`vp-drop-zone ${dragOver ? "drag-over" : ""} ${pdfFile ? "has-file" : ""}`}
+// //                   onClick={() => pdfInputRef.current.click()}
+// //                   onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+// //                   onDragLeave={() => setDragOver(false)}
+// //                   onDrop={handleDrop}
+// //                 >
+// //                   {pdfFile ? (
+// //                     <div className="vp-file-preview">
+// //                       <div className="vp-file-icon">📄</div>
+// //                       <div className="vp-file-info">
+// //                         <span className="vp-file-name">{pdfFile.name}</span>
+// //                         <span className="vp-file-size">{formatBytes(pdfFile.size)}</span>
+// //                       </div>
+// //                       <button className="vp-file-remove"
+// //                         onClick={(e) => { e.stopPropagation(); setPdfFile(null); setRawResult(null); setSubmitError(""); }}
+// //                         title="Remove file">✕</button>
+// //                     </div>
+// //                   ) : (
+// //                     <div className="vp-drop-content">
+// //                       <div className="vp-drop-icon">☁</div>
+// //                       <p className="vp-drop-title">Drag &amp; drop your PDF here</p>
+// //                       <p className="vp-drop-sub">or <span className="vp-drop-link">browse to upload</span></p>
+// //                       <p className="vp-drop-hint">Only .pdf files · Max recommended: 50MB</p>
+// //                     </div>
+// //                   )}
+// //                 </div>
+
+// //                 <div className="vp-run-panel">
+// //                   <div className="vp-check-tags">
+// //                     <span className="vp-tag">🔍 VeraPDF</span>
+// //                     <span className="vp-tag">📋 PDF/UA</span>
+// //                     <span className="vp-tag">♿ WCAG 2.1</span>
+// //                     <span className="vp-tag">🏷 Tagged PDF</span>
+// //                   </div>
+// //                   <button
+// //                     className="tp-btn tp-btn-primary vp-submit-btn"
+// //                     onClick={handleSubmit}
+// //                     disabled={!pdfFile || submitting}
+// //                   >
+// //                     {submitting
+// //                       ? <><span className="vp-btn-spinner"></span>Validating PDF…</>
+// //                       : <><span>🚀</span>Run Accessibility Checks</>}
+// //                   </button>
+// //                   {submitError && (
+// //                     <div className="vp-error-box">
+// //                       <span className="vp-error-icon">⚠</span>
+// //                       <div>
+// //                         <p className="vp-error-title">Validation Failed</p>
+// //                         <p className="vp-error-msg">{submitError}</p>
+// //                       </div>
+// //                     </div>
+// //                   )}
+// //                 </div>
+// //               </div>
+// //             </div>
+// //           </div>
+
+// //           {/* ══ CARD 2 — Validation Report ══ */}
+// //           <div className={`vp-section-card vp-section-card--results ${!rawResult && !submitting ? "vp-section-disabled" : ""}`}>
+// //             <div className="vp-section-number">2</div>
+// //             <div className="vp-section-inner">
+// //               <div className="vp-section-header">
+// //                 <h2 className="vp-section-title">Validation Report</h2>
+// //                 <p className="vp-section-sub">Detailed accessibility check results for your PDF document.</p>
+// //               </div>
+
+// //               {/* Placeholder */}
+// //               {!rawResult && !submitting && (
+// //                 <div className="vp-results-placeholder">
+// //                   <div className="vp-placeholder-icon">📊</div>
+// //                   <p className="vp-placeholder-title">No results yet</p>
+// //                   <p className="vp-placeholder-sub">Upload a PDF and run validation to see the report here.</p>
+// //                 </div>
+// //               )}
+
+// //               {/* Scanning */}
+// //               {submitting && (
+// //                 <div className="vp-results-placeholder">
+// //                   <div className="vp-scanning-anim">
+// //                     <div className="vp-scan-bar"></div>
+// //                     <div className="vp-pdf-mock"><div/><div/><div/><div/><div/></div>
+// //                   </div>
+// //                   <p className="vp-placeholder-title" style={{ marginTop: 16 }}>Scanning PDF…</p>
+// //                   <p className="vp-placeholder-sub">Running VeraPDF accessibility checks</p>
+// //                 </div>
+// //               )}
+
+// //               {/* ── Parsed results ── */}
+// //               {rawResult && !submitting && parsed && !parsed.unparseable && (
+// //                 <>
+// //                   {/* ── Validation Information ── */}
+// //                   <div className="vp-info-block">
+// //                     <h3 className="vp-info-title">Validation information</h3>
+// //                     <table className="vp-summary-table">
+// //                       <tbody>
+// //                         {parsed.profileName && (
+// //                           <tr>
+// //                             <td className="vp-sum-key">Validation Profile:</td>
+// //                             <td className="vp-sum-val">{parsed.profileName}</td>
+// //                           </tr>
+// //                         )}
+// //                         <tr>
+// //                           <td className="vp-sum-key">Compliance:</td>
+// //                           <td className={`vp-sum-val ${parsed.isCompliant ? "vp-sum-pass" : "vp-sum-fail"}`}>
+// //                             {parsed.isCompliant ? "Passed" : "Failed"}
+// //                           </td>
+// //                         </tr>
+// //                         <tr>
+// //                           <td className="vp-sum-key">Passed Checks:</td>
+// //                           <td className="vp-sum-val">{parsed.passedChecks.toLocaleString()}</td>
+// //                         </tr>
+// //                         <tr>
+// //                           <td className="vp-sum-key">Failed Checks:</td>
+// //                           <td className="vp-sum-val">{parsed.failedChecks.toLocaleString()}</td>
+// //                         </tr>
+// //                         {(parsed.passedRules > 0 || parsed.failedRules > 0) && (
+// //                           <>
+// //                             <tr>
+// //                               <td className="vp-sum-key">Passed Rules:</td>
+// //                               <td className="vp-sum-val">{parsed.passedRules.toLocaleString()}</td>
+// //                             </tr>
+// //                             <tr>
+// //                               <td className="vp-sum-key">Failed Rules:</td>
+// //                               <td className="vp-sum-val">{parsed.failedRules.toLocaleString()}</td>
+// //                             </tr>
+// //                           </>
+// //                         )}
+// //                       </tbody>
+// //                     </table>
+// //                   </div>
+
+// //                   {/* ── Failed Rules Table ── */}
+// //                   {parsed.violations.length > 0 && (
+// //                     <div className="vp-violations-wrap">
+// //                       <table className="vp-violations-table">
+// //                         <thead>
+// //                           <tr>
+// //                             <th className="vp-vth-rule">Rule</th>
+// //                             <th className="vp-vth-status">Status</th>
+// //                           </tr>
+// //                         </thead>
+// //                         <tbody>
+// //                           {parsed.violations.map((v, i) => {
+// //                             const spec        = v.specification ?? "";
+// //                             const clause      = v.clause        ?? "";
+// //                             const testNum     = v.testNumber    ?? v.test_number ?? "";
+// //                             const description = v.description   ?? v.message ?? v.detail ?? "";
+// //                             const occurrences = Number(v.failures ?? v.failedChecks ?? v.occurrences ?? v.count ?? 0);
+
+// //                             const specLabel = [
+// //                               spec    ? `Specification: ${spec}` : null,
+// //                               clause  ? `Clause: ${clause}`      : null,
+// //                               testNum ? `Test number: ${testNum}` : null,
+// //                             ].filter(Boolean).join(", ") || `Rule ${i + 1}`;
+
+// //                             return (
+// //                               <tr key={i} className="vp-vrow">
+// //                                 <td className="vp-vtd-rule">
+// //                                   <a className="vp-spec-link" href="#!">{specLabel}</a>
+// //                                   {description && <p className="vp-rule-desc">{description}</p>}
+// //                                   {occurrences > 0 && (
+// //                                     <p className="vp-occurrences">
+// //                                       {occurrences.toLocaleString()} occurrence{occurrences !== 1 ? "s" : ""}
+// //                                     </p>
+// //                                   )}
+// //                                 </td>
+// //                                 <td className="vp-vtd-status">
+// //                                   <span className="vp-vstatus fail">Failed</span>
+// //                                   <a className="vp-show-link" href="#!">Show</a>
+// //                                 </td>
+// //                               </tr>
+// //                             );
+// //                           })}
+// //                         </tbody>
+// //                       </table>
+// //                     </div>
+// //                   )}
+
+// //                   {/* All passed */}
+// //                   {parsed.isCompliant && parsed.violations.length === 0 && (
+// //                     <div className="vp-success-note">
+// //                       🎉 Excellent! Your PDF is fully accessible and meets all checked standards.
+// //                     </div>
+// //                   )}
+
+// //                   {/* Edge case: not compliant but no violations surfaced */}
+// //                   {!parsed.isCompliant && parsed.violations.length === 0 && (
+// //                     <div className="vp-warn-note">
+// //                       ⚠ Validation returned non-compliant but no specific rule violations were found in the response.
+// //                     </div>
+// //                   )}
+// //                 </>
+// //               )}
+
+// //               {/* DEBUG — always show raw JSON so we can see actual API shape */}
+// //               {rawResult && !submitting && (
+// //                 <div className="vp-raw-result" style={{ marginTop: 20 }}>
+// //                   <p className="vp-raw-label">🔍 DEBUG — Raw API Response (remove after fixing)</p>
+// //                   <pre className="vp-raw-json">{JSON.stringify(rawResult, null, 2)}</pre>
+// //                 </div>
+// //               )}
+// //             </div>
+// //           </div>
+
+// //         </div>
+// //       </main>
+// //     </div>
+// //   );
+// // }
+
+
+// import { useState, useRef } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { validatePdf } from "../../services/apiServices";
+// import "./ValidatePdf.css";
+
+// export default function ValidatePdf() {
+//   const navigate = useNavigate();
+
+//   const [pdfFile, setPdfFile]       = useState(null);
+//   const [dragOver, setDragOver]     = useState(false);
+//   const [submitting, setSubmitting] = useState(false);
+//   const [rawResult, setRawResult]   = useState(null);   // stores full API JSON
+//   const [submitError, setSubmitError] = useState("");
+
+//   const pdfInputRef = useRef(null);
+
+//   const handlePdfSelect = (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+//     if (!file.name.toLowerCase().endsWith(".pdf")) { alert("Please upload a PDF file (.pdf)"); return; }
+//     setPdfFile(file); setRawResult(null); setSubmitError("");
+//   };
+
+//   const handleDrop = (e) => {
+//     e.preventDefault(); setDragOver(false);
+//     const file = e.dataTransfer.files[0];
+//     if (!file) return;
+//     if (!file.name.toLowerCase().endsWith(".pdf")) { alert("Please drop a PDF file (.pdf)"); return; }
+//     setPdfFile(file); setRawResult(null); setSubmitError("");
+//   };
+
+//   const formatBytes = (bytes) => {
+//     if (bytes < 1024) return `${bytes} B`;
+//     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+//     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!pdfFile) { alert("Please upload a PDF file first."); return; }
+//     setSubmitting(true); setRawResult(null); setSubmitError("");
+//     try {
+//       const response = await validatePdf(pdfFile);
+//       if (!response.ok) {
+//         let errMsg = `Server error: ${response.status}`;
+//         try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
+//         catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
+//         throw new Error(errMsg);
+//       }
+//       const data = await response.json();
+//       setRawResult(data);
+//     } catch (err) {
+//       setSubmitError(err.message || "Unexpected error. Please try again.");
+//     } finally {
+//       setSubmitting(false);
+//     }
+//   };
+
+//   // ── Parse VeraPDF response ─────────────────────────────────
+//   // Actual shape: data.report.jobs[0].validationResult = ARRAY of result objects
+//   // Each item: { profileName, compliant, statement, details: { passedRules, failedRules,
+//   //   passedChecks, failedChecks, ruleSummaries: [{ ruleStatus, specification, clause,
+//   //   testNumber, failedChecks, description, ... }] } }
+//   const parseVeraPDF = (raw) => {
+//     if (!raw) return null;
+
+//     const report = raw?.data?.report ?? raw?.report ?? raw;
+//     const jobs   = Array.isArray(report?.jobs) ? report.jobs : [];
+//     const job    = jobs[0] ?? {};
+
+//     // validationResult is an ARRAY — take first element
+//     const vrRaw = job?.validationResult ?? report?.validationResult ?? null;
+//     const vr    = Array.isArray(vrRaw) ? vrRaw[0] : vrRaw;
+
+//     if (!vr) return { unparseable: true, raw };
+
+//     // profileName / compliant / statement are directly on vr (not inside details)
+//     const profileName  = vr.profileName ?? vr.validationProfileName ?? "";
+//     const statement    = vr.statement   ?? "";
+//     const isCompliant  = vr.compliant   ?? false;
+
+//     // counts are inside vr.details
+//     const details      = vr.details ?? {};
+//     const passedChecks = Number(details.passedChecks ?? 0);
+//     const failedChecks = Number(details.failedChecks ?? 0);
+//     const passedRules  = Number(details.passedRules  ?? 0);
+//     const failedRules  = Number(details.failedRules  ?? 0);
+
+//     // ruleSummaries — filter only FAILED ones (ruleStatus === "FAILED" or failedChecks > 0)
+//     const ruleSummaries = details.ruleSummaries ?? [];
+//     const violations    = ruleSummaries.filter(r =>
+//       r.ruleStatus === "FAILED" ||
+//       r.status     === "failed" ||
+//       Number(r.failedChecks ?? r.failures ?? 0) > 0
+//     );
+
+//     return {
+//       profileName,
+//       statement,
+//       isCompliant,
+//       passedChecks,
+//       failedChecks,
+//       passedRules,
+//       failedRules,
+//       violations,
+//       raw,
+//     };
+//   };
+
+//   const parsed = parseVeraPDF(rawResult);
+
+//   return (
+//     <div className="tp-page">
+
+//       {/* ── Sidebar ─────────────────────────────────────────── */}
+//       <aside className="tp-sidebar">
+//         <div className="tp-logo">
+//           <span>Orion</span>
+//           <small>Accessibility & Remediation</small>
+//         </div>
+//         <nav className="tp-nav">
+//           <p className="tp-nav-section">Accessibility & Remediation</p>
+//           <div className="tp-nav-item" onClick={() => navigate("/template")}>
+//             <span className="tp-nav-icon">📋</span> Template
+//             <span className="tp-chevron">▸</span>
+//           </div>
+//           <div className="tp-nav-item active">
+//             <span className="tp-nav-icon">✅</span> Validate PDF
+//           </div>
+//         </nav>
+//       </aside>
+
+//       {/* ── Main ────────────────────────────────────────────── */}
+//       <main className="tp-main">
+//         <div className="tp-topbar">
+//           <div className="tp-breadcrumb">
+//             <span>Accessibility &amp; Remediation</span>
+//             <span className="tp-sep">›</span>
+//             <span className="tp-active">Validate PDF</span>
+//           </div>
+//           {pdfFile && !submitting && (
+//             <div className="tp-topbar-badge"><span className="tp-badge-dot"></span>PDF Ready</div>
+//           )}
+//           {submitting && (
+//             <div className="tp-topbar-badge tp-topbar-badge--running"><span className="tp-badge-spin"></span>Validating…</div>
+//           )}
+//         </div>
+
+//         <div className="tp-content">
+
+//           {/* ══ CARD 1 — Upload + Run (50-50) ══ */}
+//           <div className="vp-section-card">
+//             <div className="vp-section-number">1</div>
+//             <div className="vp-section-inner">
+//               <div className="vp-section-header">
+//                 <h2 className="vp-section-title">Upload PDF</h2>
+//                 <p className="vp-section-sub">Select or drag-and-drop your PDF file for accessibility validation (VeraPDF / WCAG / PDF/UA).</p>
+//               </div>
+
+//               <input ref={pdfInputRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={handlePdfSelect} />
+
+//               <div className="vp-upload-run-row">
+//                 <div
+//                   className={`vp-drop-zone ${dragOver ? "drag-over" : ""} ${pdfFile ? "has-file" : ""}`}
+//                   onClick={() => pdfInputRef.current.click()}
+//                   onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+//                   onDragLeave={() => setDragOver(false)}
+//                   onDrop={handleDrop}
+//                 >
+//                   {pdfFile ? (
+//                     <div className="vp-file-preview">
+//                       <div className="vp-file-icon">📄</div>
+//                       <div className="vp-file-info">
+//                         <span className="vp-file-name">{pdfFile.name}</span>
+//                         <span className="vp-file-size">{formatBytes(pdfFile.size)}</span>
+//                       </div>
+//                       <button className="vp-file-remove"
+//                         onClick={(e) => { e.stopPropagation(); setPdfFile(null); setRawResult(null); setSubmitError(""); }}
+//                         title="Remove file">✕</button>
+//                     </div>
+//                   ) : (
+//                     <div className="vp-drop-content">
+//                       <div className="vp-drop-icon">☁</div>
+//                       <p className="vp-drop-title">Drag &amp; drop your PDF here</p>
+//                       <p className="vp-drop-sub">or <span className="vp-drop-link">browse to upload</span></p>
+//                       <p className="vp-drop-hint">Only .pdf files · Max recommended: 50MB</p>
+//                     </div>
+//                   )}
+//                 </div>
+
+//                 <div className="vp-run-panel">
+//                   <div className="vp-check-tags">
+//                     <span className="vp-tag">🔍 VeraPDF</span>
+//                     <span className="vp-tag">📋 PDF/UA</span>
+//                     <span className="vp-tag">♿ WCAG 2.1</span>
+//                     <span className="vp-tag">🏷 Tagged PDF</span>
+//                   </div>
+//                   <button
+//                     className="tp-btn tp-btn-primary vp-submit-btn"
+//                     onClick={handleSubmit}
+//                     disabled={!pdfFile || submitting}
+//                   >
+//                     {submitting
+//                       ? <><span className="vp-btn-spinner"></span>Validating PDF…</>
+//                       : <><span>🚀</span>Run Accessibility Checks</>}
+//                   </button>
+//                   {submitError && (
+//                     <div className="vp-error-box">
+//                       <span className="vp-error-icon">⚠</span>
+//                       <div>
+//                         <p className="vp-error-title">Validation Failed</p>
+//                         <p className="vp-error-msg">{submitError}</p>
+//                       </div>
+//                     </div>
+//                   )}
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* ══ CARD 2 — Validation Report ══ */}
+//           <div className={`vp-section-card vp-section-card--results ${!rawResult && !submitting ? "vp-section-disabled" : ""}`}>
+//             <div className="vp-section-number">2</div>
+//             <div className="vp-section-inner">
+//               <div className="vp-section-header">
+//                 <h2 className="vp-section-title">Validation Report</h2>
+//                 <p className="vp-section-sub">Detailed accessibility check results for your PDF document.</p>
+//               </div>
+
+//               {/* Placeholder */}
+//               {!rawResult && !submitting && (
+//                 <div className="vp-results-placeholder">
+//                   <div className="vp-placeholder-icon">📊</div>
+//                   <p className="vp-placeholder-title">No results yet</p>
+//                   <p className="vp-placeholder-sub">Upload a PDF and run validation to see the report here.</p>
+//                 </div>
+//               )}
+
+//               {/* Scanning */}
+//               {submitting && (
+//                 <div className="vp-results-placeholder">
+//                   <div className="vp-scanning-anim">
+//                     <div className="vp-scan-bar"></div>
+//                     <div className="vp-pdf-mock"><div/><div/><div/><div/><div/></div>
+//                   </div>
+//                   <p className="vp-placeholder-title" style={{ marginTop: 16 }}>Scanning PDF…</p>
+//                   <p className="vp-placeholder-sub">Running VeraPDF accessibility checks</p>
+//                 </div>
+//               )}
+
+//               {/* ── Parsed results ── */}
+//               {rawResult && !submitting && parsed && !parsed.unparseable && (
+//                 <>
+//                   {/* ── Validation Information ── */}
+//                   <div className="vp-info-block">
+//                     <h3 className="vp-info-title">Validation information</h3>
+//                     <table className="vp-summary-table">
+//                       <tbody>
+//                         {parsed.profileName && (
+//                           <tr>
+//                             <td className="vp-sum-key">Validation Profile:</td>
+//                             <td className="vp-sum-val">{parsed.profileName}</td>
+//                           </tr>
+//                         )}
+//                         <tr>
+//                           <td className="vp-sum-key">Compliance:</td>
+//                           <td className={`vp-sum-val ${parsed.isCompliant ? "vp-sum-pass" : "vp-sum-fail"}`}>
+//                             {parsed.isCompliant ? "Passed" : "Failed"}
+//                           </td>
+//                         </tr>
+//                         <tr>
+//                           <td className="vp-sum-key">Passed Checks:</td>
+//                           <td className="vp-sum-val">{parsed.passedChecks.toLocaleString()}</td>
+//                         </tr>
+//                         <tr>
+//                           <td className="vp-sum-key">Failed Checks:</td>
+//                           <td className="vp-sum-val">{parsed.failedChecks.toLocaleString()}</td>
+//                         </tr>
+//                         {(parsed.passedRules > 0 || parsed.failedRules > 0) && (
+//                           <>
+//                             <tr>
+//                               <td className="vp-sum-key">Passed Rules:</td>
+//                               <td className="vp-sum-val">{parsed.passedRules.toLocaleString()}</td>
+//                             </tr>
+//                             <tr>
+//                               <td className="vp-sum-key">Failed Rules:</td>
+//                               <td className="vp-sum-val">{parsed.failedRules.toLocaleString()}</td>
+//                             </tr>
+//                           </>
+//                         )}
+//                       </tbody>
+//                     </table>
+//                   </div>
+
+//                   {/* ── Failed Rules Table ── */}
+//                   {parsed.violations.length > 0 && (
+//                     <div className="vp-violations-wrap">
+//                       <table className="vp-violations-table">
+//                         <thead>
+//                           <tr>
+//                             <th className="vp-vth-rule">Rule</th>
+//                             <th className="vp-vth-status">Status</th>
+//                           </tr>
+//                         </thead>
+//                         <tbody>
+//                           {parsed.violations.map((v, i) => {
+//                             const spec        = v.specification ?? "";
+//                             const clause      = v.clause        ?? "";
+//                             const testNum     = v.testNumber    ?? v.test_number ?? "";
+//                             const description = v.description   ?? v.message ?? v.detail ?? "";
+//                             const occurrences = Number(v.failedChecks ?? v.failures ?? v.occurrences ?? 0);
+
+//                             const specLabel = [
+//                               spec    ? `Specification: ${spec}` : null,
+//                               clause  ? `Clause: ${clause}`      : null,
+//                               testNum ? `Test number: ${testNum}` : null,
+//                             ].filter(Boolean).join(", ") || `Rule ${i + 1}`;
+
+//                             return (
+//                               <tr key={i} className="vp-vrow">
+//                                 <td className="vp-vtd-rule">
+//                                   <a className="vp-spec-link" href="#!">{specLabel}</a>
+//                                   {description && <p className="vp-rule-desc">{description}</p>}
+//                                   {occurrences > 0 && (
+//                                     <p className="vp-occurrences">
+//                                       {occurrences.toLocaleString()} occurrence{occurrences !== 1 ? "s" : ""}
+//                                     </p>
+//                                   )}
+//                                 </td>
+//                                 <td className="vp-vtd-status">
+//                                   <span className="vp-vstatus fail">Failed</span>
+//                                   <a className="vp-show-link" href="#!">Show</a>
+//                                 </td>
+//                               </tr>
+//                             );
+//                           })}
+//                         </tbody>
+//                       </table>
+//                     </div>
+//                   )}
+
+//                   {/* All passed */}
+//                   {parsed.isCompliant && parsed.violations.length === 0 && (
+//                     <div className="vp-success-note">
+//                       🎉 Excellent! Your PDF is fully accessible and meets all checked standards.
+//                     </div>
+//                   )}
+
+//                   {/* Edge case: not compliant but no violations surfaced */}
+//                   {!parsed.isCompliant && parsed.violations.length === 0 && (
+//                     <div className="vp-warn-note">
+//                       ⚠ Validation returned non-compliant but no specific rule violations were found in the response.
+//                     </div>
+//                   )}
+//                 </>
+//               )}
+
+//               {/* Unparseable — raw fallback */}
+//               {rawResult && !submitting && parsed?.unparseable && (
+//                 <div className="vp-raw-result">
+//                   <p className="vp-raw-label">Raw API Response</p>
+//                   <pre className="vp-raw-json">{JSON.stringify(rawResult, null, 2)}</pre>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+
+//         </div>
+//       </main>
+//     </div>
+//   );
+// }
+
+
+
 
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,41 +763,30 @@ import "./ValidatePdf.css";
 export default function ValidatePdf() {
   const navigate = useNavigate();
 
-  // ── Section states ─────────────────────────────────────────
-  const [pdfFile, setPdfFile] = useState(null);
-  const [dragOver, setDragOver] = useState(false);
-
+  const [pdfFile, setPdfFile]       = useState(null);
+  const [dragOver, setDragOver]     = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [submitResult, setSubmitResult] = useState(null);
+  const [rawResult, setRawResult]   = useState(null);   // stores full API JSON
   const [submitError, setSubmitError] = useState("");
+
+  const [expandedRows, setExpandedRows] = useState({});
+  const toggleRow = (i) => setExpandedRows(prev => ({ ...prev, [i]: !prev[i] }));
 
   const pdfInputRef = useRef(null);
 
-  // ── File handling ──────────────────────────────────────────
   const handlePdfSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-      alert("Please upload a PDF file (.pdf)");
-      return;
-    }
-    setPdfFile(file);
-    setSubmitResult(null);
-    setSubmitError("");
+    if (!file.name.toLowerCase().endsWith(".pdf")) { alert("Please upload a PDF file (.pdf)"); return; }
+    setPdfFile(file); setRawResult(null); setSubmitError("");
   };
 
   const handleDrop = (e) => {
-    e.preventDefault();
-    setDragOver(false);
+    e.preventDefault(); setDragOver(false);
     const file = e.dataTransfer.files[0];
     if (!file) return;
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-      alert("Please drop a PDF file (.pdf)");
-      return;
-    }
-    setPdfFile(file);
-    setSubmitResult(null);
-    setSubmitError("");
+    if (!file.name.toLowerCase().endsWith(".pdf")) { alert("Please drop a PDF file (.pdf)"); return; }
+    setPdfFile(file); setRawResult(null); setSubmitError("");
   };
 
   const formatBytes = (bytes) => {
@@ -51,36 +795,20 @@ export default function ValidatePdf() {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
-  // ── Submit ─────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (!pdfFile) {
-      alert("Please upload a PDF file first.");
-      return;
-    }
-
-    setSubmitting(true);
-    setSubmitResult(null);
-    setSubmitError("");
-
+    if (!pdfFile) { alert("Please upload a PDF file first."); return; }
+    setSubmitting(true); setRawResult(null); setSubmitError("");
     try {
       const response = await validatePdf(pdfFile);
-
       if (!response.ok) {
         let errMsg = `Server error: ${response.status}`;
-        try {
-          const errBody = await response.json();
-          errMsg = errBody.detail || errBody.message || errBody.error || JSON.stringify(errBody);
-        } catch {
-          try {
-            const errText = await response.text();
-            if (errText) errMsg = errText;
-          } catch { /* ignore */ }
-        }
+        try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
+        catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
         throw new Error(errMsg);
       }
-
       const data = await response.json();
-      setSubmitResult(data);
+      setRawResult(data);
+      setExpandedRows({});
     } catch (err) {
       setSubmitError(err.message || "Unexpected error. Please try again.");
     } finally {
@@ -88,37 +816,58 @@ export default function ValidatePdf() {
     }
   };
 
-  // ── Result helpers ─────────────────────────────────────────
-  const getChecks = () => {
-    if (!submitResult) return [];
-    if (Array.isArray(submitResult)) return submitResult;
-    if (Array.isArray(submitResult.checks)) return submitResult.checks;
-    if (Array.isArray(submitResult.results)) return submitResult.results;
-    if (Array.isArray(submitResult.violations)) return submitResult.violations;
-    return [];
+  // ── Parse VeraPDF response ─────────────────────────────────
+  // Actual shape: data.report.jobs[0].validationResult = ARRAY of result objects
+  // Each item: { profileName, compliant, statement, details: { passedRules, failedRules,
+  //   passedChecks, failedChecks, ruleSummaries: [{ ruleStatus, specification, clause,
+  //   testNumber, failedChecks, description, ... }] } }
+  const parseVeraPDF = (raw) => {
+    if (!raw) return null;
+
+    const report = raw?.data?.report ?? raw?.report ?? raw;
+    const jobs   = Array.isArray(report?.jobs) ? report.jobs : [];
+    const job    = jobs[0] ?? {};
+
+    // validationResult is an ARRAY — take first element
+    const vrRaw = job?.validationResult ?? report?.validationResult ?? null;
+    const vr    = Array.isArray(vrRaw) ? vrRaw[0] : vrRaw;
+
+    if (!vr) return { unparseable: true, raw };
+
+    // profileName / compliant / statement are directly on vr (not inside details)
+    const profileName  = vr.profileName ?? vr.validationProfileName ?? "";
+    const statement    = vr.statement   ?? "";
+    const isCompliant  = vr.compliant   ?? false;
+
+    // counts are inside vr.details
+    const details      = vr.details ?? {};
+    const passedChecks = Number(details.passedChecks ?? 0);
+    const failedChecks = Number(details.failedChecks ?? 0);
+    const passedRules  = Number(details.passedRules  ?? 0);
+    const failedRules  = Number(details.failedRules  ?? 0);
+
+    // ruleSummaries — filter only FAILED ones (ruleStatus === "FAILED" or failedChecks > 0)
+    const ruleSummaries = details.ruleSummaries ?? [];
+    const violations    = ruleSummaries.filter(r =>
+      r.ruleStatus === "FAILED" ||
+      r.status     === "failed" ||
+      Number(r.failedChecks ?? r.failures ?? 0) > 0
+    );
+
+    return {
+      profileName,
+      statement,
+      isCompliant,
+      passedChecks,
+      failedChecks,
+      passedRules,
+      failedRules,
+      violations,
+      raw,
+    };
   };
 
-  const getSummary = () => {
-    if (!submitResult) return null;
-    const checks = getChecks();
-    const passed = checks.filter((c) => c.passed === true || c.status === "pass" || c.status === "PASS").length;
-    const failed = checks.filter((c) => c.passed === false || c.status === "fail" || c.status === "FAIL").length;
-    const total = checks.length;
-    return { passed, failed, total, passRate: total ? Math.round((passed / total) * 100) : 0 };
-  };
-
-  const summary = getSummary();
-  const checks = getChecks();
-
-  // Determine overall compliance level
-  const getComplianceLevel = () => {
-    if (!summary || summary.total === 0) return null;
-    if (summary.passRate === 100) return { label: "Fully Compliant", color: "#15803d", bg: "#f0fdf4", border: "#86efac", icon: "✅" };
-    if (summary.passRate >= 80)   return { label: "Mostly Compliant", color: "#b45309", bg: "#fffbeb", border: "#fcd34d", icon: "⚠️" };
-    return { label: "Non-Compliant", color: "#dc2626", bg: "#fef2f2", border: "#fca5a5", icon: "❌" };
-  };
-
-  const compliance = getComplianceLevel();
+  const parsed = parseVeraPDF(rawResult);
 
   return (
     <div className="tp-page">
@@ -150,24 +899,16 @@ export default function ValidatePdf() {
             <span className="tp-active">Validate PDF</span>
           </div>
           {pdfFile && !submitting && (
-            <div className="tp-topbar-badge">
-              <span className="tp-badge-dot"></span>
-              PDF Ready
-            </div>
+            <div className="tp-topbar-badge"><span className="tp-badge-dot"></span>PDF Ready</div>
           )}
           {submitting && (
-            <div className="tp-topbar-badge tp-topbar-badge--running">
-              <span className="tp-badge-spin"></span>
-              Validating…
-            </div>
+            <div className="tp-topbar-badge tp-topbar-badge--running"><span className="tp-badge-spin"></span>Validating…</div>
           )}
         </div>
 
         <div className="tp-content">
 
-          {/* ══════════════════════════════════════════════════
-              SECTION 1 — Upload PDF
-          ══════════════════════════════════════════════════ */}
+          {/* ══ CARD 1 — Upload + Run (50-50) ══ */}
           <div className="vp-section-card">
             <div className="vp-section-number">1</div>
             <div className="vp-section-inner">
@@ -176,108 +917,78 @@ export default function ValidatePdf() {
                 <p className="vp-section-sub">Select or drag-and-drop your PDF file for accessibility validation (VeraPDF / WCAG / PDF/UA).</p>
               </div>
 
-              <input
-                ref={pdfInputRef}
-                type="file"
-                accept=".pdf"
-                style={{ display: "none" }}
-                onChange={handlePdfSelect}
-              />
+              <input ref={pdfInputRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={handlePdfSelect} />
 
-              <div
-                className={`vp-drop-zone ${dragOver ? "drag-over" : ""} ${pdfFile ? "has-file" : ""}`}
-                onClick={() => pdfInputRef.current.click()}
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-              >
-                {pdfFile ? (
-                  <div className="vp-file-preview">
-                    <div className="vp-file-icon">📄</div>
-                    <div className="vp-file-info">
-                      <span className="vp-file-name">{pdfFile.name}</span>
-                      <span className="vp-file-size">{formatBytes(pdfFile.size)}</span>
-                    </div>
-                    <button
-                      className="vp-file-remove"
-                      onClick={(e) => { e.stopPropagation(); setPdfFile(null); setSubmitResult(null); setSubmitError(""); }}
-                      title="Remove file"
-                    >✕</button>
-                  </div>
-                ) : (
-                  <div className="vp-drop-content">
-                    <div className="vp-drop-icon">☁</div>
-                    <p className="vp-drop-title">Drag &amp; drop your PDF here</p>
-                    <p className="vp-drop-sub">or <span className="vp-drop-link">browse to upload</span></p>
-                    <p className="vp-drop-hint">Only .pdf files · Max recommended: 50MB</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* ══════════════════════════════════════════════════
-              SECTION 2 — Submit / Validate
-          ══════════════════════════════════════════════════ */}
-          <div className={`vp-section-card ${!pdfFile ? "vp-section-disabled" : ""}`}>
-            <div className="vp-section-number">2</div>
-            <div className="vp-section-inner">
-              <div className="vp-section-header">
-                <h2 className="vp-section-title">Run Validation</h2>
-                <p className="vp-section-sub">Submit your PDF to run VeraPDF accessibility checks against WCAG 2.1 and PDF/UA standards.</p>
-              </div>
-
-              <div className="vp-submit-row">
-                <div className="vp-check-tags">
-                  <span className="vp-tag">🔍 VeraPDF</span>
-                  <span className="vp-tag">📋 PDF/UA</span>
-                  <span className="vp-tag">♿ WCAG 2.1</span>
-                  <span className="vp-tag">🏷 Tagged PDF</span>
-                </div>
-
-                <button
-                  className="tp-btn tp-btn-primary vp-submit-btn"
-                  onClick={handleSubmit}
-                  disabled={!pdfFile || submitting}
+              <div className="vp-upload-run-row">
+                <div
+                  className={`vp-drop-zone ${dragOver ? "drag-over" : ""} ${pdfFile ? "has-file" : ""}`}
+                  onClick={() => pdfInputRef.current.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
                 >
-                  {submitting ? (
-                    <>
-                      <span className="vp-btn-spinner"></span>
-                      Validating PDF…
-                    </>
+                  {pdfFile ? (
+                    <div className="vp-file-preview">
+                      <div className="vp-file-icon">📄</div>
+                      <div className="vp-file-info">
+                        <span className="vp-file-name">{pdfFile.name}</span>
+                        <span className="vp-file-size">{formatBytes(pdfFile.size)}</span>
+                      </div>
+                      <button className="vp-file-remove"
+                        onClick={(e) => { e.stopPropagation(); setPdfFile(null); setRawResult(null); setSubmitError(""); }}
+                        title="Remove file">✕</button>
+                    </div>
                   ) : (
-                    <>
-                      <span>🚀</span>
-                      Run Accessibility Checks
-                    </>
+                    <div className="vp-drop-content">
+                      <div className="vp-drop-icon">☁</div>
+                      <p className="vp-drop-title">Drag &amp; drop your PDF here</p>
+                      <p className="vp-drop-sub">or <span className="vp-drop-link">browse to upload</span></p>
+                      <p className="vp-drop-hint">Only .pdf files · Max recommended: 50MB</p>
+                    </div>
                   )}
-                </button>
-              </div>
-
-              {submitError && (
-                <div className="vp-error-box">
-                  <span className="vp-error-icon">⚠</span>
-                  <div>
-                    <p className="vp-error-title">Validation Failed</p>
-                    <p className="vp-error-msg">{submitError}</p>
-                  </div>
                 </div>
-              )}
+
+                <div className="vp-run-panel">
+                  <div className="vp-check-tags">
+                    <span className="vp-tag">🔍 VeraPDF</span>
+                    <span className="vp-tag">📋 PDF/UA</span>
+                    <span className="vp-tag">♿ WCAG 2.1</span>
+                    <span className="vp-tag">🏷 Tagged PDF</span>
+                  </div>
+                  <button
+                    className="tp-btn tp-btn-primary vp-submit-btn"
+                    onClick={handleSubmit}
+                    disabled={!pdfFile || submitting}
+                  >
+                    {submitting
+                      ? <><span className="vp-btn-spinner"></span>Validating PDF…</>
+                      : <><span>🚀</span>Run Accessibility Checks</>}
+                  </button>
+                  {submitError && (
+                    <div className="vp-error-box">
+                      <span className="vp-error-icon">⚠</span>
+                      <div>
+                        <p className="vp-error-title">Validation Failed</p>
+                        <p className="vp-error-msg">{submitError}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* ══════════════════════════════════════════════════
-              SECTION 3 — Results
-          ══════════════════════════════════════════════════ */}
-          <div className={`vp-section-card ${!submitResult ? "vp-section-disabled" : ""}`}>
-            <div className="vp-section-number">3</div>
+          {/* ══ CARD 2 — Validation Report ══ */}
+          <div className={`vp-section-card vp-section-card--results ${!rawResult && !submitting ? "vp-section-disabled" : ""}`}>
+            <div className="vp-section-number">2</div>
             <div className="vp-section-inner">
               <div className="vp-section-header">
                 <h2 className="vp-section-title">Validation Report</h2>
                 <p className="vp-section-sub">Detailed accessibility check results for your PDF document.</p>
               </div>
 
-              {!submitResult && !submitting && (
+              {/* Placeholder */}
+              {!rawResult && !submitting && (
                 <div className="vp-results-placeholder">
                   <div className="vp-placeholder-icon">📊</div>
                   <p className="vp-placeholder-title">No results yet</p>
@@ -285,109 +996,160 @@ export default function ValidatePdf() {
                 </div>
               )}
 
+              {/* Scanning */}
               {submitting && (
                 <div className="vp-results-placeholder">
                   <div className="vp-scanning-anim">
                     <div className="vp-scan-bar"></div>
-                    <div className="vp-pdf-mock">
-                      <div></div><div></div><div></div><div></div><div></div>
-                    </div>
+                    <div className="vp-pdf-mock"><div/><div/><div/><div/><div/></div>
                   </div>
                   <p className="vp-placeholder-title" style={{ marginTop: 16 }}>Scanning PDF…</p>
                   <p className="vp-placeholder-sub">Running VeraPDF accessibility checks</p>
                 </div>
               )}
 
-              {submitResult && !submitting && (
+              {/* ── Parsed results ── */}
+              {rawResult && !submitting && parsed && !parsed.unparseable && (
                 <>
-                  {/* Compliance banner */}
-                  {compliance && (
-                    <div className="vp-compliance-banner" style={{ background: compliance.bg, borderColor: compliance.border }}>
-                      <span className="vp-compliance-icon">{compliance.icon}</span>
-                      <div>
-                        <p className="vp-compliance-label" style={{ color: compliance.color }}>{compliance.label}</p>
-                        <p className="vp-compliance-sub">
-                          {summary.passed} passed · {summary.failed} failed · {summary.total} total checks
-                        </p>
-                      </div>
-                      <div className="vp-pass-rate" style={{ color: compliance.color }}>
-                        {summary.passRate}%
-                        <span>Pass Rate</span>
-                      </div>
-                    </div>
-                  )}
+                  {/* ── Validation Information ── */}
+                  <div className="vp-info-block">
+                    <h3 className="vp-info-title">Validation information</h3>
+                    <table className="vp-summary-table">
+                      <tbody>
+                        {parsed.profileName && (
+                          <tr>
+                            <td className="vp-sum-key">Validation Profile:</td>
+                            <td className="vp-sum-val">{parsed.profileName}</td>
+                          </tr>
+                        )}
+                        <tr>
+                          <td className="vp-sum-key">Compliance:</td>
+                          <td className={`vp-sum-val ${parsed.isCompliant ? "vp-sum-pass" : "vp-sum-fail"}`}>
+                            {parsed.isCompliant ? "Passed" : "Failed"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="vp-sum-key">Passed Checks:</td>
+                          <td className="vp-sum-val">{parsed.passedChecks.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                          <td className="vp-sum-key">Failed Checks:</td>
+                          <td className="vp-sum-val">{parsed.failedChecks.toLocaleString()}</td>
+                        </tr>
+                        {(parsed.passedRules > 0 || parsed.failedRules > 0) && (
+                          <>
+                            <tr>
+                              <td className="vp-sum-key">Passed Rules:</td>
+                              <td className="vp-sum-val">{parsed.passedRules.toLocaleString()}</td>
+                            </tr>
+                            <tr>
+                              <td className="vp-sum-key">Failed Rules:</td>
+                              <td className="vp-sum-val">{parsed.failedRules.toLocaleString()}</td>
+                            </tr>
+                          </>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
 
-                  {/* Summary stats */}
-                  {summary && summary.total > 0 && (
-                    <div className="vp-stats-row">
-                      <div className="vp-stat-box vp-stat-total">
-                        <span className="vp-stat-number">{summary.total}</span>
-                        <span className="vp-stat-label">Total Checks</span>
-                      </div>
-                      <div className="vp-stat-box vp-stat-passed">
-                        <span className="vp-stat-number">{summary.passed}</span>
-                        <span className="vp-stat-label">Passed</span>
-                      </div>
-                      <div className="vp-stat-box vp-stat-failed">
-                        <span className="vp-stat-number">{summary.failed}</span>
-                        <span className="vp-stat-label">Failed</span>
-                      </div>
-                      <div className="vp-stat-box vp-stat-rate">
-                        <span className="vp-stat-number">{summary.passRate}%</span>
-                        <span className="vp-stat-label">Compliance</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Checks table */}
-                  {checks.length > 0 ? (
-                    <div className="vp-results-table-wrap">
-                      <table className="vp-results-table">
+                  {/* ── Failed Rules Table ── */}
+                  {parsed.violations.length > 0 && (
+                    <div className="vp-violations-wrap">
+                      <table className="vp-violations-table">
                         <thead>
                           <tr>
-                            <th style={{ width: 60 }}>Status</th>
-                            <th>Check / Rule</th>
-                            <th>Category</th>
-                            <th>Details / Remediation</th>
+                            <th className="vp-vth-rule">Rule</th>
+                            <th className="vp-vth-status">Status</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {checks.map((check, i) => {
-                            const isPassed = check.passed === true || check.status === "pass" || check.status === "PASS";
-                            const name = check.check_name || check.name || check.rule || `Check ${i + 1}`;
-                            const category = check.category || check.type || check.clause || "—";
-                            const detail = check.remediation_guidance || check.description || check.message || check.detail || "";
+                          {parsed.violations.map((v, i) => {
+                            const spec        = v.specification ?? "";
+                            const clause      = v.clause        ?? "";
+                            const testNum     = v.testNumber    ?? v.test_number ?? "";
+                            const description = v.description   ?? v.message ?? v.detail ?? "";
+                            const occurrences = Number(v.failedChecks ?? v.failures ?? v.occurrences ?? 0);
+                            const checks      = v.checks ?? [];   // individual failing instances
+                            const isExpanded  = !!expandedRows[i];
+
+                            const specLabel = [
+                              spec    ? `Specification: ${spec}` : null,
+                              clause  ? `Clause: ${clause}`      : null,
+                              testNum ? `Test number: ${testNum}` : null,
+                            ].filter(Boolean).join(", ") || `Rule ${i + 1}`;
+
                             return (
-                              <tr key={i} className={isPassed ? "vp-row-pass" : "vp-row-fail"}>
-                                <td>
-                                  <span className={`vp-status-badge ${isPassed ? "pass" : "fail"}`}>
-                                    {isPassed ? "✓ Pass" : "✗ Fail"}
-                                  </span>
+                              <tr key={i} className="vp-vrow">
+                                <td className="vp-vtd-rule">
+                                  <a className="vp-spec-link" href="#!" onClick={e => e.preventDefault()}>{specLabel}</a>
+                                  {description && <p className="vp-rule-desc">{description}</p>}
+                                  {occurrences > 0 && (
+                                    <p className="vp-occurrences">
+                                      {occurrences.toLocaleString()} occurrence{occurrences !== 1 ? "s" : ""}
+                                    </p>
+                                  )}
+
+                                  {/* Expanded checks detail */}
+                                  {isExpanded && checks.length > 0 && (
+                                    <div className="vp-checks-expand">
+                                      <p className="vp-checks-label">Failed instances:</p>
+                                      <div className="vp-checks-list">
+                                        {checks.map((c, ci) => (
+                                          <div key={ci} className="vp-check-item">
+                                            <p className="vp-check-context">📍 {c.context}</p>
+                                            {c.errorMessage && (
+                                              <p className="vp-check-error">{c.errorMessage}</p>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {isExpanded && checks.length === 0 && (
+                                    <div className="vp-checks-expand">
+                                      <p className="vp-checks-label">No additional context available.</p>
+                                    </div>
+                                  )}
                                 </td>
-                                <td className="vp-check-name">{name}</td>
-                                <td className="vp-check-cat">{category}</td>
-                                <td className="vp-check-detail">{detail || "—"}</td>
+                                <td className="vp-vtd-status">
+                                  <span className="vp-vstatus fail">Failed</span>
+                                  <button
+                                    className={`vp-show-btn ${isExpanded ? "active" : ""}`}
+                                    onClick={() => toggleRow(i)}
+                                  >
+                                    {isExpanded ? "Hide" : "Show"}
+                                  </button>
+                                </td>
                               </tr>
                             );
                           })}
                         </tbody>
                       </table>
                     </div>
-                  ) : (
-                    /* Raw JSON fallback if checks array is empty but result exists */
-                    <div className="vp-raw-result">
-                      <p className="vp-raw-label">Raw API Response</p>
-                      <pre className="vp-raw-json">{JSON.stringify(submitResult, null, 2)}</pre>
-                    </div>
                   )}
 
-                  {/* Success note if fully passed */}
-                  {summary && summary.total > 0 && summary.passRate === 100 && (
+                  {/* All passed */}
+                  {parsed.isCompliant && parsed.violations.length === 0 && (
                     <div className="vp-success-note">
                       🎉 Excellent! Your PDF is fully accessible and meets all checked standards.
                     </div>
                   )}
+
+                  {/* Edge case: not compliant but no violations surfaced */}
+                  {!parsed.isCompliant && parsed.violations.length === 0 && (
+                    <div className="vp-warn-note">
+                      ⚠ Validation returned non-compliant but no specific rule violations were found in the response.
+                    </div>
+                  )}
                 </>
+              )}
+
+              {/* Unparseable — raw fallback */}
+              {rawResult && !submitting && parsed?.unparseable && (
+                <div className="vp-raw-result">
+                  <p className="vp-raw-label">Raw API Response</p>
+                  <pre className="vp-raw-json">{JSON.stringify(rawResult, null, 2)}</pre>
+                </div>
               )}
             </div>
           </div>

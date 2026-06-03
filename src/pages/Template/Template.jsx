@@ -505,7 +505,7 @@ export default function Template() {
       {/* ── Sidebar ─────────────────────────────────────── */}
       <aside className="tp-sidebar">
         <nav className="tp-nav">
-          <p className="tp-nav-section">TEMPLATE</p>
+          <p className="tp-nav-section">ACCESSIBILITY</p>
           <div
             className={`tp-nav-item tp-nav-parent ${activeNav === "master" || activeNav === "organization" ? "active" : ""}`}
             onClick={() => setActiveNav(activeNav === "master" || activeNav === "organization" ? "" : "master")}
@@ -516,14 +516,14 @@ export default function Template() {
           {(activeNav === "master" || activeNav === "organization") && (
             <div className="tp-nav-sub">
               <div className={`tp-nav-sub-item ${activeNav === "master" ? "active" : ""}`} onClick={() => setActiveNav("master")}>
-                <span className="tp-sub-dot">›</span> Main Template
+                <span className="tp-sub-dot">›</span> Master Template
               </div>
               <div className={`tp-nav-sub-item ${activeNav === "organization" ? "active" : ""}`} onClick={goToOrgTab}>
                 <span className="tp-sub-dot">›</span> Organization Template
               </div>
             </div>
           )}
-          <p className="tp-nav-section" style={{ marginTop: 20 }}>ACCESSIBILITY</p>
+          <p className="tp-nav-section" style={{ marginTop: 20 }}>REMEDIATION</p>
           <div
             className={`tp-nav-item tp-nav-parent ${activeNav === "validate" ? "active" : ""}`}
             onClick={() => setActiveNav(activeNav === "validate" ? "" : "validate")}
@@ -1043,7 +1043,7 @@ export default function Template() {
         <div className="tp-modal-overlay" onClick={() => !cloning && setShowBatchCloneModal(false)}>
           <div className="tp-modal tp-modal-xl" onClick={(e) => e.stopPropagation()}>
             <div className="tp-modal-header">
-              <h3>🔁 Clone Checks to Organisation</h3>
+              <h3>🔁 Clone Checks for Organisation</h3>
               <button className="tp-modal-close" onClick={() => !cloning && setShowBatchCloneModal(false)}>✕</button>
             </div>
             <div className="tp-modal-body" style={{ padding: 0 }}>
