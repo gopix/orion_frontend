@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap');
 
 .home-container {
   min-height: 100vh;
@@ -15,7 +15,6 @@
   100% { background: #e8f0fe; }
 }
 
-/* ── Services grid ────────────────────────────────────────── */
 .services-section {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -26,6 +25,72 @@
   flex: 1;
   align-items: stretch;
   min-height: 0;
+}
+
+.services-section .service-card:nth-child(1) { animation-delay: 0.05s; }
+.services-section .service-card:nth-child(2) { animation-delay: 0.15s; }
+.services-section .service-card:nth-child(3) { animation-delay: 0.25s; }
+.services-section .service-card:nth-child(4) { animation-delay: 0.35s; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1100px) {
+  .services-section {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 20px 20px;
+    gap: 16px;
+    height: auto;
+    overflow-y: auto;
+  }
+  .home-container {
+    height: auto;
+    overflow: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .services-section {
+    grid-template-columns: 1fr;
+    padding: 14px 14px;
+    gap: 14px;
+  }
+} */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap');
+
+.home-container {
+  min-height: 100vh;
+  background: #f0f6ff;
+  animation: bgShift 8s ease-in-out infinite alternate;
+  display: flex;
+  flex-direction: column;
+  /* REMOVED: height: 100vh and overflow: hidden — these were causing
+     the cards to squash/clip on screens different from yours */
+}
+
+@keyframes bgShift {
+  0%   { background: #f0f6ff; }
+  100% { background: #e8f0fe; }
+}
+
+/* ── Services grid ────────────────────────────────────────── */
+.services-section {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(14px, 1.5vw, 24px);
+  padding: clamp(20px, 2.5vh, 36px) clamp(20px, 2.5vw, 40px);
+  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+  /* Cards have a fixed comfortable height — same on every screen */
+  align-items: start;
 }
 
 /* Stagger animation */
@@ -47,21 +112,15 @@
 @media (max-width: 1100px) {
   .services-section {
     grid-template-columns: repeat(2, 1fr);
-    padding: 20px 20px;
+    padding: 20px;
     gap: 16px;
-    height: auto;
-    overflow-y: auto;
-  }
-  .home-container {
-    height: auto;
-    overflow: auto;
   }
 }
 
 @media (max-width: 640px) {
   .services-section {
     grid-template-columns: 1fr;
-    padding: 14px 14px;
+    padding: 14px;
     gap: 14px;
   }
 }
