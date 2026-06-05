@@ -1,4 +1,7 @@
 
+
+
+
 import "./Login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
@@ -26,7 +29,7 @@ function Login() {
     } catch (err) {
       // Network error (CORS, server down, no connection, etc.)
       setLoading(false);
-      alert("Dashboard coming soon!");
+      alert("Unable to connect. Please try again later.");
       return;
     }
     setLoading(false);
@@ -36,6 +39,7 @@ function Login() {
         sessionStorage.setItem("token", result.id);
         navigate("/template");
       } else {
+        // Cards 0, 1, 2 — valid credentials but feature not live yet
         alert("Dashboard coming soon!");
         navigate("/");
       }
