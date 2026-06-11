@@ -1,3 +1,61 @@
+/* 
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap');
+
+.home-container {
+  min-height: 100vh;
+  background: #f0f6ff;
+  animation: bgShift 8s ease-in-out infinite alternate;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes bgShift {
+  0%   { background: #f0f6ff; }
+  100% { background: #e8f0fe; }
+}
+
+.services-section {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(14px, 1.5vw, 24px);
+  padding: clamp(20px, 2.5vh, 36px) clamp(20px, 2.5vw, 40px);
+  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+  align-items: start;
+}
+
+.services-section .service-card:nth-child(1) { animation-delay: 0.05s; }
+.services-section .service-card:nth-child(2) { animation-delay: 0.15s; }
+.services-section .service-card:nth-child(3) { animation-delay: 0.25s; }
+.services-section .service-card:nth-child(4) { animation-delay: 0.35s; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1100px) {
+  .services-section {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 20px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .services-section {
+    grid-template-columns: 1fr;
+    padding: 14px;
+    gap: 14px;
+  }
+} */
+
 /* @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap');
 
 .home-container {
@@ -89,8 +147,8 @@
   width: 100%;
   box-sizing: border-box;
   flex: 1;
-  /* Cards have a fixed comfortable height — same on every screen */
   align-items: start;
+  min-width: 0;
 }
 
 /* Stagger animation */
@@ -109,7 +167,9 @@
 }
 
 /* ── Responsive breakpoints ───────────────────────────────── */
-@media (max-width: 1100px) {
+/* Only drop to 2 columns on genuinely small screens (tablets/phones).
+   At 100% zoom on a normal monitor, 4 columns always stay. */
+@media (max-width: 700px) {
   .services-section {
     grid-template-columns: repeat(2, 1fr);
     padding: 20px;
@@ -117,7 +177,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 420px) {
   .services-section {
     grid-template-columns: 1fr;
     padding: 14px;
