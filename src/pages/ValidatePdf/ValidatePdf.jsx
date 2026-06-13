@@ -172,11 +172,15 @@ export default function ValidatePdf() {
             <span>Validate PDF</span>
             <span className="vp-nav-dot"></span>
           </div>
-          <div className="vp-nav-item disabled">
+          {/* <div className="vp-nav-item disabled">
             <span className="vp-nav-icon">🛠️</span>
             <span>Remediate</span>
             <span className="vp-nav-soon">Soon</span>
-          </div>
+          </div> */}
+          <div className="vp-nav-item" onClick={() => navigate("/remediate-pdf")}>
+  <span className="vp-nav-icon">🛠️</span>
+  <span>Remediate</span>
+</div>
         </nav>
         <div className="vp-sidebar-footer">
           <div className="vp-sidebar-agents">
