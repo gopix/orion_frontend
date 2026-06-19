@@ -163,24 +163,19 @@ export default function ValidatePdf() {
         </div>
         <nav className="vp-nav">
           <p className="vp-nav-label">WORKSPACE</p>
-          <div className="vp-nav-item" onClick={() => navigate("/template")}>
-            <span className="vp-nav-icon">📋</span>
-            <span>Template</span>
+          <div className="vp-nav-item" onClick={() => navigate("/remediate-pdf")}>
+            <span className="vp-nav-icon">🛠️</span>
+            <span>Remediate PDF</span>
           </div>
           <div className="vp-nav-item active">
             <span className="vp-nav-icon">✅</span>
             <span>Validate PDF</span>
             <span className="vp-nav-dot"></span>
           </div>
-          {/* <div className="vp-nav-item disabled">
-            <span className="vp-nav-icon">🛠️</span>
-            <span>Remediate</span>
-            <span className="vp-nav-soon">Soon</span>
-          </div> */}
-          <div className="vp-nav-item" onClick={() => navigate("/remediate-pdf")}>
-  <span className="vp-nav-icon">🛠️</span>
-  <span>Remediate</span>
-</div>
+          <div className="vp-nav-item" onClick={() => navigate("/template")}>
+            <span className="vp-nav-icon">📋</span>
+            <span>Template</span>
+          </div>
         </nav>
         <div className="vp-sidebar-footer">
           <div className="vp-sidebar-agents">
