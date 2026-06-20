@@ -939,13 +939,31 @@ export default function RemediatePdf() {
                           Detailed validation and remediation analysis
                         </p>
                       </div>
-                      <button
-                        className="rp-close-results-btn"
-                        onClick={() => setReportData(null)}
-                        title="Close report"
-                      >
-                        ✕
-                      </button>
+                      <div className="rp-header-actions">
+                        <button
+                          className="rp-download-report-icon-btn"
+                          onClick={handleDownloadReport}
+                          disabled={downloadingReport}
+                          title="Download Report"
+                        >
+                          {downloadingReport ? (
+                            <span className="rp-btn-spin"></span>
+                          ) : (
+                            <svg className="rp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                              <polyline points="7 10 12 15 17 10"></polyline>
+                              <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                          )}
+                        </button>
+                        <button
+                          className="rp-close-results-btn"
+                          onClick={() => setReportData(null)}
+                          title="Close report"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
 
                     {/* Summary Section */}
@@ -1167,17 +1185,6 @@ export default function RemediatePdf() {
 
                     {/* ── Close Button ── */}
                     <div className="rp-results-action-row">
-                      <button
-                        className="rp-action-btn rp-action-primary"
-                        onClick={handleDownloadReport}
-                        disabled={downloadingReport}
-                      >
-                        {downloadingReport ? (
-                          <><span className="rp-btn-spin"></span> Downloading Report…</>
-                        ) : (
-                          <><span className="rp-btn-icon">⬇️</span> Download Report</>
-                        )}
-                      </button>
                       <button
                         className="rp-action-btn rp-action-secondary"
                         onClick={() => setReportData(null)}
