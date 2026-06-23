@@ -1,0 +1,10 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark blue background -->
+  <rect width="256" height="256" fill="#1a4d99"/>
+  
+  <!-- Light blue rounded square in center -->
+  <rect x="64" y="64" width="128" height="128" rx="20" fill="#4db8ff"/>
+  
+  <!-- White O -->
+  <text x="128" y="160" font-size="96" font-weight="700" text-anchor="middle" fill="white" font-family="Arial, sans-serif">O</text>
+</svg>
