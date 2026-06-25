@@ -715,6 +715,50 @@
 .badge-fail { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
 .badge-pass { background: #dcfce7; color: #14532d; border: 1.5px solid #86efac; }
 
+/* ─── Results Header Right Section ───────────────────────────── */
+.vp-results-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.vp-download-report-icon-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  cursor: pointer;
+  color: var(--slate-500);
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.vp-download-report-icon-btn:hover:not(:disabled) {
+  border-color: var(--blue-400);
+  background: var(--blue-50);
+  color: var(--blue-600);
+}
+
+.vp-download-report-icon-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.vp-download-report-icon-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vp-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
 /* ─── Document Info Card ───────────────────────────────────── */
 /* ─── Document Info Card (redesigned) ──────────────────────── */
 .vp-doc-info-card {

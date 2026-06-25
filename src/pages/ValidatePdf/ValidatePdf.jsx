@@ -4,6 +4,19 @@ import { useNavigate } from "react-router-dom";
 import { orionValidatePdf } from "../../services/apiServices";
 import "./ValidatePdf.css";
 
+const downloadAsJson = (data, filename) => {
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 const SKIP_AGENTS = ["READING_ORDER_AGENT", "VISUAL_ACCESSIBILITY_AGENT"];
 
 const AGENT_META = {
@@ -148,6 +161,13 @@ export default function ValidatePdf() {
     activeCat[agentName] ?? catKeys[0] ?? null;
 
   const isFail = parsed?.meta?.overall_status === "FAIL";
+
+  const handleDownloadReport = () => {
+    if (!rawResult) return;
+    const timestamp = new Date().toISOString().split("T")[0];
+    const filename = `validation-report-${timestamp}.json`;
+    downloadAsJson(rawResult, filename);
+  };
 
   return (
     <div className="vp-page">
@@ -325,8 +345,21 @@ export default function ValidatePdf() {
                   <p className="vp-step-desc">Detailed accessibility check results broken down by agent and category.</p>
                 </div>
                 {rawResult && parsed && (
-                  <div className={`vp-overall-badge ${isFail ? "badge-fail" : "badge-pass"}`}>
-                    {isFail ? "⚠️ FAIL" : "✅ PASS"}
+                  <div className="vp-results-header-right">
+                    <div className={`vp-overall-badge ${isFail ? "badge-fail" : "badge-pass"}`}>
+                      {isFail ? "⚠️ FAIL" : "✅ PASS"}
+                    </div>
+                    <button
+                      className="vp-download-report-icon-btn"
+                      onClick={handleDownloadReport}
+                      title="Download Report"
+                    >
+                      <svg className="vp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                    </button>
                   </div>
                 )}
               </div>
