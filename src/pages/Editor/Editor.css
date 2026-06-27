@@ -1,0 +1,596 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ─── Design Tokens ────────────────────────────────────────── */
+:root {
+  --navy-950: #080f1e;
+  --navy-900: #0c1629;
+  --navy-800: #112040;
+  --navy-700: #1a3055;
+  --blue-600: #1d4ed8;
+  --blue-500: #2563eb;
+  --blue-400: #3b82f6;
+  --blue-200: #bfdbfe;
+  --blue-100: #dbeafe;
+  --blue-50:  #eff6ff;
+  --slate-50:  #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-900: #0f172a;
+  --white: #ffffff;
+  --green-600: #059669;
+  --red-600: #dc2626;
+  --amber-600: #d97706;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --shadow-sm: 0 1px 2px rgba(15,23,42,0.05), 0 1px 3px rgba(15,23,42,0.06);
+  --shadow-md: 0 4px 12px rgba(15,23,42,0.08), 0 2px 4px rgba(15,23,42,0.04);
+  --shadow-lg: 0 12px 32px rgba(15,23,42,0.10), 0 4px 10px rgba(15,23,42,0.05);
+  --transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── Page ─────────────────────────────────────────────────── */
+.editor-page {
+  display: flex;
+  min-height: 100vh;
+  background: #eef2f8;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Sidebar ──────────────────────────────────────────────── */
+.editor-sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: var(--navy-900);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+
+.editor-logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 22px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.editor-logo-mark {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.45);
+}
+
+.editor-logo-text span {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 0.3px;
+}
+
+.editor-logo-text small {
+  display: block;
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.42);
+  margin-top: 2px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.editor-nav {
+  flex: 1;
+  padding: 20px 16px;
+}
+
+.editor-nav-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0 0 12px 0;
+  padding: 0 8px;
+}
+
+.editor-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  margin: 4px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  font-weight: 500;
+  transition: var(--transition);
+  position: relative;
+}
+
+.editor-nav-item:hover {
+  background: rgba(59,130,246,0.1);
+  color: rgba(255,255,255,0.8);
+}
+
+.editor-nav-item.active {
+  background: rgba(59,130,246,0.15);
+  color: white;
+}
+
+.editor-nav-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.editor-nav-dot {
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+  margin-left: auto;
+}
+
+.editor-sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  text-align: center;
+}
+
+.editor-help-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 8px;
+  color: #3b82f6;
+  font-size: 18px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.editor-help-btn:hover {
+  background: rgba(59,130,246,0.2);
+}
+
+.editor-help-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+
+/* ─── Main ─────────────────────────────────────────────── */
+.editor-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px;
+}
+
+.editor-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ─── Layout ────────────────────────────────────────────── */
+.editor-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+}
+
+/* ─── Documents List Section ────────────────────────────── */
+.editor-list-section {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  height: fit-content;
+}
+
+.editor-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.editor-list-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin: 0;
+}
+
+.editor-list-count {
+  font-size: 12px;
+  color: var(--slate-500);
+  background: var(--slate-100);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.editor-documents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editor-doc-card {
+  padding: 16px;
+  background: var(--slate-50);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.editor-doc-card:hover {
+  background: var(--slate-100);
+  border-color: var(--blue-300);
+}
+
+.editor-doc-card.active {
+  background: var(--blue-50);
+  border-color: var(--blue-400);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.editor-doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.editor-doc-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin: 0;
+}
+
+.editor-doc-author {
+  font-size: 11px;
+  color: var(--slate-500);
+  margin: 4px 0 0 0;
+}
+
+.editor-doc-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.editor-status-in-review {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.editor-status-editing {
+  background: #fed7aa;
+  color: #92400e;
+}
+
+.editor-status-pending {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.editor-doc-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.editor-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--slate-200);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.editor-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+}
+
+.editor-progress-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue-600);
+  min-width: 30px;
+  text-align: right;
+}
+
+.editor-doc-footer {
+  font-size: 11px;
+  color: var(--slate-600);
+}
+
+.editor-doc-suggestions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─── Editor Panel Section ──────────────────────────────── */
+.editor-panel-section {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.editor-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--slate-200);
+}
+
+.editor-panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin: 0;
+}
+
+.editor-panel-subtitle {
+  font-size: 12px;
+  color: var(--slate-500);
+  margin: 4px 0 0 0;
+}
+
+.editor-panel-close {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--slate-400);
+  font-size: 20px;
+  transition: var(--transition);
+}
+
+.editor-panel-close:hover {
+  color: var(--slate-900);
+}
+
+/* ─── Suggestions Container ──────────────────────────────– */
+.editor-suggestions-container {
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+.editor-suggestions-header {
+  margin-bottom: 16px;
+}
+
+.editor-suggestions-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin: 0;
+}
+
+.editor-suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─── Suggestion Card ────────────────────────────────────– */
+.editor-suggestion-card {
+  padding: 16px;
+  background: var(--slate-50);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.editor-suggestion-card:hover {
+  border-color: var(--blue-300);
+  box-shadow: 0 2px 8px rgba(59,130,246,0.1);
+}
+
+.editor-suggestion-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.editor-suggestion-type {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.editor-suggestion-info {
+  flex: 1;
+}
+
+.editor-suggestion-text {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--slate-900);
+}
+
+.editor-suggestion-location {
+  margin: 4px 0 0 0;
+  font-size: 11px;
+  color: var(--slate-500);
+}
+
+/* ─── Suggestion Details ────────────────────────────────── */
+.editor-suggestion-details {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.editor-detail-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--slate-600);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.editor-detail-content {
+  padding: 10px 12px;
+  background: var(--white);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--slate-200);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--slate-700);
+}
+
+.editor-detail-content.original {
+  border-left: 3px solid #dc2626;
+  background: #fee2e2;
+}
+
+.editor-detail-content.suggested {
+  border-left: 3px solid #059669;
+  background: #dcfce7;
+}
+
+.editor-suggestion-arrow {
+  font-size: 16px;
+  color: var(--slate-400);
+  text-align: center;
+}
+
+/* ─── Suggestion Actions ────────────────────────────────── */
+.editor-suggestion-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.editor-action-accept,
+.editor-action-reject,
+.editor-action-edit {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--slate-300);
+  border-radius: var(--radius-xs);
+  background: var(--white);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.editor-action-accept:hover {
+  background: #dcfce7;
+  border-color: #059669;
+  color: #059669;
+}
+
+.editor-action-reject:hover {
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.editor-action-edit:hover {
+  background: var(--blue-50);
+  border-color: var(--blue-400);
+  color: var(--blue-600);
+}
+
+/* ─── Empty Panel ────────────────────────────────────────– */
+.editor-empty-panel {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 60px 40px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.editor-empty-content {
+  text-align: center;
+}
+
+.editor-empty-icon {
+  font-size: 56px;
+  margin-bottom: 20px;
+}
+
+.editor-empty-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin: 0 0 8px 0;
+}
+
+.editor-empty-desc {
+  font-size: 13px;
+  color: var(--slate-500);
+  margin: 0;
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────– */
+.editor-suggestions-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.editor-suggestions-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editor-suggestions-container::-webkit-scrollbar-thumb {
+  background: var(--slate-300);
+  border-radius: 3px;
+}
+
+.editor-suggestions-container::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-400);
+}

@@ -103,11 +103,6 @@
 
 // export default Login;
 
-
-
-
-
-
 import "./Login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
@@ -144,13 +139,19 @@ function Login() {
       sessionStorage.setItem("token", result.id);
       
       // Route based on card selection
-      if (cardIndex === "3") {
-        // Card 3 (Accessibility Remediation) goes to remediate-pdf
-        navigate("/remediate-pdf");
-      } else if (cardIndex === "0" || cardIndex === "1" || cardIndex === "2") {
-        // Cards 0, 1, 2 - feature not live yet
+      if (cardIndex === "0") {
+        // Card 0 (Submit+) goes to submit page
+        navigate("/submit");
+      } else if (cardIndex === "1") {
+        // Card 1 (Editor+) goes to editor page
+        navigate("/editor");
+      } else if (cardIndex === "2") {
+        // Card 2 (Publish+) - feature not live yet
         alert("Dashboard coming soon!");
         navigate("/");
+      } else if (cardIndex === "3") {
+        // Card 3 (Accessibility Remediation) goes to remediate-pdf
+        navigate("/remediate-pdf");
       } else {
         // Default to template if no card selected
         navigate("/template");

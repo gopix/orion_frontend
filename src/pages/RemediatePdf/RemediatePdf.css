@@ -2308,3 +2308,43 @@
   line-height: 1.5;
   font-family: 'Monaco', 'Courier New', monospace;
 }
+
+/* ─── Success Banner (API Message) ────────────────────────────── */
+.rp-success-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 1px solid #3b82f6;
+  border-radius: var(--radius-sm);
+  margin-top: 14px;
+}
+
+.rp-success-ico {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.rp-success-banner p {
+  margin: 0;
+  font-size: 13px;
+  color: #1e40af;
+  line-height: 1.5;
+}
+
+/* ─── Report Header Actions ────────────────────────────── */
+.rp-report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.rp-report-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
