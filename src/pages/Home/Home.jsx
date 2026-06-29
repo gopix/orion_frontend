@@ -9,10 +9,27 @@ function Home() {
   const navigate = useNavigate();
 
   const handleCardClick = (index) => {
-    // Every card click always goes to the login page first.
-    // We pass which card was clicked so Login knows what to do
-    // after the user successfully signs in.
-    navigate(`/login?card=${index}`);
+    // Check if user is already logged in (token in sessionStorage)
+    const token = sessionStorage.getItem("token");
+
+    if (token) {
+      // User is already logged in, skip login and go directly to card page
+      if (index === 0) {
+        navigate("/submit");
+      } else if (index === 1) {
+        navigate("/editor");
+      } else if (index === 2) {
+        // Card 2 (Publish+) - feature not live yet
+        alert("Dashboard coming soon!");
+      } else if (index === 3) {
+        navigate("/remediate-pdf");
+      }
+    } else {
+      // User is not logged in, redirect to login page with card info
+      // We pass which card was clicked so Login knows what to do
+      // after the user successfully signs in.
+      navigate(`/login?card=${index}`);
+    }
   };
 
   return (

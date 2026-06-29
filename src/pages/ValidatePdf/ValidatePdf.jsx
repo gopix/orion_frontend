@@ -198,14 +198,15 @@ export default function ValidatePdf() {
           </div>
         </nav>
         <div className="vp-sidebar-footer">
-          <div className="vp-sidebar-agents">
-            <p className="vp-sidebar-agents-title">Active Agents</p>
-            {Object.entries(AGENT_META).map(([name, m]) => (
-              <div key={name} className="vp-sidebar-agent">
-                <span>{m.icon}</span>
-                <span>{name.replace(" Agent", "").replace(" Accessibility", "")}</span>
-              </div>
-            ))}
+          <div className="vp-user-section">
+            <p className="vp-user-email">{sessionStorage.getItem("userEmail")}</p>
+            <button 
+              className="vp-back-btn"
+              onClick={() => navigate("/")}
+              title="Back to Home"
+            >
+              ← Back
+            </button>
           </div>
         </div>
       </aside>

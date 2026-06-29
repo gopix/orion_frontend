@@ -2824,3 +2824,269 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── User Section & Back Button ──────────────────────────────── */
+.rp-user-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rp-user-email {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
+  padding: 0 8px;
+  line-height: 1.3;
+}
+
+.rp-back-btn {
+  padding: 8px 12px;
+  background: rgba(59,130,246,0.2);
+  border: 1px solid rgba(59,130,246,0.3);
+  border-radius: 6px;
+  color: var(--blue-300);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+}
+
+.rp-back-btn:hover {
+  background: rgba(59,130,246,0.3);
+  color: #fff;
+}
+
+/* ============================================================================
+   VERAPDF VALIDATION — ACTION BUTTON + REPORT SECTION
+   ============================================================================ */
+
+.rp-action-vera {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: white;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.32);
+}
+
+.rp-action-vera:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(124,58,237,0.4);
+}
+
+.rp-action-vera:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.rp-vera-report-section {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+  border: 1px solid #e9d5ff;
+  border-radius: 12px;
+}
+
+.rp-vera-report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rp-vera-report-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #581c87;
+}
+
+.rp-vera-report-icon {
+  font-size: 18px;
+}
+
+.rp-vera-compliance-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid;
+}
+
+.rp-vera-compliant {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border-color: #86efac;
+}
+
+.rp-vera-noncompliant {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: #fca5a5;
+}
+
+.rp-vera-compliance-banner .rp-banner-icon {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.rp-vera-compliance-banner .rp-banner-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+.rp-vera-compliance-banner .rp-banner-message {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.rp-vera-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.rp-vera-card {
+  padding: 14px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: var(--transition);
+}
+
+.rp-vera-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.rp-vera-card-passed-rules {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border-color: #86efac;
+}
+
+.rp-vera-card-failed-rules {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: #fca5a5;
+}
+
+.rp-vera-card-passed-checks {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #93c5fd;
+}
+
+.rp-vera-card-failed-checks {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  border-color: #fb923c;
+}
+
+.rp-vera-card-value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.85);
+  margin-bottom: 6px;
+}
+
+.rp-vera-card-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.rp-vera-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.rp-vera-rules-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #581c87;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.rp-vera-rule-card {
+  padding: 12px 14px;
+  background: white;
+  border: 1px solid #e9d5ff;
+  border-left: 4px solid #dc2626;
+  border-radius: 8px;
+}
+
+.rp-vera-rule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.rp-vera-rule-clause {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b21a8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.rp-vera-rule-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.rp-vera-rule-desc {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.rp-vera-rule-spec {
+  margin: 0;
+  font-size: 11px;
+  color: #9ca3af;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+@media (max-width: 1024px) {
+  .rp-vera-summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .rp-vera-summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
