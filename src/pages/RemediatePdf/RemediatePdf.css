@@ -2348,3 +2348,479 @@
   align-items: center;
   gap: 8px;
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESTART BUTTON STYLES & ANIMATIONS
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.rp-file-restart-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  flex-shrink: 0;
+}
+
+.rp-file-restart-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
+}
+
+.rp-file-restart-btn:active {
+  transform: translateY(0);
+}
+
+.rp-restart-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  animation: rp-spin-restart 2s linear infinite;
+}
+
+.rp-file-restart-btn:hover .rp-restart-icon {
+  animation: rp-spin-restart 1.2s linear infinite;
+}
+
+.rp-restart-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@keyframes rp-spin-restart {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PROCESSING INDICATOR STYLES
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.rp-processing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 1px solid #93c5fd;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  animation: rp-pulse-glow 2s ease-in-out infinite;
+}
+
+.rp-processing-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-right-color: #3b82f6;
+  border-radius: 50%;
+  animation: rp-spin-loader 1s linear infinite;
+  flex-shrink: 0;
+}
+
+.rp-processing-text {
+  flex: 1;
+}
+
+.rp-processing-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 4px;
+}
+
+.rp-processing-msg {
+  margin: 0;
+  font-size: 13px;
+  color: #1e40af;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+@keyframes rp-spin-loader {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rp-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VALIDATION OVERVIEW COLORFUL CARDS
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.rp-validation-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.rp-validation-card {
+  padding: 16px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: var(--transition);
+  cursor: default;
+}
+
+.rp-validation-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Document Name Card - Light Blue */
+.rp-card-document {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  border: 1px solid #7dd3fc;
+}
+
+/* Pages Card - Light Purple */
+.rp-card-pages {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  border: 1px solid #d8b4fe;
+}
+
+/* Issues Card - Light Red/Orange */
+.rp-card-issues {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 1px solid #fca5a5;
+}
+
+/* Status Card - Pass (Green) */
+.rp-card-status-pass {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border: 1px solid #86efac;
+}
+
+/* Status Card - Fail (Red) */
+.rp-card-status-fail {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 1px solid #fca5a5;
+}
+
+/* Execution Time Card - Light Yellow */
+.rp-card-execution {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #fcd34d;
+}
+
+.rp-card-label {
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.rp-card-value {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.85);
+  word-break: break-word;
+}
+
+.rp-card-status-pass .rp-card-value {
+  color: #166534;
+}
+
+.rp-card-status-fail .rp-card-value {
+  color: #991b1b;
+}
+
+/* Responsive Grid */
+@media (max-width: 1024px) {
+  .rp-validation-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  
+  .rp-card-value {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rp-validation-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .rp-card-value {
+    font-size: 15px;
+  }
+  
+  .rp-processing-indicator {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rp-validation-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .rp-file-restart-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REMEDIATION SUMMARY COLORFUL CARDS (Single Row)
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.rp-remediation-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.rp-rem-summary-card {
+  padding: 16px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: var(--transition);
+}
+
+.rp-rem-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Issues Attempted - Yellow */
+.rp-card-attempted {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #fcd34d;
+}
+
+/* Issues Fixed - Green */
+.rp-card-fixed {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border-color: #86efac;
+}
+
+/* Issues Failed - Red */
+.rp-card-failed {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: #fca5a5;
+}
+
+/* Save Success - Blue */
+.rp-card-save-success {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #93c5fd;
+}
+
+.rp-rem-card-value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.85);
+  margin-bottom: 6px;
+}
+
+.rp-rem-card-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .rp-remediation-summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rp-remediation-summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .rp-rem-card-value {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rp-remediation-summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REPORT REMEDIATION SUMMARY COLORFUL CARDS (Multi-column Row)
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.rp-report-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.rp-report-card {
+  padding: 14px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: var(--transition);
+}
+
+.rp-report-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Issues Attempted - Yellow/Orange */
+.rp-card-attempted-report {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #fcd34d;
+}
+
+/* Issues Fixed - Green */
+.rp-card-fixed-report {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border-color: #86efac;
+}
+
+/* Issues Failed - Red */
+.rp-card-failed-report {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: #fca5a5;
+}
+
+/* Issues Detected - Purple */
+.rp-card-detected-report {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  border-color: #d8b4fe;
+}
+
+/* Issues Remaining - Orange */
+.rp-card-remaining-report {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  border-color: #fb923c;
+}
+
+/* Duration - Blue */
+.rp-card-duration-report {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #93c5fd;
+}
+
+/* Save Success - Cyan */
+.rp-card-save-report {
+  background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%);
+  border-color: #5eead4;
+}
+
+/* Fonts Patched - Pink */
+.rp-card-fonts-report {
+  background: linear-gradient(135deg, #fbcfe8 0%, #f9a8d4 100%);
+  border-color: #f472b6;
+}
+
+.rp-report-card-value {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.85);
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+
+.rp-report-card-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Responsive for Larger Screens */
+@media (min-width: 1400px) {
+  .rp-report-summary-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Responsive for Medium Screens */
+@media (max-width: 1200px) {
+  .rp-report-summary-cards {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  
+  .rp-report-card-value {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rp-report-summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .rp-report-card {
+    padding: 12px;
+  }
+
+  .rp-report-card-value {
+    font-size: 15px;
+  }
+  
+  .rp-report-card-label {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rp-report-summary-cards {
+    grid-template-columns: 1fr;
+  }
+}

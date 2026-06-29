@@ -440,11 +440,12 @@
 //                           <p className="rp-file-size">{formatBytes(pdfFile.size)}</p>
 //                         </div>
 //                         <button
-//                           className="rp-file-remove"
+//                           className="rp-file-restart-btn"
 //                           onClick={handleRemove}
-//                           title="Remove file"
+//                           title="Restart remediation"
 //                         >
-//                           ✕
+//                           <span className="rp-restart-icon">↻</span>
+//                           <span className="rp-restart-text">Restart</span>
 //                         </button>
 //                       </div>
 
@@ -528,6 +529,14 @@
 //                         <p className="rp-status-desc">
 //                           Check the current remediation status using your job ID
 //                         </p>
+//                       </div>
+//                     </div>
+
+//                     <div className="rp-processing-indicator">
+//                       <div className="rp-processing-spinner"></div>
+//                       <div className="rp-processing-text">
+//                         <p className="rp-processing-title">Backend Processing</p>
+//                         <p className="rp-processing-msg">Your PDF is being remediated. This may take a moment...</p>
 //                       </div>
 //                     </div>
 
@@ -892,28 +901,26 @@
 //                         <div className="rp-report-section-header">
 //                           <h3 className="rp-report-section-title">Validation Overview</h3>
 //                         </div>
-//                         <div className="rp-validation-overview">
-//                           <div className="rp-validation-item">
-//                             <span className="rp-validation-label">Document Name</span>
-//                             <span className="rp-validation-value">{reportData.data.validation_result.document_name}</span>
+//                         <div className="rp-validation-cards-grid">
+//                           <div className="rp-validation-card rp-card-document">
+//                             <p className="rp-card-label">Document Name</p>
+//                             <p className="rp-card-value">{reportData.data.validation_result.document_name}</p>
 //                           </div>
-//                           <div className="rp-validation-item">
-//                             <span className="rp-validation-label">Total Pages</span>
-//                             <span className="rp-validation-value">{reportData.data.validation_result.total_pages}</span>
+//                           <div className="rp-validation-card rp-card-pages">
+//                             <p className="rp-card-label">Total Pages</p>
+//                             <p className="rp-card-value">{reportData.data.validation_result.total_pages}</p>
 //                           </div>
-//                           <div className="rp-validation-item">
-//                             <span className="rp-validation-label">Total Issues</span>
-//                             <span className="rp-validation-value">{reportData.data.validation_result.total_issues}</span>
+//                           <div className="rp-validation-card rp-card-issues">
+//                             <p className="rp-card-label">Total Issues</p>
+//                             <p className="rp-card-value">{reportData.data.validation_result.total_issues}</p>
 //                           </div>
-//                           <div className="rp-validation-item">
-//                             <span className="rp-validation-label">Overall Status</span>
-//                             <span className={`rp-validation-value rp-status-${reportData.data.validation_result.overall_status?.toLowerCase()}`}>
-//                               {reportData.data.validation_result.overall_status}
-//                             </span>
+//                           <div className={`rp-validation-card rp-card-status-${reportData.data.validation_result.overall_status?.toLowerCase()}`}>
+//                             <p className="rp-card-label">Overall Status</p>
+//                             <p className="rp-card-value">{reportData.data.validation_result.overall_status}</p>
 //                           </div>
-//                           <div className="rp-validation-item">
-//                             <span className="rp-validation-label">Execution Time</span>
-//                             <span className="rp-validation-value">{reportData.data.validation_result.execution_time_ms}ms</span>
+//                           <div className="rp-validation-card rp-card-execution">
+//                             <p className="rp-card-label">Execution Time</p>
+//                             <p className="rp-card-value">{reportData.data.validation_result.execution_time_ms}ms</p>
 //                           </div>
 //                         </div>
 //                       </div>
@@ -1119,15 +1126,12 @@
 
 
 
-
-
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { orionRemediatePdf, getRemediationStatus, downloadRemediatedPdf, getRemediationReport } from "../../services/apiServices";
 import "./RemediatePdf.css";
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200 MB
 
 export default function RemediatePdf() {
   const navigate = useNavigate();
@@ -1149,6 +1153,7 @@ export default function RemediatePdf() {
   const [downloading, setDownloading]   = useState(false);
   const [downloadError, setDownloadError] = useState("");
   const [jobReady, setJobReady]          = useState(false); // Track if job is complete
+  const [showDetailedResults, setShowDetailedResults] = useState(false); // Toggle to show detailed results
   
   // ── Remediation Report state ──────────────────────────────────
   const [reportData, setReportData]     = useState(null);
@@ -1185,6 +1190,7 @@ export default function RemediatePdf() {
     setStatusError("");
     setDownloadError("");
     setJobReady(false);
+    setShowDetailedResults(false);
     setReportData(null);
     setReportError("");
   };
@@ -1214,6 +1220,7 @@ export default function RemediatePdf() {
     setStatusError("");
     setDownloadError("");
     setJobReady(false);
+    setShowDetailedResults(false);
     setReportData(null);
     setReportError("");
   };
@@ -1239,6 +1246,7 @@ export default function RemediatePdf() {
     setStatusError("");
     setDownloadError("");
     setJobReady(false);
+    setShowDetailedResults(false);
     setReportData(null);
     setReportError("");
 
@@ -1486,14 +1494,8 @@ export default function RemediatePdf() {
             <section className="rp-upload-section">
               <div className="rp-upload-wrapper">
                 <div className="rp-upload-icon">📥</div>
-                <h1 className="rp-upload-title">Upload PDF for Remediation</h1>
-                <p className="rp-upload-desc">
-                  Drag and drop your PDF file or click to browse
-                </p>
-                <p className="rp-upload-subdesc">
-                  Maximum file size: 50 MB. Supports .pdf files.
-                </p>
-
+                <h1 className="rp-upload-title">Upload PDF For Remediation</h1>
+                
                 <div
                   className={`rp-drop-zone ${dragOver ? "rp-drag-over" : ""}`}
                   onDragOver={() => setDragOver(true)}
@@ -1559,11 +1561,12 @@ export default function RemediatePdf() {
                           <p className="rp-file-size">{formatBytes(pdfFile.size)}</p>
                         </div>
                         <button
-                          className="rp-file-remove"
+                          className="rp-file-restart-btn"
                           onClick={handleRemove}
-                          title="Remove file"
+                          title="Restart remediation"
                         >
-                          ✕
+                          <span className="rp-restart-icon">↻</span>
+                          <span className="rp-restart-text">Restart</span>
                         </button>
                       </div>
 
@@ -1650,10 +1653,11 @@ export default function RemediatePdf() {
                       </div>
                     </div>
 
-                    <div className="rp-job-id-display">
-                      <div className="rp-job-id-row">
-                        <span className="rp-job-id-label">Job ID</span>
-                        <code className="rp-job-id-val">{jobId}</code>
+                    <div className="rp-processing-indicator">
+                      <div className="rp-processing-spinner"></div>
+                      <div className="rp-processing-text">
+                        <p className="rp-processing-title">Backend Processing</p>
+                        <p className="rp-processing-msg">Your PDF is being remediated. This may take a moment...</p>
                       </div>
                     </div>
 
@@ -1699,22 +1703,22 @@ export default function RemediatePdf() {
                         {statusData.data && statusData.data.summary && (
                           <div className="rp-status-summary-section">
                             <h4 className="rp-summary-section-title">Remediation Summary</h4>
-                            <div className="rp-summary-stats-grid">
-                              <div className="rp-stat-card rp-stat-attempted">
-                                <div className="rp-stat-number">{statusData.data.summary.issues_attempted || 0}</div>
-                                <div className="rp-stat-label">Issues Attempted</div>
+                            <div className="rp-report-summary-cards">
+                              <div className="rp-rem-summary-card rp-card-attempted">
+                                <p className="rp-rem-card-value">{statusData.data.summary.issues_attempted || 0}</p>
+                                <p className="rp-rem-card-label">Issues Attempted</p>
                               </div>
-                              <div className="rp-stat-card rp-stat-fixed">
-                                <div className="rp-stat-number">{statusData.data.summary.issues_fixed || 0}</div>
-                                <div className="rp-stat-label">Issues Fixed</div>
+                              <div className="rp-rem-summary-card rp-card-fixed">
+                                <p className="rp-rem-card-value">{statusData.data.summary.issues_fixed || 0}</p>
+                                <p className="rp-rem-card-label">Issues Fixed</p>
                               </div>
-                              <div className="rp-stat-card rp-stat-failed">
-                                <div className="rp-stat-number">{statusData.data.summary.issues_failed || 0}</div>
-                                <div className="rp-stat-label">Issues Failed</div>
+                              <div className="rp-rem-summary-card rp-card-failed">
+                                <p className="rp-rem-card-value">{statusData.data.summary.issues_failed || 0}</p>
+                                <p className="rp-rem-card-label">Issues Failed</p>
                               </div>
-                              <div className="rp-stat-card rp-stat-success">
-                                <div className="rp-stat-label">Save Success</div>
-                                <div className="rp-stat-badge">{statusData.data.summary.save_success ? '✓ Yes' : '✗ No'}</div>
+                              <div className="rp-rem-summary-card rp-card-save-success">
+                                <p className="rp-rem-card-label">Save Success</p>
+                                <p className="rp-rem-card-value">{statusData.data.summary.save_success ? '✓ Yes' : '✗ No'}</p>
                               </div>
                             </div>
                           </div>
@@ -1746,12 +1750,7 @@ export default function RemediatePdf() {
                                 <span className="rp-metadata-value">{statusData.data.total_duration_ms}ms</span>
                               </div>
                             )}
-                            {statusData.data.created_at && (
-                              <div className="rp-metadata-item">
-                                <span className="rp-metadata-label">Created</span>
-                                <span className="rp-metadata-value">{new Date(statusData.data.created_at).toLocaleString()}</span>
-                              </div>
-                            )}
+
                           </div>
                         )}
 
@@ -1787,13 +1786,13 @@ export default function RemediatePdf() {
                   </div>
                 )}
 
-                {/* ── SECTION 3: View Remediation Report Button (after job is ready) ── */}
-                {jobReady && !reportData && (
+                {/* ── SECTION 3: View Detailed Results Button (after job is ready) ── */}
+                {jobReady && !showDetailedResults && (
                   <div className="rp-results-section">
                     <div className="rp-results-header">
                       <h3 className="rp-results-title">Step 3: Detailed Results</h3>
                       <p className="rp-results-desc">
-                        Your PDF remediation is complete. View detailed remediation report and download the remediated file.
+                        Your PDF remediation is complete. View summary and download the remediated file.
                       </p>
                     </div>
 
@@ -1815,22 +1814,22 @@ export default function RemediatePdf() {
                         {statusData.data && statusData.data.summary && (
                           <div className="rp-status-summary-section">
                             <h4 className="rp-summary-section-title">Remediation Summary</h4>
-                            <div className="rp-summary-stats-grid">
-                              <div className="rp-stat-card rp-stat-attempted">
-                                <div className="rp-stat-number">{statusData.data.summary.issues_attempted || 0}</div>
-                                <div className="rp-stat-label">Issues Attempted</div>
+                            <div className="rp-report-summary-cards">
+                              <div className="rp-rem-summary-card rp-card-attempted">
+                                <p className="rp-rem-card-value">{statusData.data.summary.issues_attempted || 0}</p>
+                                <p className="rp-rem-card-label">Issues Attempted</p>
                               </div>
-                              <div className="rp-stat-card rp-stat-fixed">
-                                <div className="rp-stat-number">{statusData.data.summary.issues_fixed || 0}</div>
-                                <div className="rp-stat-label">Issues Fixed</div>
+                              <div className="rp-rem-summary-card rp-card-fixed">
+                                <p className="rp-rem-card-value">{statusData.data.summary.issues_fixed || 0}</p>
+                                <p className="rp-rem-card-label">Issues Fixed</p>
                               </div>
-                              <div className="rp-stat-card rp-stat-failed">
-                                <div className="rp-stat-number">{statusData.data.summary.issues_failed || 0}</div>
-                                <div className="rp-stat-label">Issues Failed</div>
+                              <div className="rp-rem-summary-card rp-card-failed">
+                                <p className="rp-rem-card-value">{statusData.data.summary.issues_failed || 0}</p>
+                                <p className="rp-rem-card-label">Issues Failed</p>
                               </div>
-                              <div className="rp-stat-card rp-stat-success">
-                                <div className="rp-stat-label">Save Success</div>
-                                <div className="rp-stat-badge">{statusData.data.summary.save_success ? '✓ Yes' : '✗ No'}</div>
+                              <div className="rp-rem-summary-card rp-card-save-success">
+                                <p className="rp-rem-card-label">Save Success</p>
+                                <p className="rp-rem-card-value">{statusData.data.summary.save_success ? '✓ Yes' : '✗ No'}</p>
                               </div>
                             </div>
                           </div>
@@ -1862,12 +1861,7 @@ export default function RemediatePdf() {
                                 <span className="rp-metadata-value">{statusData.data.total_duration_ms}ms</span>
                               </div>
                             )}
-                            {statusData.data.created_at && (
-                              <div className="rp-metadata-item">
-                                <span className="rp-metadata-label">Created</span>
-                                <span className="rp-metadata-value">{new Date(statusData.data.created_at).toLocaleString()}</span>
-                              </div>
-                            )}
+
                           </div>
                         )}
                       </div>
@@ -1932,91 +1926,56 @@ export default function RemediatePdf() {
                           Complete remediation analysis and validation results
                         </p>
                       </div>
-                      <div className="rp-report-header-actions">
-                        <button
-                          className="rp-action-btn rp-action-primary"
-                          onClick={handleDownloadReport}
-                          disabled={downloadingReport}
-                          title="Download remediation report"
-                        >
-                          {downloadingReport ? (
-                            <><span className="rp-btn-spin"></span> Downloading…</>
-                          ) : (
-                            <><span className="rp-btn-icon">🖨️</span> Download Report</>
-                          )}
-                        </button>
-                        <button
-                          className="rp-close-results-btn"
-                          onClick={() => setReportData(null)}
-                          title="Close report"
-                        >
-                          ✕
-                        </button>
-                      </div>
+                      <button
+                        className="rp-close-results-btn"
+                        onClick={() => setReportData(null)}
+                        title="Close report"
+                      >
+                        ✕
+                      </button>
                     </div>
 
-                    {/* Job Info */}
-                    {reportData.data && (
-                      <div className="rp-report-section-block">
-                        <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Job Information</h3>
-                        </div>
-                        <div className="rp-job-info-grid">
-                          <div className="rp-job-info-item">
-                            <span className="rp-info-label">Job ID</span>
-                            <span className="rp-info-value">{reportData.data.job_id}</span>
-                          </div>
-                          <div className="rp-job-info-item">
-                            <span className="rp-info-label">Status</span>
-                            <span className="rp-info-value">{reportData.data.status}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Summary Section with Colorful Blocks */}
+                    {/* Summary Section */}
                     {reportData.data && reportData.data.summary && (
                       <div className="rp-report-section-block">
                         <div className="rp-report-section-header">
                           <h3 className="rp-report-section-title">Remediation Summary</h3>
                         </div>
-                        <div className="rp-detailed-stats-section">
-                          <div className="rp-detailed-stats-grid">
-                            <div className="rp-detailed-stat-card rp-stat-attempted">
-                              <div className="rp-stat-label">Issues Attempted</div>
-                              <div className="rp-stat-value">{reportData.data.summary.issues_attempted}</div>
-                            </div>
-                            <div className="rp-detailed-stat-card rp-stat-fixed">
-                              <div className="rp-stat-label">Issues Fixed</div>
-                              <div className="rp-stat-value">{reportData.data.summary.issues_fixed}</div>
-                            </div>
-                            <div className="rp-detailed-stat-card rp-stat-failed">
-                              <div className="rp-stat-label">Issues Failed</div>
-                              <div className="rp-stat-value">{reportData.data.summary.issues_failed}</div>
-                            </div>
-                            <div className="rp-detailed-stat-card rp-stat-detected">
-                              <div className="rp-stat-label">Issues Detected</div>
-                              <div className="rp-stat-value">{reportData.data.summary.issues_detected}</div>
-                            </div>
-                            <div className="rp-detailed-stat-card rp-stat-remaining">
-                              <div className="rp-stat-label">Issues Remaining</div>
-                              <div className="rp-stat-value">{reportData.data.summary.issues_remaining}</div>
-                            </div>
-                            <div className="rp-detailed-stat-card rp-stat-success">
-                              <div className="rp-stat-label">Save Success</div>
-                              <div className="rp-stat-value">{reportData.data.summary.save_success ? '✓ Yes' : '✗ No'}</div>
-                            </div>
-                            <div className="rp-detailed-stat-card rp-stat-duration">
-                              <div className="rp-stat-label">Duration</div>
-                              <div className="rp-stat-value">{reportData.data.summary.total_duration_ms}ms</div>
-                            </div>
-                            {reportData.data.summary.font_encoding && (
-                              <div className="rp-detailed-stat-card rp-stat-fonts">
-                                <div className="rp-stat-label">Fonts Patched</div>
-                                <div className="rp-stat-value">{reportData.data.summary.font_encoding.fonts_patched}</div>
-                              </div>
-                            )}
+                        <div className="rp-report-summary-cards">
+                          <div className="rp-report-card rp-card-attempted-report">
+                            <p className="rp-report-card-value">{reportData.data.summary.issues_attempted}</p>
+                            <p className="rp-report-card-label">Issues Attempted</p>
                           </div>
+                          <div className="rp-report-card rp-card-fixed-report">
+                            <p className="rp-report-card-value">{reportData.data.summary.issues_fixed}</p>
+                            <p className="rp-report-card-label">Issues Fixed</p>
+                          </div>
+                          <div className="rp-report-card rp-card-failed-report">
+                            <p className="rp-report-card-value">{reportData.data.summary.issues_failed}</p>
+                            <p className="rp-report-card-label">Issues Failed</p>
+                          </div>
+                          <div className="rp-report-card rp-card-detected-report">
+                            <p className="rp-report-card-value">{reportData.data.summary.issues_detected}</p>
+                            <p className="rp-report-card-label">Issues Detected</p>
+                          </div>
+                          <div className="rp-report-card rp-card-remaining-report">
+                            <p className="rp-report-card-value">{reportData.data.summary.issues_remaining}</p>
+                            <p className="rp-report-card-label">Issues Remaining</p>
+                          </div>
+                          <div className="rp-report-card rp-card-duration-report">
+                            <p className="rp-report-card-value">{reportData.data.summary.total_duration_ms}ms</p>
+                            <p className="rp-report-card-label">Duration</p>
+                          </div>
+                          <div className="rp-report-card rp-card-save-report">
+                            <p className="rp-report-card-value">{reportData.data.summary.save_success ? 'Yes' : 'No'}</p>
+                            <p className="rp-report-card-label">Save Success</p>
+                          </div>
+                          {reportData.data.summary.font_encoding && (
+                            <div className="rp-report-card rp-card-fonts-report">
+                              <p className="rp-report-card-value">{reportData.data.summary.font_encoding.fonts_patched}</p>
+                              <p className="rp-report-card-label">Fonts Patched</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -2027,28 +1986,26 @@ export default function RemediatePdf() {
                         <div className="rp-report-section-header">
                           <h3 className="rp-report-section-title">Validation Overview</h3>
                         </div>
-                        <div className="rp-validation-overview">
-                          <div className="rp-validation-item">
-                            <span className="rp-validation-label">Document Name</span>
-                            <span className="rp-validation-value">{reportData.data.validation_result.document_name}</span>
+                        <div className="rp-validation-cards-grid">
+                          <div className="rp-validation-card rp-card-document">
+                            <p className="rp-card-label">Document Name</p>
+                            <p className="rp-card-value">{reportData.data.validation_result.document_name}</p>
                           </div>
-                          <div className="rp-validation-item">
-                            <span className="rp-validation-label">Total Pages</span>
-                            <span className="rp-validation-value">{reportData.data.validation_result.total_pages}</span>
+                          <div className="rp-validation-card rp-card-pages">
+                            <p className="rp-card-label">Total Pages</p>
+                            <p className="rp-card-value">{reportData.data.validation_result.total_pages}</p>
                           </div>
-                          <div className="rp-validation-item">
-                            <span className="rp-validation-label">Total Issues</span>
-                            <span className="rp-validation-value">{reportData.data.validation_result.total_issues}</span>
+                          <div className="rp-validation-card rp-card-issues">
+                            <p className="rp-card-label">Total Issues</p>
+                            <p className="rp-card-value">{reportData.data.validation_result.total_issues}</p>
                           </div>
-                          <div className="rp-validation-item">
-                            <span className="rp-validation-label">Overall Status</span>
-                            <span className={`rp-validation-value rp-status-${reportData.data.validation_result.overall_status?.toLowerCase()}`}>
-                              {reportData.data.validation_result.overall_status}
-                            </span>
+                          <div className={`rp-validation-card rp-card-status-${reportData.data.validation_result.overall_status?.toLowerCase()}`}>
+                            <p className="rp-card-label">Overall Status</p>
+                            <p className="rp-card-value">{reportData.data.validation_result.overall_status}</p>
                           </div>
-                          <div className="rp-validation-item">
-                            <span className="rp-validation-label">Execution Time</span>
-                            <span className="rp-validation-value">{reportData.data.validation_result.execution_time_ms}ms</span>
+                          <div className="rp-validation-card rp-card-execution">
+                            <p className="rp-card-label">Execution Time</p>
+                            <p className="rp-card-value">{reportData.data.validation_result.execution_time_ms}ms</p>
                           </div>
                         </div>
                       </div>
@@ -2204,6 +2161,17 @@ export default function RemediatePdf() {
                     {/* ── Action Buttons ── */}
                     <div className="rp-results-action-row">
                       <button
+                        className="rp-action-btn rp-action-primary"
+                        onClick={handleDownloadReport}
+                        disabled={downloadingReport}
+                      >
+                        {downloadingReport ? (
+                          <><span className="rp-btn-spin"></span> Downloading…</>
+                        ) : (
+                          <><span className="rp-btn-icon">⬇️</span> Download Report</>
+                        )}
+                      </button>
+                      <button
                         className="rp-action-btn rp-action-secondary"
                         onClick={() => setReportData(null)}
                       >
@@ -2240,4 +2208,3 @@ export default function RemediatePdf() {
     </div>
   );
 }
-
