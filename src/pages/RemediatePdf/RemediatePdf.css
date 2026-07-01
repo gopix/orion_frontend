@@ -2688,6 +2688,54 @@
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   OVERALL RESULT SUMMARY BANNER (result_summary block)
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.rp-result-overall-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.rp-result-status-remediated {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border-color: #86efac;
+}
+
+.rp-result-status-partial {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #fcd34d;
+}
+
+.rp-result-status-failed {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: #fca5a5;
+}
+
+.rp-result-overall-banner .rp-banner-icon {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.rp-result-overall-banner .rp-banner-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+.rp-result-overall-banner .rp-banner-message {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    REPORT REMEDIATION SUMMARY COLORFUL CARDS (Multi-column Row)
    ═════════════════════════════════════════════════════════════════════════ */
 
