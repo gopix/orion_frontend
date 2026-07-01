@@ -7,6 +7,8 @@ import "./Home.css";
 
 function Home() {
   const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
+  const userEmail = sessionStorage.getItem("userEmail");
 
   const handleCardClick = (index) => {
     // Check if user is already logged in (token in sessionStorage)
@@ -35,6 +37,15 @@ function Home() {
   return (
     <div className="home-container">
       <Navbar />
+      {token && (
+        <div className="welcome-banner" key={userEmail}>
+          <span className="welcome-wave">👋</span>
+          <p className="welcome-text">
+            Welcome back{userEmail ? "," : ""}{" "}
+            {userEmail && <span className="welcome-email">{userEmail}</span>}
+          </p>
+        </div>
+      )}
       <div className="services-section">
         {services.map((item, index) => (
           <ServiceCard

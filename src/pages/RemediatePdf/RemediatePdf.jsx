@@ -577,16 +577,6 @@ export default function RemediatePdf() {
                         )}
                       </button>
 
-                      {/* Display API message after submission */}
-                      {submitMessage && (
-                        <div className="rp-success-banner">
-                          <span className="rp-success-ico">ℹ️</span>
-                          <div>
-                            <p className="rp-success-msg">{submitMessage}</p>
-                          </div>
-                        </div>
-                      )}
-
                       {isLockedAfterRun && !submitting && (
                         <p className="rp-rerun-hint">
                           Remove the current file to remediate a new PDF.
@@ -914,7 +904,7 @@ export default function RemediatePdf() {
                                 {veraJob.compliant ? "PDF/A Compliant" : "Not PDF/A Compliant"}
                               </p>
                               <p className="rp-banner-message">
-                                {veraJob.profileName}{veraJob.statement ? ` — ${veraJob.statement}` : ""}
+                                PDF/A-1b (ISO 19005-1:2005)
                               </p>
                             </div>
                           </div>
@@ -998,7 +988,7 @@ export default function RemediatePdf() {
                       <div>
                         <h3 className="rp-report-title">Remediation Report</h3>
                         <p className="rp-report-desc">
-                          Complete remediation analysis and validation results
+                          PDF/UA + WCAG accessibility
                         </p>
                       </div>
                       <button
@@ -1017,6 +1007,10 @@ export default function RemediatePdf() {
                           <h3 className="rp-report-section-title">Remediation Summary</h3>
                         </div>
                         <div className="rp-report-summary-cards">
+                          <div className="rp-report-card rp-card-detected-report">
+                            <p className="rp-report-card-value">{reportData.data.summary.issues_detected}</p>
+                            <p className="rp-report-card-label">Issues Detected</p>
+                          </div>
                           <div className="rp-report-card rp-card-attempted-report">
                             <p className="rp-report-card-value">{reportData.data.summary.issues_attempted}</p>
                             <p className="rp-report-card-label">Issues Attempted</p>
@@ -1028,10 +1022,6 @@ export default function RemediatePdf() {
                           <div className="rp-report-card rp-card-failed-report">
                             <p className="rp-report-card-value">{reportData.data.summary.issues_failed}</p>
                             <p className="rp-report-card-label">Issues Failed</p>
-                          </div>
-                          <div className="rp-report-card rp-card-detected-report">
-                            <p className="rp-report-card-value">{reportData.data.summary.issues_detected}</p>
-                            <p className="rp-report-card-label">Issues Detected</p>
                           </div>
                           <div className="rp-report-card rp-card-remaining-report">
                             <p className="rp-report-card-value">{reportData.data.summary.issues_remaining}</p>
