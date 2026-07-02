@@ -1,4 +1,4 @@
- @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
 /* ─── Design Tokens ────────────────────────────────────────── */
 :root {
@@ -3390,6 +3390,88 @@
 @media (max-width: 420px) {
   .rp-raw-meta-grid,
   .rp-raw-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Accessibility Dashboard (GET /accessibility/dashboard/{job_id}) ── */
+.rp-dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.rp-dash-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--white);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  animation: rp-raw-fade-in-kf 0.4s ease both;
+}
+
+.rp-dash-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+.rp-dash-value {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.rp-dash-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.92;
+}
+
+.rp-dash-score       { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+.rp-dash-compliance  { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+.rp-dash-critical    { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+.rp-dash-risk-low    { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.rp-dash-risk-medium { background: linear-gradient(135deg, #eab308, #ca8a04); }
+.rp-dash-risk-high   { background: linear-gradient(135deg, #f97316, #dc2626); }
+.rp-dash-extra       { background: linear-gradient(135deg, #64748b, #475569); }
+
+.rp-dash-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--slate-500);
+}
+
+.rp-dash-spin {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--slate-200);
+  border-top-color: var(--blue-600);
+  border-radius: 50%;
+  animation: rp-spin 0.7s linear infinite;
+}
+
+@media (max-width: 640px) {
+  .rp-dash-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .rp-dash-grid {
     grid-template-columns: 1fr;
   }
 }

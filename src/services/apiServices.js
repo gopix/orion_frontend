@@ -180,3 +180,14 @@ export const downloadRemediatedPdf = async (jobId) => {
   return response;
 };
 
+// ── Accessibility Dashboard (NEW) ───────────────────────────────
+// GET /api/v1/accessibility/dashboard/{job_id}
+// Path param: job_id (string, required)
+// Returns: response_code, message, data (dashboard: accessibility_score, pdfua_compliance, wcag_risk, critical_issues, ...)
+export const getAccessibilityDashboard = async (jobId) => {
+  const response = await fetch(`${BASE_URL}/accessibility/dashboard/${jobId}`, {
+    method: "GET",
+    headers: { "Accept": "application/json" },
+  });
+  return response;
+};
