@@ -1000,6 +1000,57 @@
 //                       </button>
 //                     </div>
 
+//                     {/* Overall Result Summary */}
+//                     {reportData.data && reportData.data.result_summary && (
+//                       <div className="rp-report-section-block">
+//                         <div className="rp-report-section-header">
+//                           <h3 className="rp-report-section-title">Overall Result</h3>
+//                         </div>
+
+//                         <div
+//                           className={`rp-result-overall-banner ${
+//                             reportData.data.result_summary.overall_status === "fully_remediated"
+//                               ? "rp-result-status-remediated"
+//                               : reportData.data.result_summary.overall_status === "partially_remediated"
+//                               ? "rp-result-status-partial"
+//                               : "rp-result-status-failed"
+//                           }`}
+//                         >
+//                           <span className="rp-banner-icon">
+//                             {reportData.data.result_summary.overall_status === "fully_remediated" ? "✓" : "!"}
+//                           </span>
+//                           <div className="rp-banner-content">
+//                             <p className="rp-banner-title">
+//                               {reportData.data.result_summary.overall_status
+//                                 ?.split("_")
+//                                 .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+//                                 .join(" ")}
+//                             </p>
+//                             <p className="rp-banner-message">
+//                               {reportData.data.result_summary.issues_resolved} of{" "}
+//                               {reportData.data.result_summary.issues_detected} detected issue
+//                               {reportData.data.result_summary.issues_detected !== 1 ? "s" : ""} resolved
+//                             </p>
+//                           </div>
+//                         </div>
+
+//                         <div className="rp-report-summary-cards">
+//                           <div className="rp-report-card rp-card-detected-report">
+//                             <p className="rp-report-card-value">{reportData.data.result_summary.issues_detected}</p>
+//                             <p className="rp-report-card-label">Issues Detected</p>
+//                           </div>
+//                           <div className="rp-report-card rp-card-fixed-report">
+//                             <p className="rp-report-card-value">{reportData.data.result_summary.issues_resolved}</p>
+//                             <p className="rp-report-card-label">Issues Resolved</p>
+//                           </div>
+//                           <div className="rp-report-card rp-card-failed-report">
+//                             <p className="rp-report-card-value">{reportData.data.result_summary.issues_not_fixed}</p>
+//                             <p className="rp-report-card-label">Issues Not Fixed</p>
+//                           </div>
+//                         </div>
+//                       </div>
+//                     )}
+
 //                     {/* Summary Section */}
 //                     {reportData.data && reportData.data.summary && (
 //                       <div className="rp-report-section-block">
@@ -1223,6 +1274,146 @@
 //                       </div>
 //                     )}
 
+//                     {/* Revalidation Overview - post-remediation re-check */}
+//                     {reportData.data && reportData.data.revalidation_result && (
+//                       <div className="rp-report-section-block">
+//                         <div className="rp-report-section-header">
+//                           <h3 className="rp-report-section-title">Revalidation Overview (After Remediation)</h3>
+//                         </div>
+//                         <div className="rp-validation-cards-grid">
+//                           <div className="rp-validation-card rp-card-document">
+//                             <p className="rp-card-label">Document Name</p>
+//                             <p className="rp-card-value">{reportData.data.revalidation_result.document_name}</p>
+//                           </div>
+//                           <div className="rp-validation-card rp-card-pages">
+//                             <p className="rp-card-label">Total Pages</p>
+//                             <p className="rp-card-value">{reportData.data.revalidation_result.total_pages}</p>
+//                           </div>
+//                           <div className="rp-validation-card rp-card-issues">
+//                             <p className="rp-card-label">Total Issues</p>
+//                             <p className="rp-card-value">{reportData.data.revalidation_result.total_issues}</p>
+//                           </div>
+//                           <div className={`rp-validation-card rp-card-status-${reportData.data.revalidation_result.overall_status?.toLowerCase()}`}>
+//                             <p className="rp-card-label">Overall Status</p>
+//                             <p className="rp-card-value">{reportData.data.revalidation_result.overall_status}</p>
+//                           </div>
+//                           <div className="rp-validation-card rp-card-execution">
+//                             <p className="rp-card-label">Execution Time</p>
+//                             <p className="rp-card-value">{reportData.data.revalidation_result.execution_time_ms}ms</p>
+//                           </div>
+//                         </div>
+//                       </div>
+//                     )}
+
+//                     {/* Revalidation Severity Breakdown */}
+//                     {reportData.data && reportData.data.revalidation_result && (
+//                       <div className="rp-report-section-block">
+//                         <div className="rp-report-section-header">
+//                           <h3 className="rp-report-section-title">Revalidation Severity Breakdown</h3>
+//                         </div>
+//                         <div className="rp-severity-grid">
+//                           {reportData.data.revalidation_result.critical_count !== undefined && (
+//                             <div className="rp-severity-card rp-severity-critical">
+//                               <span className="rp-severity-count">{reportData.data.revalidation_result.critical_count}</span>
+//                               <span className="rp-severity-label">Critical</span>
+//                             </div>
+//                           )}
+//                           {reportData.data.revalidation_result.high_count !== undefined && (
+//                             <div className="rp-severity-card rp-severity-high">
+//                               <span className="rp-severity-count">{reportData.data.revalidation_result.high_count}</span>
+//                               <span className="rp-severity-label">High</span>
+//                             </div>
+//                           )}
+//                           {reportData.data.revalidation_result.medium_count !== undefined && (
+//                             <div className="rp-severity-card rp-severity-medium">
+//                               <span className="rp-severity-count">{reportData.data.revalidation_result.medium_count}</span>
+//                               <span className="rp-severity-label">Medium</span>
+//                             </div>
+//                           )}
+//                           {reportData.data.revalidation_result.low_count !== undefined && (
+//                             <div className="rp-severity-card rp-severity-low">
+//                               <span className="rp-severity-count">{reportData.data.revalidation_result.low_count}</span>
+//                               <span className="rp-severity-label">Low</span>
+//                             </div>
+//                           )}
+//                           {reportData.data.revalidation_result.auto_fixable_count !== undefined && (
+//                             <div className="rp-severity-card rp-severity-autofixable">
+//                               <span className="rp-severity-count">{reportData.data.revalidation_result.auto_fixable_count}</span>
+//                               <span className="rp-severity-label">Auto-Fixable</span>
+//                             </div>
+//                           )}
+//                         </div>
+//                       </div>
+//                     )}
+
+//                     {/* Revalidation Agent Results - detailed issues remaining after remediation */}
+//                     {reportData.data && reportData.data.revalidation_result && reportData.data.revalidation_result.agent_results && (
+//                       <div className="rp-report-section-block">
+//                         <div className="rp-report-section-header">
+//                           <h3 className="rp-report-section-title">Revalidation Agent Results</h3>
+//                         </div>
+//                         <div className="rp-agent-results-container">
+//                           {reportData.data.revalidation_result.agent_results.map((agent, idx) => (
+//                             <div key={idx} className={`rp-agent-card ${agent.success ? 'rp-agent-success' : 'rp-agent-failed'}`}>
+//                               <div className="rp-agent-header">
+//                                 <div className="rp-agent-status-badge">
+//                                   {agent.success ? (
+//                                     <span className="rp-badge-icon rp-badge-pass">✓</span>
+//                                   ) : (
+//                                     <span className="rp-badge-icon rp-badge-fail">✗</span>
+//                                   )}
+//                                 </div>
+//                                 <div className="rp-agent-info">
+//                                   <h4 className="rp-agent-name">{agent.agent_name}</h4>
+//                                   <p className="rp-agent-meta">{agent.issue_count} issue{agent.issue_count !== 1 ? 's' : ''}</p>
+//                                 </div>
+//                               </div>
+//                               {agent.issues && agent.issues.length > 0 && (
+//                                 <div className="rp-agent-issues">
+//                                   {agent.issues.map((issue, issueIdx) => (
+//                                     <div key={issueIdx} className={`rp-issue-card rp-issue-${issue.severity?.toLowerCase()}`}>
+//                                       <div className="rp-issue-header">
+//                                         <div className="rp-issue-severity-dot" style={{
+//                                           backgroundColor: issue.severity === 'CRITICAL' ? '#dc2626' : 
+//                                                           issue.severity === 'HIGH' ? '#f97316' :
+//                                                           issue.severity === 'MEDIUM' ? '#eab308' :
+//                                                           issue.severity === 'LOW' ? '#22c55e' : '#6b7280'
+//                                         }}></div>
+//                                         <div className="rp-issue-title-section">
+//                                           <p className="rp-issue-rule-id">{issue.rule_id}</p>
+//                                           <p className="rp-issue-message">{issue.message}</p>
+//                                         </div>
+//                                         <div className="rp-issue-badges">
+//                                           <span className={`rp-issue-status rp-status-${issue.status?.toLowerCase()}`}>
+//                                             {issue.status}
+//                                           </span>
+//                                           {issue.auto_fixable && (
+//                                             <span className="rp-issue-autofixable">🔧 Auto-fixable</span>
+//                                           )}
+//                                         </div>
+//                                       </div>
+//                                       <div className="rp-issue-details">
+//                                         <div className="rp-detail-group">
+//                                           <span className="rp-detail-label">Category</span>
+//                                           <span className="rp-detail-text">{issue.category}</span>
+//                                         </div>
+//                                         {issue.recommendation && (
+//                                           <div className="rp-detail-group">
+//                                             <span className="rp-detail-label">Recommendation</span>
+//                                             <span className="rp-detail-text">{issue.recommendation}</span>
+//                                           </div>
+//                                         )}
+//                                       </div>
+//                                     </div>
+//                                   ))}
+//                                 </div>
+//                               )}
+//                             </div>
+//                           ))}
+//                         </div>
+//                       </div>
+//                     )}
+
 //                     {/* ── Action Buttons ── */}
 //                     <div className="rp-results-action-row">
 //                       <button
@@ -1306,16 +1497,34 @@
 
 
 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { orionRemediatePdf, getRemediationStatus, downloadRemediatedPdf, getRemediationReport, validatePdf } from "../../services/apiServices";
 import "./RemediatePdf.css";
-
+ 
 const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200 MB
-
+ 
 export default function RemediatePdf() {
   const navigate = useNavigate();
-
+ 
   const [pdfFile, setPdfFile]           = useState(null);
   const [dragOver, setDragOver]         = useState(false);
   const [mode, setMode]                 = useState("auto");   // "auto" | "manual"
@@ -1324,7 +1533,7 @@ export default function RemediatePdf() {
   const [submitError, setSubmitError]   = useState("");
   const [rawResult, setRawResult]       = useState(null);
   const [submitMessage, setSubmitMessage] = useState(""); // Message from API response
-
+ 
   // ── Status polling state ──────────────────────────────────────
   const [jobId, setJobId]               = useState(null);
   const [statusData, setStatusData]     = useState(null);
@@ -1341,16 +1550,16 @@ export default function RemediatePdf() {
   const [reportError, setReportError]   = useState("");
   const [downloadingReport, setDownloadingReport] = useState(false);
   const [downloadReportError, setDownloadReportError] = useState("");
-
+ 
   // ── VeraPDF Validation state ────────────────────────────────────
   const [veraValidating, setVeraValidating] = useState(false);
   const [veraResult, setVeraResult] = useState(null);
   const [veraError, setVeraError] = useState("");
   const [downloadingVeraReport, setDownloadingVeraReport] = useState(false);
   const [downloadVeraReportError, setDownloadVeraReportError] = useState("");
-
+ 
   const pdfInputRef = useRef(null);
-
+ 
   // ── File validation ──────────────────────────────────────────
   const validateFile = (file) => {
     if (!file) return null;
@@ -1364,7 +1573,7 @@ export default function RemediatePdf() {
     }
     return file;
   };
-
+ 
   const applyFile = (file) => {
     const valid = validateFile(file);
     if (!valid) return;
@@ -1383,21 +1592,21 @@ export default function RemediatePdf() {
     setVeraResult(null);
     setVeraError("");
   };
-
+ 
   // ── Handlers ─────────────────────────────────────────────────
   const handlePdfSelect = (e) => {
     const file = e.target.files[0];
     if (file) applyFile(file);
     e.target.value = "";
   };
-
+ 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
     if (file) applyFile(file);
   };
-
+ 
   const handleRemove = (e) => {
     e.stopPropagation();
     setPdfFile(null);
@@ -1415,13 +1624,13 @@ export default function RemediatePdf() {
     setVeraResult(null);
     setVeraError("");
   };
-
+ 
   const formatBytes = (bytes) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
-
+ 
   // ── Submit — Remediate PDF ────────────────────────────────────
   const handleSubmit = async () => {
     if (!pdfFile) {
@@ -1442,19 +1651,19 @@ export default function RemediatePdf() {
     setReportError("");
     setVeraResult(null);
     setVeraError("");
-
+ 
     try {
       const orgId     = sessionStorage.getItem("organization_id") || 1;
       const projectId = sessionStorage.getItem("project_id")      || 1;
       const response  = await orionRemediatePdf(pdfFile, orgId, projectId);
-
+ 
       if (!response.ok) {
         let errMsg = `Server error: ${response.status}`;
         try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
         catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
         throw new Error(errMsg);
       }
-
+ 
       const data = await response.json();
       setRawResult(data);
       
@@ -1462,18 +1671,18 @@ export default function RemediatePdf() {
       if (data?.message) {
         setSubmitMessage(data.message);
       }
-
+ 
       // Save job_id for status polling
       const id = data?.job_id ?? data?.data?.job_id ?? null;
       if (id) setJobId(id);
-
+ 
     } catch (err) {
       setSubmitError(err.message || "Unexpected error. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
-
+ 
   // ── Check Remediation Status ──────────────────────────────────
   const handleCheckStatus = async () => {
     if (!jobId) {
@@ -1483,17 +1692,17 @@ export default function RemediatePdf() {
     setStatusLoading(true);
     setStatusData(null);
     setStatusError("");
-
+ 
     try {
       const response = await getRemediationStatus(jobId);
-
+ 
       if (!response.ok) {
         let errMsg = `Server error: ${response.status}`;
         try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
         catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
         throw new Error(errMsg);
       }
-
+ 
       const data = await response.json();
       setStatusData(data);
       
@@ -1507,7 +1716,7 @@ export default function RemediatePdf() {
       setStatusLoading(false);
     }
   };
-
+ 
   // ── Get Remediation Report ────────────────────────────────────
   const handleGetReport = async () => {
     if (!jobId) {
@@ -1517,27 +1726,27 @@ export default function RemediatePdf() {
     setReportLoading(true);
     setReportData(null);
     setReportError("");
-
+ 
     try {
       const response = await getRemediationReport(jobId);
-
+ 
       if (!response.ok) {
         let errMsg = `Server error: ${response.status}`;
         try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
         catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
         throw new Error(errMsg);
       }
-
+ 
       const data = await response.json();
       setReportData(data);
-
+ 
     } catch (err) {
       setReportError(err.message || "Could not fetch remediation report. Please try again.");
     } finally {
       setReportLoading(false);
     }
   };
-
+ 
   // ── Download Remediated PDF ─────────────────────────────────────
   const handleDownloadRemediatedPdf = async () => {
     if (!jobId) {
@@ -1546,17 +1755,17 @@ export default function RemediatePdf() {
     }
     setDownloading(true);
     setDownloadError("");
-
+ 
     try {
       const response = await downloadRemediatedPdf(jobId);
-
+ 
       if (!response.ok) {
         let errMsg = `Server error: ${response.status}`;
         try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
         catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
         throw new Error(errMsg);
       }
-
+ 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -1574,7 +1783,7 @@ export default function RemediatePdf() {
       setDownloading(false);
     }
   };
-
+ 
   // ── Download Remediation Report as JSON ────────────────────────
   const handleDownloadReport = async () => {
     if (!reportData) {
@@ -1608,7 +1817,7 @@ export default function RemediatePdf() {
       setDownloadingReport(false);
     }
   };
-
+ 
   // ── Validate PDF through VeraPDF ────────────────────────────────
   const handleValidateWithVeraPdf = async () => {
     if (!pdfFile) {
@@ -1618,47 +1827,47 @@ export default function RemediatePdf() {
     setVeraValidating(true);
     setVeraResult(null);
     setVeraError("");
-
+ 
     try {
       const response = await validatePdf(pdfFile);
-
+ 
       if (!response.ok) {
         let errMsg = `Server error: ${response.status}`;
         try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
         catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
         throw new Error(errMsg);
       }
-
+ 
       const data = await response.json();
       setVeraResult(data);
-
+ 
     } catch (err) {
       setVeraError(err.message || "Could not validate the PDF via VeraPDF. Please try again.");
     } finally {
       setVeraValidating(false);
     }
   };
-
+ 
   // ── Download VeraPDF Validation Report as JSON ──────────────────
   const handleDownloadVeraReport = async () => {
     if (!veraResult) {
       setDownloadVeraReportError("No validation report available to download.");
       return;
     }
-
+ 
     try {
       setDownloadingVeraReport(true);
       setDownloadVeraReportError("");
-
+ 
       const jsonString = JSON.stringify(veraResult, null, 2);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-
+ 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
       const fileName = `verapdf-validation_${timestamp}.json`;
-
+ 
       link.setAttribute('download', fileName);
       document.body.appendChild(link);
       link.click();
@@ -1670,7 +1879,7 @@ export default function RemediatePdf() {
       setDownloadingVeraReport(false);
     }
   };
-
+ 
   // ── Parse remediation result ──────────────────────────────────
   const parseResult = (raw) => {
     if (!raw) return null;
@@ -1686,9 +1895,9 @@ export default function RemediatePdf() {
       report_url:         d.report_url,
     };
   };
-
+ 
   const parsed = parseResult(rawResult);
-
+ 
   // ── Derived ──────────────────────────────────────────────────
   const statusLabel = () => {
     if (submitting)        return { cls: "chip-running", dot: "dot-amber", text: "Remediating…" };
@@ -1698,15 +1907,15 @@ export default function RemediatePdf() {
     return null;
   };
   const chip = statusLabel();
-
+ 
   // A job has already been run for the current file — re-running requires
   // removing/replacing the file first, so the submit button locks here.
   const isLockedAfterRun = submitting || Boolean(jobId);
   const veraJob = veraResult?.data?.report?.jobs?.[0]?.validationResult?.[0] ?? null;
-
+ 
   return (
     <div className="rp-page">
-
+ 
       {/* ── Sidebar ──────────────────────────────────────────── */}
       <aside className="rp-sidebar">
         <div className="rp-logo">
@@ -1716,7 +1925,7 @@ export default function RemediatePdf() {
             <small>Accessibility & Remediation</small>
           </div>
         </div>
-
+ 
         <nav className="rp-nav">
           <p className="rp-nav-label">WORKSPACE</p>
           <div className="rp-nav-item active">
@@ -1733,7 +1942,7 @@ export default function RemediatePdf() {
             <span>Template</span>
           </div>
         </nav>
-
+ 
         <div className="rp-sidebar-footer">
           <div className="rp-user-section">
             <p className="rp-user-email">{sessionStorage.getItem("userEmail")}</p>
@@ -1747,11 +1956,11 @@ export default function RemediatePdf() {
           </div>
         </div>
       </aside>
-
+ 
       {/* ── Main ─────────────────────────────────────────────── */}
       <main className="rp-main">
         <div className="rp-container">
-
+ 
           {!pdfFile ? (
             <section className="rp-upload-section">
               <div className="rp-upload-wrapper">
@@ -1771,7 +1980,7 @@ export default function RemediatePdf() {
                     <p className="rp-drop-subtext">or <strong>click to select</strong></p>
                   </div>
                 </div>
-
+ 
                 <input
                   ref={pdfInputRef}
                   type="file"
@@ -1779,7 +1988,7 @@ export default function RemediatePdf() {
                   onChange={handlePdfSelect}
                   style={{ display: "none" }}
                 />
-
+ 
                 {submitError && (
                   <div className="rp-error-banner">
                     <span className="rp-error-ico">⚠</span>
@@ -1803,17 +2012,17 @@ export default function RemediatePdf() {
                     </div>
                   </div>
                 )}
-
+ 
                 {/* ──────────────────────────────────────────────────
                     FLOW: PDF Upload → Check Job Status → Detailed Results (INLINE)
                     ────────────────────────────────────────────────── */}
-
+ 
                 {/* ── SECTION 1: File Management & Job Submission ── */}
                 <div className="rp-file-management-section">
                   <div className="rp-fm-header">
                     <h3 className="rp-fm-title">Step 1: Upload & Configure</h3>
                   </div>
-
+ 
                   {pdfFile && (
                     <div className="rp-fm-content">
                       <div className="rp-file-card">
@@ -1831,7 +2040,7 @@ export default function RemediatePdf() {
                           <span className="rp-restart-text">Restart</span>
                         </button>
                       </div>
-
+ 
                       <div className="rp-controls-row">
                         <div className="rp-control-group">
                           <label className="rp-control-label">Mode</label>
@@ -1845,7 +2054,7 @@ export default function RemediatePdf() {
                             <option value="manual">Manual</option>
                           </select>
                         </div>
-
+ 
                         <div className="rp-control-group">
                           <label className="rp-control-label">Standard</label>
                           <select
@@ -1859,7 +2068,7 @@ export default function RemediatePdf() {
                           </select>
                         </div>
                       </div>
-
+ 
                       <button
                         className="rp-submit-btn"
                         onClick={handleSubmit}
@@ -1883,7 +2092,7 @@ export default function RemediatePdf() {
                           </>
                         )}
                       </button>
-
+ 
                       {isLockedAfterRun && !submitting && (
                         <p className="rp-rerun-hint">
                           Remove the current file to remediate a new PDF.
@@ -1892,7 +2101,7 @@ export default function RemediatePdf() {
                     </div>
                   )}
                 </div>
-
+ 
                 {/* ── SECTION 2: Check Job Status ── */}
                 {jobId && !jobReady && (
                   <div className="rp-job-status-section">
@@ -1904,7 +2113,7 @@ export default function RemediatePdf() {
                         </p>
                       </div>
                     </div>
-
+ 
                     <div className="rp-processing-indicator">
                       <div className="rp-processing-spinner"></div>
                       <div className="rp-processing-text">
@@ -1912,7 +2121,7 @@ export default function RemediatePdf() {
                         <p className="rp-processing-msg">Your PDF is being remediated. This may take a moment...</p>
                       </div>
                     </div>
-
+ 
                     <div className="rp-single-action-row">
                       <button
                         className="rp-status-btn"
@@ -1926,7 +2135,7 @@ export default function RemediatePdf() {
                         )}
                       </button>
                     </div>
-
+ 
                     {/* ── Status result ── */}
                     {statusError && (
                       <div className="rp-error-banner" style={{ marginTop: 16 }}>
@@ -1937,7 +2146,7 @@ export default function RemediatePdf() {
                         </div>
                       </div>
                     )}
-
+ 
                     {statusData && !statusLoading && (
                       <div className="rp-status-result">
                         {/* Status Success Banner */}
@@ -1950,7 +2159,7 @@ export default function RemediatePdf() {
                             </div>
                           </div>
                         )}
-
+ 
                         {/* Summary Statistics Cards */}
                         {statusData.data && statusData.data.summary && (
                           <div className="rp-status-summary-section">
@@ -1975,7 +2184,7 @@ export default function RemediatePdf() {
                             </div>
                           </div>
                         )}
-
+ 
                         {/* Font Encoding Details */}
                         {statusData.data && statusData.data.font_encoding && (
                           <div className="rp-status-details-section">
@@ -1992,7 +2201,7 @@ export default function RemediatePdf() {
                             </div>
                           </div>
                         )}
-
+ 
                         {/* Duration and Timestamp */}
                         {statusData.data && (
                           <div className="rp-status-metadata">
@@ -2002,10 +2211,10 @@ export default function RemediatePdf() {
                                 <span className="rp-metadata-value">{statusData.data.total_duration_ms}ms</span>
                               </div>
                             )}
-
+ 
                           </div>
                         )}
-
+ 
                         {/* Action Buttons */}
                         {statusData.status === "completed" && (
                           <div className="rp-status-actions-row">
@@ -2037,7 +2246,7 @@ export default function RemediatePdf() {
                     )}
                   </div>
                 )}
-
+ 
                 {/* ── SECTION 3: View Detailed Results Button (after job is ready) ── */}
                 {jobReady && !showDetailedResults && (
                   <div className="rp-results-section">
@@ -2047,7 +2256,7 @@ export default function RemediatePdf() {
                         Your PDF remediation is complete. View summary and download the remediated file.
                       </p>
                     </div>
-
+ 
                     {/* Professional Status Summary Display */}
                     {statusData && (
                       <div className="rp-status-result">
@@ -2061,7 +2270,7 @@ export default function RemediatePdf() {
                             </div>
                           </div>
                         )}
-
+ 
                         {/* Summary Statistics Cards */}
                         {statusData.data && statusData.data.summary && (
                           <div className="rp-status-summary-section">
@@ -2086,7 +2295,7 @@ export default function RemediatePdf() {
                             </div>
                           </div>
                         )}
-
+ 
                         {/* Font Encoding Details */}
                         {statusData.data && statusData.data.font_encoding && (
                           <div className="rp-status-details-section">
@@ -2103,7 +2312,7 @@ export default function RemediatePdf() {
                             </div>
                           </div>
                         )}
-
+ 
                         {/* Duration and Timestamp */}
                         {statusData.data && (
                           <div className="rp-status-metadata">
@@ -2113,12 +2322,12 @@ export default function RemediatePdf() {
                                 <span className="rp-metadata-value">{statusData.data.total_duration_ms}ms</span>
                               </div>
                             )}
-
+ 
                           </div>
                         )}
                       </div>
                     )}
-
+ 
                     <div className="rp-results-action-row">
                       <button
                         className="rp-action-btn rp-action-primary"
@@ -2156,7 +2365,7 @@ export default function RemediatePdf() {
                         </button>
                       )}
                     </div>
-
+ 
                     {reportError && (
                       <div className="rp-error-banner" style={{ marginTop: 16 }}>
                         <span className="rp-error-ico">⚠</span>
@@ -2166,7 +2375,7 @@ export default function RemediatePdf() {
                         </div>
                       </div>
                     )}
-
+ 
                     {downloadError && (
                       <div className="rp-error-banner" style={{ marginTop: 16 }}>
                         <span className="rp-error-ico">⚠</span>
@@ -2176,7 +2385,7 @@ export default function RemediatePdf() {
                         </div>
                       </div>
                     )}
-
+ 
                     {veraError && (
                       <div className="rp-error-banner" style={{ marginTop: 16 }}>
                         <span className="rp-error-ico">⚠</span>
@@ -2186,7 +2395,7 @@ export default function RemediatePdf() {
                         </div>
                       </div>
                     )}
-
+ 
                     {/* ── VeraPDF Validation Report ── */}
                     {veraResult && (
                       <div className="rp-vera-report-section">
@@ -2202,7 +2411,7 @@ export default function RemediatePdf() {
                             ✕
                           </button>
                         </div>
-
+ 
                         {veraJob && (
                           <div className={`rp-vera-compliance-banner ${veraJob.compliant ? "rp-vera-compliant" : "rp-vera-noncompliant"}`}>
                             <span className="rp-banner-icon">{veraJob.compliant ? "✓" : "✗"}</span>
@@ -2216,7 +2425,7 @@ export default function RemediatePdf() {
                             </div>
                           </div>
                         )}
-
+ 
                         {veraJob && veraJob.details && (
                           <div className="rp-vera-summary-cards">
                             <div className="rp-vera-card rp-vera-card-passed-rules">
@@ -2237,7 +2446,7 @@ export default function RemediatePdf() {
                             </div>
                           </div>
                         )}
-
+ 
                         {veraJob && veraJob.details?.ruleSummaries?.length > 0 && (
                           <div className="rp-vera-rules-list">
                             <h4 className="rp-vera-rules-title">
@@ -2259,7 +2468,7 @@ export default function RemediatePdf() {
                             ))}
                           </div>
                         )}
-
+ 
                         <div className="rp-results-action-row">
                           <button
                             className="rp-action-btn rp-action-secondary"
@@ -2273,7 +2482,7 @@ export default function RemediatePdf() {
                             )}
                           </button>
                         </div>
-
+ 
                         {downloadVeraReportError && (
                           <div className="rp-error-banner" style={{ marginTop: 16 }}>
                             <span className="rp-error-ico">⚠</span>
@@ -2287,15 +2496,15 @@ export default function RemediatePdf() {
                     )}
                   </div>
                 )}
-
+ 
                 {/* ── SECTION 4: Remediation Report Display ── */}
                 {reportData && (
-                  <div className="rp-report-display-section">
+                  <div className="rp-raw-report-section">
                     <div className="rp-report-header">
                       <div>
                         <h3 className="rp-report-title">Remediation Report</h3>
                         <p className="rp-report-desc">
-                          PDF/UA + WCAG accessibility
+                          Raw response returned by the server
                         </p>
                       </div>
                       <button
@@ -2306,230 +2515,228 @@ export default function RemediatePdf() {
                         ✕
                       </button>
                     </div>
-
-                    {/* Overall Result Summary */}
+ 
+                    {/* ── API Envelope: response_code / message ── */}
+                    <div className="rp-raw-envelope">
+                      {reportData.response_code !== undefined && (
+                        <span className="rp-raw-envelope-code">
+                          {reportData.response_code}
+                        </span>
+                      )}
+                      {reportData.message && (
+                        <span className="rp-raw-envelope-message">{reportData.message}</span>
+                      )}
+                    </div>
+ 
+                    {/* ── Job Meta: job_id / status / created_at ── */}
+                    {reportData.data && (
+                      <div className="rp-raw-meta-grid">
+                        {reportData.data.job_id !== undefined && (
+                          <div className="rp-raw-meta-card">
+                            <span className="rp-raw-meta-label">Job ID</span>
+                            <span className="rp-raw-meta-value rp-raw-meta-mono">{reportData.data.job_id}</span>
+                          </div>
+                        )}
+                        {reportData.data.status !== undefined && (
+                          <div className="rp-raw-meta-card">
+                            <span className="rp-raw-meta-label">Status</span>
+                            <span className={`rp-raw-status-pill rp-raw-status-${String(reportData.data.status).toLowerCase()}`}>
+                              {reportData.data.status}
+                            </span>
+                          </div>
+                        )}
+                        {reportData.data.created_at !== undefined && (
+                          <div className="rp-raw-meta-card">
+                            <span className="rp-raw-meta-label">Created At</span>
+                            <span className="rp-raw-meta-value">{reportData.data.created_at}</span>
+                          </div>
+                        )}
+                        {reportData.data.document && reportData.data.document.name !== undefined && (
+                          <div className="rp-raw-meta-card">
+                            <span className="rp-raw-meta-label">Document</span>
+                            <span className="rp-raw-meta-value">{reportData.data.document.name}</span>
+                          </div>
+                        )}
+                        {reportData.data.document && reportData.data.document.total_pages !== undefined && (
+                          <div className="rp-raw-meta-card">
+                            <span className="rp-raw-meta-label">Total Pages</span>
+                            <span className="rp-raw-meta-value">{reportData.data.document.total_pages}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+ 
+                    {/* ── result_summary — rendered exactly as sent, key by key ── */}
                     {reportData.data && reportData.data.result_summary && (
-                      <div className="rp-report-section-block">
+                      <div className="rp-report-section-block rp-raw-fade-in">
                         <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Overall Result</h3>
+                          <h3 className="rp-report-section-title">Result Summary</h3>
                         </div>
-
-                        <div
-                          className={`rp-result-overall-banner ${
-                            reportData.data.result_summary.overall_status === "fully_remediated"
-                              ? "rp-result-status-remediated"
-                              : reportData.data.result_summary.overall_status === "partially_remediated"
-                              ? "rp-result-status-partial"
-                              : "rp-result-status-failed"
-                          }`}
-                        >
-                          <span className="rp-banner-icon">
-                            {reportData.data.result_summary.overall_status === "fully_remediated" ? "✓" : "!"}
-                          </span>
-                          <div className="rp-banner-content">
-                            <p className="rp-banner-title">
-                              {reportData.data.result_summary.overall_status
-                                ?.split("_")
-                                .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                                .join(" ")}
-                            </p>
-                            <p className="rp-banner-message">
-                              {reportData.data.result_summary.issues_resolved} of{" "}
-                              {reportData.data.result_summary.issues_detected} detected issue
-                              {reportData.data.result_summary.issues_detected !== 1 ? "s" : ""} resolved
-                            </p>
+ 
+                        {reportData.data.result_summary.overall_status !== undefined && (
+                          <div
+                            className={`rp-result-overall-banner ${
+                              reportData.data.result_summary.overall_status === "fully_remediated"
+                                ? "rp-result-status-remediated"
+                                : reportData.data.result_summary.overall_status === "partially_remediated"
+                                ? "rp-result-status-partial"
+                                : "rp-result-status-failed"
+                            }`}
+                          >
+                            <span className="rp-banner-icon">
+                              {reportData.data.result_summary.overall_status === "fully_remediated" ? "✓" : "!"}
+                            </span>
+                            <div className="rp-banner-content">
+                              <p className="rp-banner-title">
+                                {String(reportData.data.result_summary.overall_status)
+                                  .split("_")
+                                  .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                                  .join(" ")}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-
-                        <div className="rp-report-summary-cards">
-                          <div className="rp-report-card rp-card-detected-report">
-                            <p className="rp-report-card-value">{reportData.data.result_summary.issues_detected}</p>
-                            <p className="rp-report-card-label">Issues Detected</p>
-                          </div>
-                          <div className="rp-report-card rp-card-fixed-report">
-                            <p className="rp-report-card-value">{reportData.data.result_summary.issues_resolved}</p>
-                            <p className="rp-report-card-label">Issues Resolved</p>
-                          </div>
-                          <div className="rp-report-card rp-card-failed-report">
-                            <p className="rp-report-card-value">{reportData.data.result_summary.issues_not_fixed}</p>
-                            <p className="rp-report-card-label">Issues Not Fixed</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Summary Section */}
-                    {reportData.data && reportData.data.summary && (
-                      <div className="rp-report-section-block">
-                        <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Remediation Summary</h3>
-                        </div>
-                        <div className="rp-report-summary-cards">
-                          <div className="rp-report-card rp-card-detected-report">
-                            <p className="rp-report-card-value">{reportData.data.summary.issues_detected}</p>
-                            <p className="rp-report-card-label">Issues Detected</p>
-                          </div>
-                          <div className="rp-report-card rp-card-attempted-report">
-                            <p className="rp-report-card-value">{reportData.data.summary.issues_attempted}</p>
-                            <p className="rp-report-card-label">Issues Attempted</p>
-                          </div>
-                          <div className="rp-report-card rp-card-fixed-report">
-                            <p className="rp-report-card-value">{reportData.data.summary.issues_fixed}</p>
-                            <p className="rp-report-card-label">Issues Fixed</p>
-                          </div>
-                          <div className="rp-report-card rp-card-failed-report">
-                            <p className="rp-report-card-value">{reportData.data.summary.issues_failed}</p>
-                            <p className="rp-report-card-label">Issues Failed</p>
-                          </div>
-                          <div className="rp-report-card rp-card-remaining-report">
-                            <p className="rp-report-card-value">{reportData.data.summary.issues_remaining}</p>
-                            <p className="rp-report-card-label">Issues Remaining</p>
-                          </div>
-                          <div className="rp-report-card rp-card-duration-report">
-                            <p className="rp-report-card-value">{reportData.data.summary.total_duration_ms}ms</p>
-                            <p className="rp-report-card-label">Duration</p>
-                          </div>
-                          <div className="rp-report-card rp-card-save-report">
-                            <p className="rp-report-card-value">{reportData.data.summary.save_success ? 'Yes' : 'No'}</p>
-                            <p className="rp-report-card-label">Save Success</p>
-                          </div>
-                          {reportData.data.summary.font_encoding && (
-                            <div className="rp-report-card rp-card-fonts-report">
-                              <p className="rp-report-card-value">{reportData.data.summary.font_encoding.fonts_patched}</p>
-                              <p className="rp-report-card-label">Fonts Patched</p>
+                        )}
+ 
+                        <div className="rp-raw-summary-grid">
+                          {reportData.data.result_summary.issues_scanned !== undefined && (
+                            <div className="rp-raw-stat-card rp-raw-stat-scanned">
+                              <span className="rp-raw-stat-value">{reportData.data.result_summary.issues_scanned}</span>
+                              <span className="rp-raw-stat-label">Issues Scanned</span>
+                            </div>
+                          )}
+                          {reportData.data.result_summary.auto_fixable_found !== undefined && (
+                            <div className="rp-raw-stat-card rp-raw-stat-autofixable">
+                              <span className="rp-raw-stat-value">{reportData.data.result_summary.auto_fixable_found}</span>
+                              <span className="rp-raw-stat-label">Auto-Fixable Found</span>
+                            </div>
+                          )}
+                          {reportData.data.result_summary.issues_fixed !== undefined && (
+                            <div className="rp-raw-stat-card rp-raw-stat-fixed">
+                              <span className="rp-raw-stat-value">{reportData.data.result_summary.issues_fixed}</span>
+                              <span className="rp-raw-stat-label">Issues Fixed</span>
+                            </div>
+                          )}
+                          {reportData.data.result_summary.issues_not_fixed !== undefined && (
+                            <div className="rp-raw-stat-card rp-raw-stat-notfixed">
+                              <span className="rp-raw-stat-value">{reportData.data.result_summary.issues_not_fixed}</span>
+                              <span className="rp-raw-stat-label">Issues Not Fixed</span>
+                            </div>
+                          )}
+                          {reportData.data.result_summary.issues_remaining !== undefined && (
+                            <div className="rp-raw-stat-card rp-raw-stat-remaining">
+                              <span className="rp-raw-stat-value">{reportData.data.result_summary.issues_remaining}</span>
+                              <span className="rp-raw-stat-label">Issues Remaining</span>
+                            </div>
+                          )}
+                          {reportData.data.result_summary.save_success !== undefined && (
+                            <div className={`rp-raw-stat-card ${reportData.data.result_summary.save_success ? "rp-raw-stat-save-ok" : "rp-raw-stat-save-fail"}`}>
+                              <span className="rp-raw-stat-value">{reportData.data.result_summary.save_success ? "Yes" : "No"}</span>
+                              <span className="rp-raw-stat-label">Save Success</span>
+                            </div>
+                          )}
+                          {reportData.data.result_summary.total_duration_ms !== undefined && (
+                            <div className="rp-raw-stat-card rp-raw-stat-duration">
+                              <span className="rp-raw-stat-value">{reportData.data.result_summary.total_duration_ms}ms</span>
+                              <span className="rp-raw-stat-label">Total Duration</span>
                             </div>
                           )}
                         </div>
                       </div>
                     )}
-
-                    {/* Validation Result Overview */}
-                    {reportData.data && reportData.data.validation_result && (
-                      <div className="rp-report-section-block">
+ 
+                    {/* ── agent_results — every agent + every check, exactly as sent ── */}
+                    {reportData.data && Array.isArray(reportData.data.agent_results) && (
+                      <div className="rp-report-section-block rp-raw-fade-in">
                         <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Validation Overview</h3>
-                        </div>
-                        <div className="rp-validation-cards-grid">
-                          <div className="rp-validation-card rp-card-document">
-                            <p className="rp-card-label">Document Name</p>
-                            <p className="rp-card-value">{reportData.data.validation_result.document_name}</p>
-                          </div>
-                          <div className="rp-validation-card rp-card-pages">
-                            <p className="rp-card-label">Total Pages</p>
-                            <p className="rp-card-value">{reportData.data.validation_result.total_pages}</p>
-                          </div>
-                          <div className="rp-validation-card rp-card-issues">
-                            <p className="rp-card-label">Total Issues</p>
-                            <p className="rp-card-value">{reportData.data.validation_result.total_issues}</p>
-                          </div>
-                          <div className={`rp-validation-card rp-card-status-${reportData.data.validation_result.overall_status?.toLowerCase()}`}>
-                            <p className="rp-card-label">Overall Status</p>
-                            <p className="rp-card-value">{reportData.data.validation_result.overall_status}</p>
-                          </div>
-                          <div className="rp-validation-card rp-card-execution">
-                            <p className="rp-card-label">Execution Time</p>
-                            <p className="rp-card-value">{reportData.data.validation_result.execution_time_ms}ms</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Severity Breakdown */}
-                    {reportData.data && reportData.data.validation_result && (
-                      <div className="rp-report-section-block">
-                        <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Issue Severity Breakdown</h3>
-                        </div>
-                        <div className="rp-severity-grid">
-                          {reportData.data.validation_result.critical_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-critical">
-                              <span className="rp-severity-count">{reportData.data.validation_result.critical_count}</span>
-                              <span className="rp-severity-label">Critical</span>
-                            </div>
-                          )}
-                          {reportData.data.validation_result.high_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-high">
-                              <span className="rp-severity-count">{reportData.data.validation_result.high_count}</span>
-                              <span className="rp-severity-label">High</span>
-                            </div>
-                          )}
-                          {reportData.data.validation_result.medium_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-medium">
-                              <span className="rp-severity-count">{reportData.data.validation_result.medium_count}</span>
-                              <span className="rp-severity-label">Medium</span>
-                            </div>
-                          )}
-                          {reportData.data.validation_result.low_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-low">
-                              <span className="rp-severity-count">{reportData.data.validation_result.low_count}</span>
-                              <span className="rp-severity-label">Low</span>
-                            </div>
-                          )}
-                          {reportData.data.validation_result.auto_fixable_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-autofixable">
-                              <span className="rp-severity-count">{reportData.data.validation_result.auto_fixable_count}</span>
-                              <span className="rp-severity-label">Auto-Fixable</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Validation Report Section - show detailed issues */}
-                    {reportData.data && reportData.data.validation_result && reportData.data.validation_result.agent_results && (
-                      <div className="rp-report-section-block">
-                        <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Agent Results</h3>
+                          <h3 className="rp-report-section-title">
+                            Agent Results ({reportData.data.agent_results.length})
+                          </h3>
                         </div>
                         <div className="rp-agent-results-container">
-                          {reportData.data.validation_result.agent_results.map((agent, idx) => (
-                            <div key={idx} className={`rp-agent-card ${agent.success ? 'rp-agent-success' : 'rp-agent-failed'}`}>
+                          {reportData.data.agent_results.map((agent, idx) => (
+                            <div
+                              key={idx}
+                              className={`rp-raw-agent-card rp-raw-agent-${String(agent.agent_status).toLowerCase()}`}
+                              style={{ animationDelay: `${idx * 60}ms` }}
+                            >
                               <div className="rp-agent-header">
                                 <div className="rp-agent-status-badge">
-                                  {agent.success ? (
+                                  {agent.agent_status === "PASS" ? (
                                     <span className="rp-badge-icon rp-badge-pass">✓</span>
-                                  ) : (
+                                  ) : agent.agent_status === "FAIL" ? (
                                     <span className="rp-badge-icon rp-badge-fail">✗</span>
+                                  ) : (
+                                    <span className="rp-badge-icon rp-raw-badge-neutral">•</span>
                                   )}
                                 </div>
                                 <div className="rp-agent-info">
                                   <h4 className="rp-agent-name">{agent.agent_name}</h4>
-                                  <p className="rp-agent-meta">{agent.issue_count} issue{agent.issue_count !== 1 ? 's' : ''}</p>
+                                  <p className="rp-agent-meta">
+                                    {Array.isArray(agent.checks) ? agent.checks.length : 0} check
+                                    {Array.isArray(agent.checks) && agent.checks.length !== 1 ? "s" : ""}
+                                  </p>
                                 </div>
+                                <span className={`rp-raw-agent-status-tag rp-raw-agent-status-${String(agent.agent_status).toLowerCase()}`}>
+                                  {agent.agent_status}
+                                </span>
                               </div>
-                              {agent.issues && agent.issues.length > 0 && (
+ 
+                              {Array.isArray(agent.checks) && agent.checks.length > 0 && (
                                 <div className="rp-agent-issues">
-                                  {agent.issues.map((issue, issueIdx) => (
-                                    <div key={issueIdx} className={`rp-issue-card rp-issue-${issue.severity?.toLowerCase()}`}>
+                                  {agent.checks.map((check, checkIdx) => (
+                                    <div
+                                      key={checkIdx}
+                                      className={`rp-issue-card rp-issue-${String(check.severity).toLowerCase()}`}
+                                    >
                                       <div className="rp-issue-header">
-                                        <div className="rp-issue-severity-dot" style={{
-                                          backgroundColor: issue.severity === 'CRITICAL' ? '#dc2626' : 
-                                                          issue.severity === 'HIGH' ? '#f97316' :
-                                                          issue.severity === 'MEDIUM' ? '#eab308' :
-                                                          issue.severity === 'LOW' ? '#22c55e' : '#6b7280'
-                                        }}></div>
+                                        <div
+                                          className="rp-issue-severity-dot"
+                                          style={{
+                                            backgroundColor:
+                                              check.severity === "CRITICAL" ? "#dc2626" :
+                                              check.severity === "HIGH" ? "#f97316" :
+                                              check.severity === "MEDIUM" ? "#eab308" :
+                                              check.severity === "LOW" ? "#22c55e" : "#6b7280"
+                                          }}
+                                        ></div>
                                         <div className="rp-issue-title-section">
-                                          <p className="rp-issue-rule-id">{issue.rule_id}</p>
-                                          <p className="rp-issue-message">{issue.message}</p>
+                                          {check.rule_id !== undefined && (
+                                            <p className="rp-issue-rule-id">{check.rule_id}</p>
+                                          )}
+                                          {check.message !== undefined && (
+                                            <p className="rp-issue-message">{check.message}</p>
+                                          )}
                                         </div>
                                         <div className="rp-issue-badges">
-                                          <span className={`rp-issue-status rp-status-${issue.status?.toLowerCase()}`}>
-                                            {issue.status}
-                                          </span>
-                                          {issue.auto_fixable && (
-                                            <span className="rp-issue-autofixable">🔧 Auto-fixable</span>
+                                          {check.severity !== undefined && (
+                                            <span className={`rp-raw-severity-tag rp-raw-severity-${String(check.severity).toLowerCase()}`}>
+                                              {check.severity}
+                                            </span>
+                                          )}
+                                          {check.final_status !== undefined && (
+                                            <span className={`rp-issue-status rp-status-${String(check.final_status).toLowerCase()}`}>
+                                              {check.final_status}
+                                            </span>
                                           )}
                                         </div>
                                       </div>
                                       <div className="rp-issue-details">
-                                        <div className="rp-detail-group">
-                                          <span className="rp-detail-label">Category</span>
-                                          <span className="rp-detail-text">{issue.category}</span>
-                                        </div>
-                                        {issue.recommendation && (
+                                        {check.category !== undefined && (
+                                          <div className="rp-detail-group">
+                                            <span className="rp-detail-label">Category</span>
+                                            <span className="rp-detail-text">{check.category}</span>
+                                          </div>
+                                        )}
+                                        {check.remediation_outcome !== undefined && (
+                                          <div className="rp-detail-group">
+                                            <span className="rp-detail-label">Remediation Outcome</span>
+                                            <span className="rp-detail-text">{check.remediation_outcome}</span>
+                                          </div>
+                                        )}
+                                        {check.recommendation !== undefined && (
                                           <div className="rp-detail-group">
                                             <span className="rp-detail-label">Recommendation</span>
-                                            <span className="rp-detail-text">{issue.recommendation}</span>
+                                            <span className="rp-detail-text">{check.recommendation}</span>
                                           </div>
                                         )}
                                       </div>
@@ -2542,185 +2749,26 @@ export default function RemediatePdf() {
                         </div>
                       </div>
                     )}
-
-                    {/* Remediation Results Section */}
-                    {reportData.data && reportData.data.remediation_results && reportData.data.remediation_results.length > 0 && (
-                      <div className="rp-report-section-block">
+ 
+                    {/* ── errors — shown only if the API actually sent any ── */}
+                    {Array.isArray(reportData.errors) && reportData.errors.length > 0 && (
+                      <div className="rp-report-section-block rp-raw-fade-in">
                         <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Remediation Results</h3>
+                          <h3 className="rp-report-section-title">Errors ({reportData.errors.length})</h3>
                         </div>
-                        <div className="rp-remediation-results">
-                          {reportData.data.remediation_results.map((result, idx) => (
-                            <div key={idx} className={`rp-remediation-item ${result.success ? 'rp-remediation-success' : 'rp-remediation-failed'}`}>
-                              <div className="rp-remediation-header">
-                                <span className="rp-remediation-icon">{result.success ? '✓' : '✗'}</span>
-                                <div className="rp-remediation-title">
-                                  <p className="rp-remediation-rule">{result.rule_id}</p>
-                                  <p className="rp-remediation-action">{result.action}</p>
-                                </div>
-                              </div>
-                              {result.changes_made && result.changes_made.length > 0 && (
-                                <div className="rp-remediation-changes">
-                                  <p className="rp-changes-label">Changes Made:</p>
-                                  <ul className="rp-changes-list">
-                                    {result.changes_made.map((change, changeIdx) => (
-                                      <li key={changeIdx}>{change}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {result.error && (
-                                <div className="rp-remediation-error">
-                                  <p className="rp-error-label">Error:</p>
-                                  <p className="rp-error-text">{result.error}</p>
-                                </div>
-                              )}
+                        <div className="rp-raw-errors-list">
+                          {reportData.errors.map((err, idx) => (
+                            <div key={idx} className="rp-error-banner">
+                              <span className="rp-error-ico">⚠</span>
+                              <p className="rp-error-msg">
+                                {typeof err === "string" ? err : JSON.stringify(err)}
+                              </p>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
-
-                    {/* Revalidation Overview - post-remediation re-check */}
-                    {reportData.data && reportData.data.revalidation_result && (
-                      <div className="rp-report-section-block">
-                        <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Revalidation Overview (After Remediation)</h3>
-                        </div>
-                        <div className="rp-validation-cards-grid">
-                          <div className="rp-validation-card rp-card-document">
-                            <p className="rp-card-label">Document Name</p>
-                            <p className="rp-card-value">{reportData.data.revalidation_result.document_name}</p>
-                          </div>
-                          <div className="rp-validation-card rp-card-pages">
-                            <p className="rp-card-label">Total Pages</p>
-                            <p className="rp-card-value">{reportData.data.revalidation_result.total_pages}</p>
-                          </div>
-                          <div className="rp-validation-card rp-card-issues">
-                            <p className="rp-card-label">Total Issues</p>
-                            <p className="rp-card-value">{reportData.data.revalidation_result.total_issues}</p>
-                          </div>
-                          <div className={`rp-validation-card rp-card-status-${reportData.data.revalidation_result.overall_status?.toLowerCase()}`}>
-                            <p className="rp-card-label">Overall Status</p>
-                            <p className="rp-card-value">{reportData.data.revalidation_result.overall_status}</p>
-                          </div>
-                          <div className="rp-validation-card rp-card-execution">
-                            <p className="rp-card-label">Execution Time</p>
-                            <p className="rp-card-value">{reportData.data.revalidation_result.execution_time_ms}ms</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Revalidation Severity Breakdown */}
-                    {reportData.data && reportData.data.revalidation_result && (
-                      <div className="rp-report-section-block">
-                        <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Revalidation Severity Breakdown</h3>
-                        </div>
-                        <div className="rp-severity-grid">
-                          {reportData.data.revalidation_result.critical_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-critical">
-                              <span className="rp-severity-count">{reportData.data.revalidation_result.critical_count}</span>
-                              <span className="rp-severity-label">Critical</span>
-                            </div>
-                          )}
-                          {reportData.data.revalidation_result.high_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-high">
-                              <span className="rp-severity-count">{reportData.data.revalidation_result.high_count}</span>
-                              <span className="rp-severity-label">High</span>
-                            </div>
-                          )}
-                          {reportData.data.revalidation_result.medium_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-medium">
-                              <span className="rp-severity-count">{reportData.data.revalidation_result.medium_count}</span>
-                              <span className="rp-severity-label">Medium</span>
-                            </div>
-                          )}
-                          {reportData.data.revalidation_result.low_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-low">
-                              <span className="rp-severity-count">{reportData.data.revalidation_result.low_count}</span>
-                              <span className="rp-severity-label">Low</span>
-                            </div>
-                          )}
-                          {reportData.data.revalidation_result.auto_fixable_count !== undefined && (
-                            <div className="rp-severity-card rp-severity-autofixable">
-                              <span className="rp-severity-count">{reportData.data.revalidation_result.auto_fixable_count}</span>
-                              <span className="rp-severity-label">Auto-Fixable</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Revalidation Agent Results - detailed issues remaining after remediation */}
-                    {reportData.data && reportData.data.revalidation_result && reportData.data.revalidation_result.agent_results && (
-                      <div className="rp-report-section-block">
-                        <div className="rp-report-section-header">
-                          <h3 className="rp-report-section-title">Revalidation Agent Results</h3>
-                        </div>
-                        <div className="rp-agent-results-container">
-                          {reportData.data.revalidation_result.agent_results.map((agent, idx) => (
-                            <div key={idx} className={`rp-agent-card ${agent.success ? 'rp-agent-success' : 'rp-agent-failed'}`}>
-                              <div className="rp-agent-header">
-                                <div className="rp-agent-status-badge">
-                                  {agent.success ? (
-                                    <span className="rp-badge-icon rp-badge-pass">✓</span>
-                                  ) : (
-                                    <span className="rp-badge-icon rp-badge-fail">✗</span>
-                                  )}
-                                </div>
-                                <div className="rp-agent-info">
-                                  <h4 className="rp-agent-name">{agent.agent_name}</h4>
-                                  <p className="rp-agent-meta">{agent.issue_count} issue{agent.issue_count !== 1 ? 's' : ''}</p>
-                                </div>
-                              </div>
-                              {agent.issues && agent.issues.length > 0 && (
-                                <div className="rp-agent-issues">
-                                  {agent.issues.map((issue, issueIdx) => (
-                                    <div key={issueIdx} className={`rp-issue-card rp-issue-${issue.severity?.toLowerCase()}`}>
-                                      <div className="rp-issue-header">
-                                        <div className="rp-issue-severity-dot" style={{
-                                          backgroundColor: issue.severity === 'CRITICAL' ? '#dc2626' : 
-                                                          issue.severity === 'HIGH' ? '#f97316' :
-                                                          issue.severity === 'MEDIUM' ? '#eab308' :
-                                                          issue.severity === 'LOW' ? '#22c55e' : '#6b7280'
-                                        }}></div>
-                                        <div className="rp-issue-title-section">
-                                          <p className="rp-issue-rule-id">{issue.rule_id}</p>
-                                          <p className="rp-issue-message">{issue.message}</p>
-                                        </div>
-                                        <div className="rp-issue-badges">
-                                          <span className={`rp-issue-status rp-status-${issue.status?.toLowerCase()}`}>
-                                            {issue.status}
-                                          </span>
-                                          {issue.auto_fixable && (
-                                            <span className="rp-issue-autofixable">🔧 Auto-fixable</span>
-                                          )}
-                                        </div>
-                                      </div>
-                                      <div className="rp-issue-details">
-                                        <div className="rp-detail-group">
-                                          <span className="rp-detail-label">Category</span>
-                                          <span className="rp-detail-text">{issue.category}</span>
-                                        </div>
-                                        {issue.recommendation && (
-                                          <div className="rp-detail-group">
-                                            <span className="rp-detail-label">Recommendation</span>
-                                            <span className="rp-detail-text">{issue.recommendation}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
+ 
                     {/* ── Action Buttons ── */}
                     <div className="rp-results-action-row">
                       <button
@@ -2741,7 +2789,7 @@ export default function RemediatePdf() {
                         <span className="rp-btn-icon">✕</span> Close Report
                       </button>
                     </div>
-
+ 
                     {downloadReportError && (
                       <div className="rp-error-banner" style={{ marginTop: 16 }}>
                         <span className="rp-error-ico">⚠</span>
@@ -2751,7 +2799,7 @@ export default function RemediatePdf() {
                         </div>
                       </div>
                     )}
-
+ 
                     {reportError && (
                       <div className="rp-error-banner" style={{ marginTop: 16 }}>
                         <span className="rp-error-ico">⚠</span>
