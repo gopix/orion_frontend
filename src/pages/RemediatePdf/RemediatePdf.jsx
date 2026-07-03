@@ -635,7 +635,7 @@ export default function RemediatePdf() {
                     <div className="rp-processing-indicator">
                       <div className="rp-processing-spinner"></div>
                       <div className="rp-processing-text">
-                        <p className="rp-processing-title">Backend Processing</p>
+                        <p className="rp-processing-title">Processing</p>
                         <p className="rp-processing-msg">Your PDF is being remediated. This may take a moment...</p>
                       </div>
                     </div>
@@ -1035,7 +1035,7 @@ export default function RemediatePdf() {
                     </div>
  
                     {/* ── API Envelope: response_code / message ── */}
-                    <div className="rp-raw-envelope">
+                    {/* <div className="rp-raw-envelope">
                       {reportData.response_code !== undefined && (
                         <span className="rp-raw-envelope-code">
                           {reportData.response_code}
@@ -1045,7 +1045,7 @@ export default function RemediatePdf() {
                         <span className="rp-raw-envelope-message">{reportData.message}</span>
                       )}
                     </div>
- 
+  */}
                     {/* ── Accessibility Dashboard (GET /accessibility/dashboard/{job_id}) ── */}
                     {(dashboardLoading || dashboardData || dashboardError) && (
                       <div className="rp-report-section-block rp-raw-fade-in">
