@@ -942,6 +942,31 @@
 }
 
 /* ─── Header Actions Container ────────────────────────────────── */
+.rp-manual-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  text-decoration: none;
+  transition: var(--transition);
+  cursor: pointer;
+  background: var(--white);
+  color: var(--blue-600);
+  border: 1.5px solid var(--blue-300);
+  box-shadow: 0 1px 3px rgba(37,99,235,0.1);
+  flex-shrink: 0;
+}
+
+.rp-manual-btn:hover {
+  background: var(--blue-50, #eff6ff);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37,99,235,0.2);
+}
+
 .rp-header-actions {
   display: flex;
   align-items: center;

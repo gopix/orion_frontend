@@ -537,10 +537,12 @@ export default function RemediatePdf() {
  
                 {/* ── SECTION 1: File Management & Job Submission ── */}
                 <div className="rp-file-management-section">
-                  <div className="rp-fm-header">
-                    <h3 className="rp-fm-title">Step 1: Upload & Configure</h3>
-                  </div>
- 
+                  {!jobReady && (
+                    <div className="rp-fm-header">
+                      <h3 className="rp-fm-title">Step 1: Upload & Configure</h3>
+                    </div>
+                  )}
+
                   {pdfFile && (
                     <div className="rp-fm-content">
                       <div className="rp-file-card">
@@ -558,63 +560,67 @@ export default function RemediatePdf() {
                           <span className="rp-restart-text">Restart</span>
                         </button>
                       </div>
- 
-                      <div className="rp-controls-row">
-                        <div className="rp-control-group">
-                          <label className="rp-control-label">Mode</label>
-                          <select
-                            value={mode}
-                            onChange={(e) => setMode(e.target.value)}
-                            className="rp-control-select"
+
+                      {!jobReady && (
+                        <>
+                          <div className="rp-controls-row">
+                            <div className="rp-control-group">
+                              <label className="rp-control-label">Mode</label>
+                              <select
+                                value={mode}
+                                onChange={(e) => setMode(e.target.value)}
+                                className="rp-control-select"
+                                disabled={isLockedAfterRun}
+                              >
+                                <option value="auto">Auto</option>
+                                <option value="manual">Manual</option>
+                              </select>
+                            </div>
+
+                            <div className="rp-control-group">
+                              <label className="rp-control-label">Standard</label>
+                              <select
+                                value={standard}
+                                onChange={(e) => setStandard(e.target.value)}
+                                className="rp-control-select"
+                                disabled={isLockedAfterRun}
+                              >
+                                <option value="wcag">WCAG</option>
+                                <option value="pdfua">PDF/UA</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <button
+                            className="rp-submit-btn"
+                            onClick={handleSubmit}
                             disabled={isLockedAfterRun}
+                            title={isLockedAfterRun && !submitting ? "Remove the current file to run a new remediation" : undefined}
                           >
-                            <option value="auto">Auto</option>
-                            <option value="manual">Manual</option>
-                          </select>
-                        </div>
- 
-                        <div className="rp-control-group">
-                          <label className="rp-control-label">Standard</label>
-                          <select
-                            value={standard}
-                            onChange={(e) => setStandard(e.target.value)}
-                            className="rp-control-select"
-                            disabled={isLockedAfterRun}
-                          >
-                            <option value="wcag">WCAG</option>
-                            <option value="pdfua">PDF/UA</option>
-                          </select>
-                        </div>
-                      </div>
- 
-                      <button
-                        className="rp-submit-btn"
-                        onClick={handleSubmit}
-                        disabled={isLockedAfterRun}
-                        title={isLockedAfterRun && !submitting ? "Remove the current file to run a new remediation" : undefined}
-                      >
-                        {submitting ? (
-                          <>
-                            <span className="rp-btn-spin"></span>
-                            Remediating PDF…
-                          </>
-                        ) : jobId ? (
-                          <>
-                            <span className="rp-btn-icon">✓</span>
-                            Remediation Submitted
-                          </>
-                        ) : (
-                          <>
-                            <span className="rp-btn-icon">🚀</span>
-                            Start Remediation
-                          </>
-                        )}
-                      </button>
- 
-                      {isLockedAfterRun && !submitting && (
-                        <p className="rp-rerun-hint">
-                          Remove the current file to remediate a new PDF.
-                        </p>
+                            {submitting ? (
+                              <>
+                                <span className="rp-btn-spin"></span>
+                                Remediating PDF…
+                              </>
+                            ) : jobId ? (
+                              <>
+                                <span className="rp-btn-icon">✓</span>
+                                Remediation Submitted
+                              </>
+                            ) : (
+                              <>
+                                <span className="rp-btn-icon">🚀</span>
+                                Start Remediation
+                              </>
+                            )}
+                          </button>
+
+                          {isLockedAfterRun && !submitting && (
+                            <p className="rp-rerun-hint">
+                              Remove the current file to remediate a new PDF.
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
@@ -635,7 +641,7 @@ export default function RemediatePdf() {
                     <div className="rp-processing-indicator">
                       <div className="rp-processing-spinner"></div>
                       <div className="rp-processing-text">
-                        <p className="rp-processing-title">Processing</p>
+                        <p className="rp-processing-title">Backend Processing</p>
                         <p className="rp-processing-msg">Your PDF is being remediated. This may take a moment...</p>
                       </div>
                     </div>
@@ -768,6 +774,44 @@ export default function RemediatePdf() {
                 {/* ── SECTION 3: View Detailed Results Button (after job is ready) ── */}
                 {jobReady && !showDetailedResults && (
                   <div className="rp-results-section">
+                    <div className="rp-results-action-row">
+                      <button
+                        className="rp-action-btn rp-action-primary"
+                        onClick={handleGetReport}
+                        disabled={reportLoading}
+                      >
+                        {reportLoading ? (
+                          <><span className="rp-btn-spin"></span> Generating Report…</>
+                        ) : (
+                          <><span className="rp-btn-icon">📄</span> Remediation Report</>
+                        )}
+                      </button>
+                      <button
+                        className="rp-action-btn rp-action-vera"
+                        onClick={handleValidateWithVeraPdf}
+                        disabled={veraValidating}
+                      >
+                        {veraValidating ? (
+                          <><span className="rp-btn-spin"></span> Validating…</>
+                        ) : (
+                          <><span className="rp-btn-icon">🔍</span> Validate PDF through VeraPDF</>
+                        )}
+                      </button>
+                      {jobId && (
+                        <button
+                          className="rp-action-btn rp-action-secondary"
+                          onClick={handleDownloadRemediatedPdf}
+                          disabled={downloading}
+                        >
+                          {downloading ? (
+                            <><span className="rp-btn-spin"></span> Preparing Download…</>
+                          ) : (
+                            <><span className="rp-btn-icon">⬇️</span> Download PDF</>
+                          )}
+                        </button>
+                      )}
+                    </div>
+ 
                     <div className="rp-results-header">
                       <h3 className="rp-results-title">Step 3: Detailed Results</h3>
                       <p className="rp-results-desc">
@@ -845,44 +889,6 @@ export default function RemediatePdf() {
                         )}
                       </div>
                     )}
- 
-                    <div className="rp-results-action-row">
-                      <button
-                        className="rp-action-btn rp-action-primary"
-                        onClick={handleGetReport}
-                        disabled={reportLoading}
-                      >
-                        {reportLoading ? (
-                          <><span className="rp-btn-spin"></span> Generating Report…</>
-                        ) : (
-                          <><span className="rp-btn-icon">📄</span> Remediation Report</>
-                        )}
-                      </button>
-                      <button
-                        className="rp-action-btn rp-action-vera"
-                        onClick={handleValidateWithVeraPdf}
-                        disabled={veraValidating}
-                      >
-                        {veraValidating ? (
-                          <><span className="rp-btn-spin"></span> Validating…</>
-                        ) : (
-                          <><span className="rp-btn-icon">🔍</span> Validate PDF through VeraPDF</>
-                        )}
-                      </button>
-                      {jobId && (
-                        <button
-                          className="rp-action-btn rp-action-secondary"
-                          onClick={handleDownloadRemediatedPdf}
-                          disabled={downloading}
-                        >
-                          {downloading ? (
-                            <><span className="rp-btn-spin"></span> Preparing Download…</>
-                          ) : (
-                            <><span className="rp-btn-icon">⬇️</span> Download PDF</>
-                          )}
-                        </button>
-                      )}
-                    </div>
  
                     {reportError && (
                       <div className="rp-error-banner" style={{ marginTop: 16 }}>
@@ -1025,13 +1031,24 @@ export default function RemediatePdf() {
                           PDF/UA + WCAG accessibility
                         </p>
                       </div>
-                      <button
-                        className="rp-close-results-btn"
-                        onClick={() => setReportData(null)}
-                        title="Close report"
-                      >
-                        ✕
-                      </button>
+                      <div className="rp-report-header-actions">
+                        <a
+                          className="rp-manual-btn"
+                          href="/docs/Remediation_KPI_Methodology.pdf"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Learn how these results are calculated"
+                        >
+                          <span className="rp-btn-icon">📖</span> Remediation KPI Methodology
+                        </a>
+                        <button
+                          className="rp-close-results-btn"
+                          onClick={() => setReportData(null)}
+                          title="Close report"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
  
                     {/* ── API Envelope: response_code / message ── */}
@@ -1044,8 +1061,8 @@ export default function RemediatePdf() {
                       {reportData.message && (
                         <span className="rp-raw-envelope-message">{reportData.message}</span>
                       )}
-                    </div>
-  */}
+                    </div> */}
+ 
                     {/* ── Accessibility Dashboard (GET /accessibility/dashboard/{job_id}) ── */}
                     {(dashboardLoading || dashboardData || dashboardError) && (
                       <div className="rp-report-section-block rp-raw-fade-in">
@@ -1144,20 +1161,6 @@ export default function RemediatePdf() {
                             <span className="rp-raw-meta-value rp-raw-meta-mono">{reportData.data.job_id}</span>
                           </div>
                         )}
-                        {reportData.data.status !== undefined && (
-                          <div className="rp-raw-meta-card">
-                            <span className="rp-raw-meta-label">Status</span>
-                            <span className={`rp-raw-status-pill rp-raw-status-${String(reportData.data.status).toLowerCase()}`}>
-                              {reportData.data.status}
-                            </span>
-                          </div>
-                        )}
-                        {reportData.data.created_at !== undefined && (
-                          <div className="rp-raw-meta-card">
-                            <span className="rp-raw-meta-label">Created At</span>
-                            <span className="rp-raw-meta-value">{reportData.data.created_at}</span>
-                          </div>
-                        )}
                         {reportData.data.document && reportData.data.document.name !== undefined && (
                           <div className="rp-raw-meta-card">
                             <span className="rp-raw-meta-label">Document</span>
@@ -1233,12 +1236,6 @@ export default function RemediatePdf() {
                             <div className="rp-raw-stat-card rp-raw-stat-remaining">
                               <span className="rp-raw-stat-value">{reportData.data.result_summary.issues_remaining}</span>
                               <span className="rp-raw-stat-label">Issues Remaining</span>
-                            </div>
-                          )}
-                          {reportData.data.result_summary.save_success !== undefined && (
-                            <div className={`rp-raw-stat-card ${reportData.data.result_summary.save_success ? "rp-raw-stat-save-ok" : "rp-raw-stat-save-fail"}`}>
-                              <span className="rp-raw-stat-value">{reportData.data.result_summary.save_success ? "Yes" : "No"}</span>
-                              <span className="rp-raw-stat-label">Save Success</span>
                             </div>
                           )}
                           {reportData.data.result_summary.total_duration_ms !== undefined && (
