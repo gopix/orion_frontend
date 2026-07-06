@@ -1,4 +1,5 @@
 
+
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { orionRemediatePdf, getRemediationStatus, downloadRemediatedPdf, getRemediationReport, validatePdf, getAccessibilityDashboard } from "../../services/apiServices";
@@ -455,10 +456,10 @@ export default function RemediatePdf() {
             <span className="rp-nav-icon">✅</span>
             <span>Validate PDF</span>
           </div>
-          <div className="rp-nav-item" onClick={() => navigate("/template")}>
+          {/* <div className="rp-nav-item" onClick={() => navigate("/template")}>
             <span className="rp-nav-icon">📋</span>
             <span>Template</span>
-          </div>
+          </div> */}
         </nav>
  
         <div className="rp-sidebar-footer">
@@ -483,7 +484,7 @@ export default function RemediatePdf() {
             <section className="rp-upload-section">
               <div className="rp-upload-wrapper">
                 <div className="rp-upload-icon">📥</div>
-                <h1 className="rp-upload-title">Upload PDF For Remediation</h1>
+                <h1 className="rp-upload-title"> Remediatiate PDF</h1>
                 
                 <div
                   className={`rp-drop-zone ${dragOver ? "rp-drag-over" : ""}`}
@@ -495,7 +496,7 @@ export default function RemediatePdf() {
                   <div className="rp-drop-content">
                     <div className="rp-drop-icon">📁</div>
                     <p className="rp-drop-text">Drop your PDF here</p>
-                    <p className="rp-drop-subtext">or <strong>click to select</strong></p>
+                    
                   </div>
                 </div>
  
@@ -521,15 +522,7 @@ export default function RemediatePdf() {
           ) : (
             <section className="rp-work-section">
               <div className="rp-work-container">
-                {/* ── STATUS BADGE ROW ─────────────────────────── */}
-                {chip && (
-                  <div className="rp-status-badge-row">
-                    <div className={`rp-status-chip ${chip.cls}`}>
-                      <span className={`rp-status-dot ${chip.dot}`}></span>
-                      <span className="rp-status-text">{chip.text}</span>
-                    </div>
-                  </div>
-                )}
+                {/* ── STATUS BADGE ROW (removed per request) ──── */}
  
                 {/* ──────────────────────────────────────────────────
                     FLOW: PDF Upload → Check Job Status → Detailed Results (INLINE)
@@ -641,7 +634,7 @@ export default function RemediatePdf() {
                     <div className="rp-processing-indicator">
                       <div className="rp-processing-spinner"></div>
                       <div className="rp-processing-text">
-                        <p className="rp-processing-title">Backend Processing</p>
+                        <p className="rp-processing-title"> Processing</p>
                         <p className="rp-processing-msg">Your PDF is being remediated. This may take a moment...</p>
                       </div>
                     </div>
@@ -726,16 +719,13 @@ export default function RemediatePdf() {
                           </div>
                         )}
  
-                        {/* Duration and Timestamp */}
-                        {statusData.data && (
+                        {/* Duration and Timestamp (only render when there is data, to avoid an empty box) */}
+                        {statusData.data && statusData.data.total_duration_ms && (
                           <div className="rp-status-metadata">
-                            {statusData.data.total_duration_ms && (
-                              <div className="rp-metadata-item">
-                                <span className="rp-metadata-label">Duration</span>
-                                <span className="rp-metadata-value">{statusData.data.total_duration_ms}ms</span>
-                              </div>
-                            )}
- 
+                            <div className="rp-metadata-item">
+                              <span className="rp-metadata-label">Duration</span>
+                              <span className="rp-metadata-value">{statusData.data.total_duration_ms}ms</span>
+                            </div>
                           </div>
                         )}
  
@@ -875,16 +865,13 @@ export default function RemediatePdf() {
                           </div>
                         )}
  
-                        {/* Duration and Timestamp */}
-                        {statusData.data && (
+                        {/* Duration and Timestamp (only render when there is data, to avoid an empty box) */}
+                        {statusData.data && statusData.data.total_duration_ms && (
                           <div className="rp-status-metadata">
-                            {statusData.data.total_duration_ms && (
-                              <div className="rp-metadata-item">
-                                <span className="rp-metadata-label">Duration</span>
-                                <span className="rp-metadata-value">{statusData.data.total_duration_ms}ms</span>
-                              </div>
-                            )}
- 
+                            <div className="rp-metadata-item">
+                              <span className="rp-metadata-label">Duration</span>
+                              <span className="rp-metadata-value">{statusData.data.total_duration_ms}ms</span>
+                            </div>
                           </div>
                         )}
                       </div>

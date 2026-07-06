@@ -192,10 +192,10 @@ export default function ValidatePdf() {
             <span>Validate PDF</span>
             <span className="vp-nav-dot"></span>
           </div>
-          <div className="vp-nav-item" onClick={() => navigate("/template")}>
+          {/* <div className="vp-nav-item" onClick={() => navigate("/template")}>
             <span className="vp-nav-icon">📋</span>
             <span>Template</span>
-          </div>
+          </div> */}
         </nav>
         <div className="vp-sidebar-footer">
           <div className="vp-user-section">
