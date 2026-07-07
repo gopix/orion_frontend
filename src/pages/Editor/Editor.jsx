@@ -1,3 +1,7 @@
+
+
+
+
 // import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import "./Editor.css";
@@ -115,10 +119,16 @@
 //         </nav>
 
 //         <div className="editor-sidebar-footer">
-//           <button className="editor-help-btn">
-//             <span>?</span>
-//           </button>
-//           <p className="editor-help-text">Need help?</p>
+//           <div className="editor-user-section">
+//             <p className="editor-user-email">{sessionStorage.getItem("userEmail")}</p>
+//             <button 
+//               className="editor-back-btn"
+//               onClick={() => navigate("/")}
+//               title="Back to Home"
+//             >
+//               ← Back
+//             </button>
+//           </div>
 //         </div>
 //       </aside>
 
@@ -269,6 +279,12 @@
 
 
 
+
+
+
+
+
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Editor.css";
@@ -378,6 +394,10 @@ export default function Editor() {
             <span className="editor-nav-icon">📝</span>
             <span>Editor+</span>
             <span className="editor-nav-dot"></span>
+          </div>
+          <div className="editor-nav-item" onClick={() => navigate("/publish")}>
+            <span className="editor-nav-icon">📚</span>
+            <span>Publish+</span>
           </div>
           <div className="editor-nav-item" onClick={() => navigate("/remediate-pdf")}>
             <span className="editor-nav-icon">🔧</span>

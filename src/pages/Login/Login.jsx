@@ -1,4 +1,6 @@
 
+
+
 // import "./Login.css";
 // import { useNavigate, useSearchParams } from "react-router-dom";
 // import { useState } from "react";
@@ -33,6 +35,7 @@
 
 //     if (result.id) {
 //       sessionStorage.setItem("token", result.id);
+//       sessionStorage.setItem("userEmail", result.email);
       
 //       // Route based on card selection
 //       if (cardIndex === "0") {
@@ -111,6 +114,20 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import "./Login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
@@ -155,9 +172,8 @@ function Login() {
         // Card 1 (Editor+) goes to editor page
         navigate("/editor");
       } else if (cardIndex === "2") {
-        // Card 2 (Publish+) - feature not live yet
-        alert("Dashboard coming soon!");
-        navigate("/");
+        // Card 2 (Publish+) goes to publish dashboard
+        navigate("/publish");
       } else if (cardIndex === "3") {
         // Card 3 (Accessibility Remediation) goes to remediate-pdf
         navigate("/remediate-pdf");

@@ -1,3 +1,4 @@
+
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import "./Submit.css";
@@ -113,10 +114,16 @@
 //         </nav>
 
 //         <div className="submit-sidebar-footer">
-//           <button className="submit-help-btn">
-//             <span>?</span>
-//           </button>
-//           <p className="submit-help-text">Need help?</p>
+//           <div className="submit-user-section">
+//             <p className="submit-user-email">{sessionStorage.getItem("userEmail")}</p>
+//             <button 
+//               className="submit-back-btn"
+//               onClick={() => navigate("/")}
+//               title="Back to Home"
+//             >
+//               ← Back
+//             </button>
+//           </div>
 //         </div>
 //       </aside>
 
@@ -314,6 +321,11 @@
 
 
 
+
+
+
+
+
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Submit.css";
@@ -421,6 +433,10 @@ export default function Submit() {
           <div className="submit-nav-item" onClick={() => navigate("/editor")}>
             <span className="submit-nav-icon">📝</span>
             <span>Editor+</span>
+          </div>
+          <div className="submit-nav-item" onClick={() => navigate("/publish")}>
+            <span className="submit-nav-icon">📚</span>
+            <span>Publish+</span>
           </div>
           <div className="submit-nav-item" onClick={() => navigate("/remediate-pdf")}>
             <span className="submit-nav-icon">🔧</span>
