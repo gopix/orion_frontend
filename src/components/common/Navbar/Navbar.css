@@ -53,20 +53,125 @@
   white-space: nowrap;
 }
 
+/* Fancy icon-first logout button: a circular icon pill that expands to
+   reveal the label on hover, with the arrow animating "out the door". */
 .navbar-logout-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 42px;
+  height: 42px;
+  padding: 0;
   background: #ffffff;
   border: 1px solid #dbe6fb;
   border-radius: 999px;
-  padding: 8px 18px;
-  font-size: clamp(11px, 1.4vw, 13px);
-  font-weight: 600;
   color: #1e3a8a;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.25s ease, color 0.25s ease, border-color 0.25s ease,
+    box-shadow 0.25s ease, transform 0.15s ease;
+}
+
+.navbar-logout-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(30, 58, 138, 0.35);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .navbar-logout-btn:hover {
+  width: 128px;
+  padding: 0 16px 0 12px;
+  justify-content: flex-start;
+  gap: 8px;
   background: #1e3a8a;
   color: #ffffff;
   border-color: #1e3a8a;
+  box-shadow: 0 8px 18px rgba(30, 58, 138, 0.25);
+}
+
+.navbar-logout-btn:hover::before {
+  animation: logoutPulse 0.7s ease-out;
+}
+
+.navbar-logout-btn:active {
+  transform: scale(0.94);
+}
+
+.logout-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.logout-icon {
+  width: 20px;
+  height: 20px;
+  overflow: visible;
+}
+
+.logout-icon-door {
+  transition: transform 0.3s ease;
+  transform-origin: 9px 12px;
+}
+
+.logout-icon-arrow {
+  transition: transform 0.3s ease;
+}
+
+.navbar-logout-btn:hover .logout-icon-arrow {
+  transform: translateX(2.5px);
+}
+
+.navbar-logout-btn:hover .logout-icon-door {
+  transform: rotateY(35deg);
+}
+
+.logout-label {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: clamp(11px, 1.4vw, 13px);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease 0.08s;
+}
+
+.navbar-logout-btn:hover .logout-label {
+  max-width: 70px;
+  opacity: 1;
+}
+
+@keyframes logoutPulse {
+  0% {
+    opacity: 0.45;
+    box-shadow: 0 0 0 0 rgba(30, 58, 138, 0.35);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 14px rgba(30, 58, 138, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar-logout-btn,
+  .navbar-logout-btn::before,
+  .logout-icon-door,
+  .logout-icon-arrow,
+  .logout-label {
+    transition: none;
+    animation: none;
+  }
 }
