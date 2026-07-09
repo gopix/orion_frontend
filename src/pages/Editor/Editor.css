@@ -630,3 +630,619 @@
   background: rgba(59,130,246,0.3);
   color: #fff;
 }
+
+/* ══════════════════════════════════════════════════════════
+   EDITOR+ — Copy Editing Tool extensions
+   (Customer / Project / Template / User / Features /
+   Abbreviations / Copy Edit)
+   Reuses the same design tokens as the rest of the app so
+   colors, radii and shadows stay identical to Publish+.
+   ══════════════════════════════════════════════════════════ */
+
+/* ─── Header (matches Publish+ header) ───────────────────────*/
+.publish-header {
+  margin-bottom: 28px;
+}
+
+.publish-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--slate-900);
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+}
+
+.publish-subtitle {
+  font-size: 13.5px;
+  color: var(--slate-500);
+}
+
+/* ── Main section tabs ───────────────────────────────────── */
+.pt-maintabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--slate-200);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.pt-maintab {
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--slate-500);
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+}
+
+.pt-maintab:hover {
+  color: var(--slate-900);
+}
+
+.pt-maintab.active {
+  color: var(--blue-600);
+}
+
+.pt-maintab.active::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--blue-600);
+  border-radius: 2px;
+}
+
+/* ── Card shell around each feature section ─────────────── */
+.pt-card {
+  background: var(--white);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.pt-panel {
+  padding: 22px 24px 24px;
+}
+
+.pt-mt-16 {
+  margin-top: 16px;
+}
+
+/* ── Sub tabs (List / Add-Update) ────────────────────────── */
+.pt-subtabs {
+  display: flex;
+  gap: 4px;
+  padding: 16px 24px 0;
+  border-bottom: 1px solid var(--slate-200);
+  flex-wrap: wrap;
+}
+
+.pt-subtab {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--slate-500);
+  background: none;
+  border: none;
+  padding: 8px 4px 12px;
+  margin-right: 22px;
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+}
+
+.pt-subtab:hover {
+  color: var(--slate-900);
+}
+
+.pt-subtab.active {
+  color: var(--blue-600);
+}
+
+.pt-subtab.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--blue-600);
+  border-radius: 2px;
+}
+
+/* ── Search box ───────────────────────────────────────────── */
+.pt-search-block {
+  margin-bottom: 18px;
+}
+
+.pt-search-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--slate-700);
+  margin-bottom: 8px;
+}
+
+.pt-search-input-wrap {
+  position: relative;
+  max-width: 480px;
+}
+
+.pt-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  opacity: 0.55;
+}
+
+.pt-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 34px;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--slate-700);
+  background: var(--slate-50);
+  transition: var(--transition);
+}
+
+.pt-search-input:focus {
+  outline: none;
+  border-color: var(--blue-400);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+
+/* ── Tables ───────────────────────────────────────────────── */
+.pt-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+}
+
+.pt-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.pt-table thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--slate-500);
+  background: var(--slate-100);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--slate-200);
+  white-space: nowrap;
+}
+
+.pt-table tbody td {
+  padding: 13px 14px;
+  font-size: 13px;
+  color: var(--slate-700);
+  border-bottom: 1px solid var(--slate-100);
+  white-space: nowrap;
+}
+
+.pt-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pt-table tbody tr:hover {
+  background: var(--slate-50);
+}
+
+.pt-cell-strong {
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.pt-cell-truncate {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pt-cell-link {
+  color: var(--blue-600);
+  font-weight: 600;
+}
+
+.pt-col-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pt-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: var(--radius-xs);
+  transition: var(--transition);
+}
+
+.pt-icon-btn:hover {
+  background: var(--slate-100);
+}
+
+.pt-empty-row {
+  text-align: center;
+  color: var(--slate-400);
+  font-size: 13px;
+  padding: 28px 14px !important;
+  white-space: normal !important;
+}
+
+.pt-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.pt-sortable:hover {
+  color: var(--blue-600);
+}
+
+/* ── Status badges ────────────────────────────────────────── */
+.pt-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pt-badge-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.pt-badge-inactive {
+  background: #fee2e2;
+  color: var(--red-600);
+}
+
+.pt-badge-pending {
+  background: #fef3c7;
+  color: var(--amber-600);
+}
+
+.pt-badge-progress {
+  background: var(--blue-100);
+  color: var(--blue-600);
+}
+
+/* ── Pagination bar ───────────────────────────────────────── */
+.pt-pagination {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: var(--slate-500);
+}
+
+.pt-page-btn {
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--slate-700);
+  background: var(--white);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-xs);
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.pt-page-btn:hover:not(:disabled) {
+  background: var(--slate-100);
+}
+
+.pt-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pt-page-btn-next {
+  margin-left: auto;
+}
+
+.pt-page-info {
+  font-weight: 600;
+  color: var(--slate-700);
+}
+
+.pt-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--slate-200);
+}
+
+.pt-rows-select select {
+  margin-left: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-xs);
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--slate-700);
+  background: var(--white);
+}
+
+.pt-records-info {
+  color: var(--slate-500);
+}
+
+/* ── Forms (Add/Update Customer, Project, Template, User…) ── */
+.pt-form-card {
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.pt-form-idbar {
+  background: var(--slate-50);
+  padding: 14px 20px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--slate-700);
+  border-bottom: 1px solid var(--slate-200);
+}
+
+.pt-form-idbar span {
+  font-weight: 500;
+  color: var(--slate-500);
+}
+
+.pt-form-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pt-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.pt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pt-field label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--slate-700);
+}
+
+.pt-required {
+  color: var(--red-600);
+}
+
+.pt-field input[type="text"],
+.pt-field input[type="email"],
+.pt-field select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--slate-700);
+  background: var(--white);
+  transition: var(--transition);
+}
+
+.pt-field input::placeholder {
+  color: var(--slate-400);
+}
+
+.pt-field input:focus,
+.pt-field select:focus {
+  outline: none;
+  border-color: var(--blue-400);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+
+.pt-field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  padding-right: 34px;
+}
+
+.pt-input-icon-wrap {
+  position: relative;
+}
+
+.pt-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.pt-input-icon-wrap input {
+  padding-left: 34px !important;
+}
+
+.pt-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  background: var(--slate-50);
+  border-top: 1px solid var(--slate-200);
+}
+
+.pt-form-footer-split {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pt-form-footer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.pt-file-chip {
+  margin-left: 12px;
+  font-size: 12px;
+  color: var(--slate-500);
+  font-weight: 600;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.pt-btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid transparent;
+}
+
+.pt-btn-primary {
+  background: var(--blue-600);
+  color: var(--white);
+}
+
+.pt-btn-primary:hover:not(:disabled) {
+  background: var(--blue-500);
+}
+
+.pt-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pt-btn-outline {
+  background: var(--white);
+  color: var(--slate-700);
+  border-color: var(--slate-200);
+}
+
+.pt-btn-outline:hover {
+  background: var(--slate-100);
+}
+
+/* ── Copy Editor toolbar ──────────────────────────────────── */
+.pt-copyedit-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.pt-inline-field {
+  min-width: 200px;
+}
+
+.pt-copyedit-filters {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.pt-copyedit-filters .pt-search-block {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 240px;
+}
+
+.pt-status-filter {
+  min-width: 190px;
+}
+
+/* ── Template design gallery (3 new template layouts) ────── */
+.pt-design-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.pt-design-card {
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--slate-50);
+}
+
+.pt-design-card:hover {
+  border-color: var(--blue-300);
+  background: var(--blue-50);
+}
+
+.pt-design-card.active {
+  border-color: var(--blue-500);
+  background: var(--blue-50);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+
+.pt-design-icon {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.pt-design-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin-bottom: 4px;
+}
+
+.pt-design-desc {
+  font-size: 11.5px;
+  color: var(--slate-500);
+  line-height: 1.4;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .pt-field-row {
+    grid-template-columns: 1fr;
+  }
+  .pt-copyedit-toolbar,
+  .pt-copyedit-filters {
+    justify-content: flex-start;
+  }
+  .pt-design-grid {
+    grid-template-columns: 1fr;
+  }
+}
