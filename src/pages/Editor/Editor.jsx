@@ -1,4 +1,5 @@
 
+
 // import { useMemo, useRef, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import "./Editor.css";
@@ -127,6 +128,56 @@
 //     </div>
 //   );
 // }
+
+// /* ── Minimal line icons for the section nav (no emoji, stroke-based) ── */
+// const iconProps = {
+//   viewBox: "0 0 24 24",
+//   fill: "none",
+//   stroke: "currentColor",
+//   strokeWidth: 1.8,
+//   strokeLinecap: "round",
+//   strokeLinejoin: "round",
+// };
+
+// const IconCustomers = () => (
+//   <svg {...iconProps}>
+//     <circle cx="9" cy="8" r="3.2" />
+//     <path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
+//     <path d="M16 8.2c1.3.3 2.3 1.4 2.3 2.8 0 1.3-.9 2.4-2.1 2.8" />
+//     <path d="M15.5 14.2c2.3.4 4 2.1 4 4.3" />
+//   </svg>
+// );
+
+// const IconProjects = () => (
+//   <svg {...iconProps}>
+//     <path d="M3.5 7.2c0-.7.6-1.2 1.3-1.2H9l1.8 2h8.4c.7 0 1.3.5 1.3 1.2v9.1c0 .7-.6 1.3-1.3 1.3H4.8c-.7 0-1.3-.6-1.3-1.3z" />
+//   </svg>
+// );
+
+// const IconTemplates = () => (
+//   <svg {...iconProps}>
+//     <circle cx="12" cy="12" r="8.2" />
+//     <circle cx="12" cy="8.3" r="1.15" fill="currentColor" stroke="none" />
+//     <circle cx="15.6" cy="12.3" r="1.15" fill="currentColor" stroke="none" />
+//     <circle cx="9.2" cy="14.6" r="1.15" fill="currentColor" stroke="none" />
+//   </svg>
+// );
+
+// const IconUsers = () => (
+//   <svg {...iconProps}>
+//     <circle cx="8.3" cy="7.6" r="3" />
+//     <path d="M2.8 18.3c0-2.9 2.4-4.9 5.5-4.9s5.5 2 5.5 4.9" />
+//     <path d="M16.3 6.4a2.9 2.9 0 010 5.6" />
+//     <path d="M15.7 13.6c2.3.4 3.9 2.1 3.9 4.4" />
+//   </svg>
+// );
+
+// const IconCopyEdit = () => (
+//   <svg {...iconProps}>
+//     <path d="M14.2 4.3l5.3 5.3-9.8 9.8-5.8 1 1-5.8z" />
+//     <path d="M12.6 5.9l5.3 5.3" />
+//   </svg>
+// );
 
 // /* ════════════════════════════════════════════════════════════
 //    CUSTOMERS SECTION
@@ -479,7 +530,17 @@
 //   { key: "compact", name: "Compact Layout", icon: "📘", desc: "Condensed layout optimized for EPUB & mobile reading." },
 // ];
 
-// function TemplatesSection({ templates, setTemplates, projects }) {
+// function TemplatesSection({
+//   templates,
+//   setTemplates,
+//   projects,
+//   features,
+//   setFeatures,
+//   featureGroups,
+//   setFeatureGroups,
+//   abbreviations,
+//   setAbbreviations,
+// }) {
 //   const emptyForm = {
 //     id: null,
 //     name: "",
@@ -568,6 +629,8 @@
 //         tabs={[
 //           { key: "list", label: "Templates List" },
 //           { key: "form", label: "Add New Template" },
+//           { key: "features", label: "Features" },
+//           { key: "abbreviations", label: "Abbreviations" },
 //         ]}
 //         active={subTab}
 //         onChange={(k) => {
@@ -722,6 +785,19 @@
 //             </div>
 //           </div>
 //         </div>
+//       )}
+
+//       {subTab === "features" && (
+//         <FeaturesSection
+//           features={features}
+//           setFeatures={setFeatures}
+//           featureGroups={featureGroups}
+//           setFeatureGroups={setFeatureGroups}
+//         />
+//       )}
+
+//       {subTab === "abbreviations" && (
+//         <AbbreviationsSection abbreviations={abbreviations} setAbbreviations={setAbbreviations} />
 //       )}
 //     </div>
 //   );
@@ -1502,14 +1578,44 @@
 //   const [files, setFiles] = useState(seedFiles);
 
 //   const mainTabs = [
-//     { key: "customers", label: "Customer" },
-//     { key: "projects", label: "Project" },
-//     { key: "templates", label: "Template" },
-//     { key: "users", label: "User" },
-//     { key: "features", label: "Features" },
-//     { key: "abbreviations", label: "Abbreviations" },
-//     { key: "copyedit", label: "Copy Edit" },
+//     {
+//       key: "customers",
+//       label: "Customer",
+//       desc: "Accounts & contacts",
+//       Icon: IconCustomers,
+//       count: customers.length,
+//     },
+//     {
+//       key: "projects",
+//       label: "Project",
+//       desc: "Active engagements",
+//       Icon: IconProjects,
+//       count: projects.length,
+//     },
+//     {
+//       key: "templates",
+//       label: "Template",
+//       desc: "Layouts & features",
+//       Icon: IconTemplates,
+//       count: templates.length,
+//     },
+//     {
+//       key: "users",
+//       label: "User",
+//       desc: "Team & roles",
+//       Icon: IconUsers,
+//       count: users.length,
+//     },
+//     {
+//       key: "copyedit",
+//       label: "Copy Edit",
+//       desc: "Files in review",
+//       Icon: IconCopyEdit,
+//       count: files.length,
+//     },
 //   ];
+
+//   const activeIndex = Math.max(0, mainTabs.findIndex((t) => t.key === activeTab));
 
 //   return (
 //     <div className="editor-page">
@@ -1564,101 +1670,69 @@
 //             </p>
 //           </div>
 
-//           {/* ── Main section tabs ─────────────────────────────── */}
-//           <div className="pt-maintabs">
-//             {mainTabs.map((t) => (
-//               <button
-//                 key={t.key}
-//                 type="button"
-//                 className={`pt-maintab ${activeTab === t.key ? "active" : ""}`}
-//                 onClick={() => setActiveTab(t.key)}
-//               >
-//                 {t.label}
-//               </button>
-//             ))}
+//           {/* ── Main section selector — segmented control ─────── */}
+//           <div className="pt-segmented" role="tablist">
+//             <div
+//               className="pt-segmented-indicator"
+//               style={{
+//                 width: `calc(100% / ${mainTabs.length})`,
+//                 transform: `translateX(${activeIndex * 100}%)`,
+//               }}
+//             />
+//             {mainTabs.map((t) => {
+//               const { Icon } = t;
+//               return (
+//                 <button
+//                   key={t.key}
+//                   type="button"
+//                   role="tab"
+//                   aria-selected={activeTab === t.key}
+//                   className={`pt-segment ${activeTab === t.key ? "active" : ""}`}
+//                   onClick={() => setActiveTab(t.key)}
+//                 >
+//                   <span className="pt-segment-icon"><Icon /></span>
+//                   <span className="pt-segment-text">
+//                     <span className="pt-segment-label">{t.label}</span>
+//                     <span className="pt-segment-desc">{t.desc}</span>
+//                   </span>
+//                   <span className="pt-segment-count">{t.count}</span>
+//                 </button>
+//               );
+//             })}
 //           </div>
 
-//           {activeTab === "customers" && <CustomersSection customers={customers} setCustomers={setCustomers} />}
+//           <div className="pt-section-content" key={activeTab}>
+//             {activeTab === "customers" && <CustomersSection customers={customers} setCustomers={setCustomers} />}
 
-//           {activeTab === "projects" && (
-//             <ProjectsSection projects={projects} setProjects={setProjects} customers={customers} />
-//           )}
+//             {activeTab === "projects" && (
+//               <ProjectsSection projects={projects} setProjects={setProjects} customers={customers} />
+//             )}
 
-//           {activeTab === "templates" && (
-//             <TemplatesSection templates={templates} setTemplates={setTemplates} projects={projects} />
-//           )}
+//             {activeTab === "templates" && (
+//               <TemplatesSection
+//                 templates={templates}
+//                 setTemplates={setTemplates}
+//                 projects={projects}
+//                 features={features}
+//                 setFeatures={setFeatures}
+//                 featureGroups={featureGroups}
+//                 setFeatureGroups={setFeatureGroups}
+//                 abbreviations={abbreviations}
+//                 setAbbreviations={setAbbreviations}
+//               />
+//             )}
 
-//           {activeTab === "users" && <UsersSection users={users} setUsers={setUsers} />}
+//             {activeTab === "users" && <UsersSection users={users} setUsers={setUsers} />}
 
-//           {activeTab === "features" && (
-//             <FeaturesSection
-//               features={features}
-//               setFeatures={setFeatures}
-//               featureGroups={featureGroups}
-//               setFeatureGroups={setFeatureGroups}
-//             />
-//           )}
-
-//           {activeTab === "abbreviations" && (
-//             <AbbreviationsSection abbreviations={abbreviations} setAbbreviations={setAbbreviations} />
-//           )}
-
-//           {activeTab === "copyedit" && (
-//             <CopyEditorSection files={files} setFiles={setFiles} projects={projects} templates={templates} />
-//           )}
+//             {activeTab === "copyedit" && (
+//               <CopyEditorSection files={files} setFiles={setFiles} projects={projects} templates={templates} />
+//             )}
+//           </div>
 //         </div>
 //       </main>
 //     </div>
 //   );
 // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 import { useMemo, useRef, useState } from "react";
@@ -1789,6 +1863,56 @@ function SubTabs({ tabs, active, onChange }) {
     </div>
   );
 }
+
+/* ── Minimal line icons for the section nav (no emoji, stroke-based) ── */
+const iconProps = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.8,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+};
+
+const IconCustomers = () => (
+  <svg {...iconProps}>
+    <circle cx="9" cy="8" r="3.2" />
+    <path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
+    <path d="M16 8.2c1.3.3 2.3 1.4 2.3 2.8 0 1.3-.9 2.4-2.1 2.8" />
+    <path d="M15.5 14.2c2.3.4 4 2.1 4 4.3" />
+  </svg>
+);
+
+const IconProjects = () => (
+  <svg {...iconProps}>
+    <path d="M3.5 7.2c0-.7.6-1.2 1.3-1.2H9l1.8 2h8.4c.7 0 1.3.5 1.3 1.2v9.1c0 .7-.6 1.3-1.3 1.3H4.8c-.7 0-1.3-.6-1.3-1.3z" />
+  </svg>
+);
+
+const IconTemplates = () => (
+  <svg {...iconProps}>
+    <circle cx="12" cy="12" r="8.2" />
+    <circle cx="12" cy="8.3" r="1.15" fill="currentColor" stroke="none" />
+    <circle cx="15.6" cy="12.3" r="1.15" fill="currentColor" stroke="none" />
+    <circle cx="9.2" cy="14.6" r="1.15" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const IconUsers = () => (
+  <svg {...iconProps}>
+    <circle cx="8.3" cy="7.6" r="3" />
+    <path d="M2.8 18.3c0-2.9 2.4-4.9 5.5-4.9s5.5 2 5.5 4.9" />
+    <path d="M16.3 6.4a2.9 2.9 0 010 5.6" />
+    <path d="M15.7 13.6c2.3.4 3.9 2.1 3.9 4.4" />
+  </svg>
+);
+
+const IconCopyEdit = () => (
+  <svg {...iconProps}>
+    <path d="M14.2 4.3l5.3 5.3-9.8 9.8-5.8 1 1-5.8z" />
+    <path d="M12.6 5.9l5.3 5.3" />
+  </svg>
+);
 
 /* ════════════════════════════════════════════════════════════
    CUSTOMERS SECTION
@@ -3189,12 +3313,44 @@ export default function Editor() {
   const [files, setFiles] = useState(seedFiles);
 
   const mainTabs = [
-    { key: "customers", label: "Customer" },
-    { key: "projects", label: "Project" },
-    { key: "templates", label: "Template" },
-    { key: "users", label: "User" },
-    { key: "copyedit", label: "Copy Edit" },
+    {
+      key: "customers",
+      label: "Customer",
+      desc: "Accounts & contacts",
+      Icon: IconCustomers,
+      count: customers.length,
+    },
+    {
+      key: "projects",
+      label: "Project",
+      desc: "Active engagements",
+      Icon: IconProjects,
+      count: projects.length,
+    },
+    {
+      key: "templates",
+      label: "Template",
+      desc: "Layouts & features",
+      Icon: IconTemplates,
+      count: templates.length,
+    },
+    {
+      key: "users",
+      label: "User",
+      desc: "Team & roles",
+      Icon: IconUsers,
+      count: users.length,
+    },
+    {
+      key: "copyedit",
+      label: "Copy Edit",
+      desc: "Files in review",
+      Icon: IconCopyEdit,
+      count: files.length,
+    },
   ];
+
+  const activeIndex = Math.max(0, mainTabs.findIndex((t) => t.key === activeTab));
 
   return (
     <div className="editor-page">
@@ -3249,45 +3405,65 @@ export default function Editor() {
             </p>
           </div>
 
-          {/* ── Main section tabs ─────────────────────────────── */}
-          <div className="pt-maintabs">
-            {mainTabs.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                className={`pt-maintab ${activeTab === t.key ? "active" : ""}`}
-                onClick={() => setActiveTab(t.key)}
-              >
-                {t.label}
-              </button>
-            ))}
+          {/* ── Main section selector — segmented control ─────── */}
+          <div className="pt-segmented" role="tablist">
+            <div
+              className="pt-segmented-indicator"
+              style={{
+                width: `calc(100% / ${mainTabs.length})`,
+                transform: `translateX(${activeIndex * 100}%)`,
+              }}
+            />
+            {mainTabs.map((t, i) => {
+              const { Icon } = t;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === t.key}
+                  className={`pt-segment ${activeTab === t.key ? "active" : ""}`}
+                  style={{ "--i": i }}
+                  onClick={() => setActiveTab(t.key)}
+                >
+                  <span className="pt-segment-icon"><Icon /></span>
+                  <span className="pt-segment-text">
+                    <span className="pt-segment-label">{t.label}</span>
+                    <span className="pt-segment-desc">{t.desc}</span>
+                  </span>
+                  <span className="pt-segment-count">{t.count}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {activeTab === "customers" && <CustomersSection customers={customers} setCustomers={setCustomers} />}
+          <div className="pt-section-content" key={activeTab}>
+            {activeTab === "customers" && <CustomersSection customers={customers} setCustomers={setCustomers} />}
 
-          {activeTab === "projects" && (
-            <ProjectsSection projects={projects} setProjects={setProjects} customers={customers} />
-          )}
+            {activeTab === "projects" && (
+              <ProjectsSection projects={projects} setProjects={setProjects} customers={customers} />
+            )}
 
-          {activeTab === "templates" && (
-            <TemplatesSection
-              templates={templates}
-              setTemplates={setTemplates}
-              projects={projects}
-              features={features}
-              setFeatures={setFeatures}
-              featureGroups={featureGroups}
-              setFeatureGroups={setFeatureGroups}
-              abbreviations={abbreviations}
-              setAbbreviations={setAbbreviations}
-            />
-          )}
+            {activeTab === "templates" && (
+              <TemplatesSection
+                templates={templates}
+                setTemplates={setTemplates}
+                projects={projects}
+                features={features}
+                setFeatures={setFeatures}
+                featureGroups={featureGroups}
+                setFeatureGroups={setFeatureGroups}
+                abbreviations={abbreviations}
+                setAbbreviations={setAbbreviations}
+              />
+            )}
 
-          {activeTab === "users" && <UsersSection users={users} setUsers={setUsers} />}
+            {activeTab === "users" && <UsersSection users={users} setUsers={setUsers} />}
 
-          {activeTab === "copyedit" && (
-            <CopyEditorSection files={files} setFiles={setFiles} projects={projects} templates={templates} />
-          )}
+            {activeTab === "copyedit" && (
+              <CopyEditorSection files={files} setFiles={setFiles} projects={projects} templates={templates} />
+            )}
+          </div>
         </div>
       </main>
     </div>

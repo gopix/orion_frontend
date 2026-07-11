@@ -1,4 +1,5 @@
 
+
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import "./Submit.css";
@@ -106,6 +107,10 @@
 //           <div className="submit-nav-item" onClick={() => navigate("/editor")}>
 //             <span className="submit-nav-icon">📝</span>
 //             <span>Editor+</span>
+//           </div>
+//           <div className="submit-nav-item" onClick={() => navigate("/publish")}>
+//             <span className="submit-nav-icon">📚</span>
+//             <span>Publish+</span>
 //           </div>
 //           <div className="submit-nav-item" onClick={() => navigate("/remediate-pdf")}>
 //             <span className="submit-nav-icon">🔧</span>
@@ -321,13 +326,9 @@
 
 
 
-
-
-
-
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { SHOW_EDITOR_PLUS } from "../../constants/featureFlags";
 import "./Submit.css";
 
 export default function Submit() {
@@ -430,10 +431,12 @@ export default function Submit() {
             <span>Submit+</span>
             <span className="submit-nav-dot"></span>
           </div>
-          <div className="submit-nav-item" onClick={() => navigate("/editor")}>
-            <span className="submit-nav-icon">📝</span>
-            <span>Editor+</span>
-          </div>
+          {SHOW_EDITOR_PLUS && (
+            <div className="submit-nav-item" onClick={() => navigate("/editor")}>
+              <span className="submit-nav-icon">📝</span>
+              <span>Editor+</span>
+            </div>
+          )}
           <div className="submit-nav-item" onClick={() => navigate("/publish")}>
             <span className="submit-nav-icon">📚</span>
             <span>Publish+</span>

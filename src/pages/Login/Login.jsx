@@ -1,6 +1,4 @@
 
-
-
 // import "./Login.css";
 // import { useNavigate, useSearchParams } from "react-router-dom";
 // import { useState } from "react";
@@ -45,9 +43,8 @@
 //         // Card 1 (Editor+) goes to editor page
 //         navigate("/editor");
 //       } else if (cardIndex === "2") {
-//         // Card 2 (Publish+) - feature not live yet
-//         alert("Dashboard coming soon!");
-//         navigate("/");
+//         // Card 2 (Publish+) goes to publish dashboard
+//         navigate("/publish");
 //       } else if (cardIndex === "3") {
 //         // Card 3 (Accessibility Remediation) goes to remediate-pdf
 //         navigate("/remediate-pdf");
@@ -115,23 +112,11 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 import "./Login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { loginUser } from "../../services/apiServices";
+import { SHOW_EDITOR_PLUS } from "../../constants/featureFlags";
 
 function Login() {
   const navigate = useNavigate();
@@ -168,7 +153,7 @@ function Login() {
       if (cardIndex === "0") {
         // Card 0 (Submit+) goes to submit page
         navigate("/submit");
-      } else if (cardIndex === "1") {
+      } else if (cardIndex === "1" && SHOW_EDITOR_PLUS) {
         // Card 1 (Editor+) goes to editor page
         navigate("/editor");
       } else if (cardIndex === "2") {
