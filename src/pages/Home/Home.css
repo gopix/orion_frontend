@@ -34,6 +34,57 @@
 .services-section .service-card:nth-child(3) { animation-delay: 0.25s; }
 .services-section .service-card:nth-child(4) { animation-delay: 0.35s; }
 
+/* ── Reflow when some cards are hidden via feature flags ─────
+   Fewer visible cards get more breathing room, larger sizing,
+   and are centered so the remaining cards fill the screen in a
+   deliberate, professional layout instead of hugging one side. */
+.services-section.count-1,
+.services-section.count-2,
+.services-section.count-3 {
+  align-content: center;
+  justify-content: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.services-section.count-1 {
+  grid-template-columns: minmax(0, 480px);
+}
+
+.services-section.count-2 {
+  grid-template-columns: repeat(2, minmax(0, 420px));
+  gap: clamp(24px, 3vw, 48px);
+}
+
+.services-section.count-3 {
+  grid-template-columns: repeat(3, minmax(0, 360px));
+  gap: clamp(20px, 2.5vw, 40px);
+}
+
+/* Scale up card content a bit when there's more room per card */
+.services-section.count-1 .service-card,
+.services-section.count-2 .service-card {
+  padding: clamp(30px, 3.2vw, 44px) clamp(24px, 2.6vw, 36px) clamp(24px, 2.8vw, 34px);
+}
+
+.services-section.count-1 .service-icon-wrap,
+.services-section.count-2 .service-icon-wrap {
+  width: clamp(56px, 5.5vw, 76px);
+  height: clamp(56px, 5.5vw, 76px);
+  font-size: clamp(26px, 2.8vw, 36px);
+}
+
+.services-section.count-1 .service-card h2,
+.services-section.count-2 .service-card h2 {
+  font-size: clamp(18px, 1.9vw, 24px);
+}
+
+.services-section.count-1 .service-card p,
+.services-section.count-2 .service-card p {
+  font-size: clamp(13px, 1.1vw, 15px);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -52,6 +103,18 @@
     padding: 20px;
     gap: 16px;
   }
+
+  .services-section.count-1,
+  .services-section.count-2,
+  .services-section.count-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 100%;
+  }
+
+  .services-section.count-1 {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 420px;
+  }
 }
 
 @media (max-width: 420px) {
@@ -59,6 +122,13 @@
     grid-template-columns: 1fr;
     padding: 14px;
     gap: 14px;
+  }
+
+  .services-section.count-1,
+  .services-section.count-2,
+  .services-section.count-3 {
+    grid-template-columns: 1fr;
+    max-width: 100%;
   }
 }
 
