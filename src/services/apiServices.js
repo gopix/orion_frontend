@@ -191,3 +191,32 @@ export const getAccessibilityDashboard = async (jobId) => {
   });
   return response;
 };
+
+// ── MIS — Accessibility Audit Template (NEW) ────────────────────
+// GET /api/v1/accessibility/accessibility-audit-template/{organization_id}
+// Path param: organization_id (integer, required)
+// Returns: accessibility MIS rows for an organization with user/role/org metadata
+export const getAccessibilityAuditTemplate = async (organizationId) => {
+  const response = await fetch(
+    `${BASE_URL}/accessibility/accessibility-audit-template/${organizationId}`,
+    {
+      method: "GET",
+      headers: { "Accept": "application/json" },
+    }
+  );
+  return response;
+};
+
+// GET /api/v1/accessibility/accessibility-audit-template/{organization_id}/csv
+// Path param: organization_id (integer, required)
+// Returns: a CSV file (binary) of accessibility MIS rows for the organization
+export const exportAccessibilityAuditTemplateCsv = async (organizationId) => {
+  const response = await fetch(
+    `${BASE_URL}/accessibility/accessibility-audit-template/${organizationId}/csv`,
+    {
+      method: "GET",
+      headers: { "Accept": "application/octet-stream" },
+    }
+  );
+  return response;
+};

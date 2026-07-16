@@ -2,13 +2,13 @@
 import "./Login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
-import { loginUser } from "../../services/apiServices";
+import { loginUser } from "../../../services/apiServices";
 import {
   SHOW_SUBMIT_PLUS,
   SHOW_EDITOR_PLUS,
   SHOW_PUBLISH_PLUS,
   SHOW_ACCESSIBILITY_PLUS,
-} from "../../constants/featureFlags";
+} from "../../../constants/featureFlags";
 
 function Login() {
   const navigate = useNavigate();

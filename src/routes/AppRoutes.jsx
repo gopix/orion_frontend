@@ -6,15 +6,16 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
+import ForgotPassword from "../pages/Auth/ForgotPassword/ForgotPassword";
 import Home           from "../pages/Home/Home";
-import Login          from "../pages/Login/Login";
-import SignUp         from "../pages/SignUp/SignUp";
+import Login          from "../pages/Auth/Login/Login";
+import SignUp         from "../pages/Auth/SignUp/SignUp";
 import Template       from "../pages/Template/Template";
-import ValidatePdf    from "../pages/ValidatePdf/ValidatePdf";
-import RemediatePdf   from "../pages/RemediatePdf/RemediatePdf";
-import RemediateEpub  from "../pages/RemediateEpub/RemediateEpub";
-import ValidateEpub   from "../pages/ValidateEpub/ValidateEpub";
+import ValidatePdf    from "../pages/Accessibility/ValidatePdf/ValidatePdf";
+import RemediatePdf   from "../pages/Accessibility/RemediatePdf/RemediatePdf";
+import RemediateEpub  from "../pages/Accessibility/RemediateEpub/RemediateEpub";
+import ValidateEpub   from "../pages/Accessibility/ValidateEpub/ValidateEpub";
+import MisPdf         from "../pages/Accessibility/MisPdf/MisPdf";
 import Submit         from "../pages/Submit/Submit";
 import Editor         from "../pages/Editor/Editor";
 import Publish        from "../pages/Publish/Publish";
@@ -114,6 +115,18 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/mis-pdf"
+          element={
+            SHOW_ACCESSIBILITY_PLUS ? (
+              <ProtectedRoute>
+                <MisPdf />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
           path="/publish"
           element={
             SHOW_PUBLISH_PLUS ? (
@@ -154,4 +167,4 @@ function AppRoutes() {
   );
 }
 
-export default AppRoutes;
+export default AppRoutes;
