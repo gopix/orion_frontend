@@ -3,11 +3,24 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 
 // ── Auth ─────────────────────────────────────────────────────
 
-export const registerUser = async (email, password) => {
+// export const registerUser = async (email, password) => {
+//   const response = await fetch(`${BASE_URL}/auth/register`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({ email, password })
+//   });
+//   return response.json();
+// };
+export const registerUser = async (userName, email, password, organizationId) => {
   const response = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({
+      user_name: userName,
+      email,
+      password,
+      organization_id: Number(organizationId)
+    })
   });
   return response.json();
 };
@@ -22,16 +35,16 @@ export const loginUser = async (email, password) => {
 };
 
 
-// ── Master Setup ─────────────────────────────────────────────
+// // ── Master Setup ─────────────────────────────────────────────
 
-// GET all organizations  (GET /api/v1/master-setup/organizations)
-export const getOrganizations = async () => {
-  const response = await fetch(`${BASE_URL}/master-setup/organizations`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" }
-  });
-  return response.json();
-};
+// // GET all organizations  (GET /api/v1/master-setup/organizations)
+// export const getOrganizations = async () => {
+//   const response = await fetch(`${BASE_URL}/master-setup/organizations`, {
+//     method: "GET",
+//     headers: { "Content-Type": "application/json" }
+//   });
+//   return response.json();
+// };
 
 // ── Template ─────────────────────────────────────────────────
 
@@ -219,4 +232,14 @@ export const exportAccessibilityAuditTemplateCsv = async (organizationId) => {
     }
   );
   return response;
-};
+};
+
+
+// GET all organizations  (GET /api/v1/auth/organization)
+export const getOrganizations = async () => {
+  const response = await fetch(`${BASE_URL}/auth/organization`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" }
+  });
+  return response.json();
+};
