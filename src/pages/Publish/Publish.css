@@ -57,7 +57,67 @@
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   border-right: 1px solid rgba(255,255,255,0.06);
+  transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+/* ── Collapsed (icon-only) state — non-admin users ─────────────── */
+.publish-sidebar.collapsed {
+  width: 76px;
+  min-width: 76px;
+}
+
+.publish-sidebar.collapsed .publish-logo {
+  justify-content: center;
+  padding: 22px 0;
+}
+
+.publish-sidebar.collapsed .publish-logo-text,
+.publish-sidebar.collapsed .publish-user-email,
+.publish-sidebar.collapsed .publish-back-label {
+  display: none;
+}
+
+.publish-sidebar.collapsed .publish-back-btn {
+  padding: 8px;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Nav collapse/expand toggle (shown when there's no menu) ──── */
+.publish-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 8px;
+  color: var(--blue-400);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.publish-nav-toggle:hover {
+  background: rgba(59,130,246,0.2);
+  color: #fff;
+}
+
+.publish-nav-toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.publish-sidebar.collapsed .publish-nav-toggle svg {
+  transform: rotate(180deg);
 }
 
 .publish-logo {
@@ -182,6 +242,10 @@
 }
 
 .publish-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
   padding: 9px 12px;
   border-radius: var(--radius-xs);

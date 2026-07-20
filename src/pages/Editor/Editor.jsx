@@ -1,4 +1,7 @@
 
+
+
+
 // import { useMemo, useRef, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import "./Editor.css";
@@ -7,6 +10,7 @@
 //   SHOW_PUBLISH_PLUS,
 //   SHOW_ACCESSIBILITY_PLUS,
 // } from "../../constants/featureFlags";
+// import { isAdmin } from "../../utils/auth";
 
 // /* ────────────────────────────────────────────────────────────
 //    Small shared helpers
@@ -1570,7 +1574,8 @@
 //    ════════════════════════════════════════════════════════════ */
 // export default function Editor() {
 //   const navigate = useNavigate();
-//   const [activeTab, setActiveTab] = useState("customers");
+//   const userIsAdmin = isAdmin();
+//   const [activeTab, setActiveTab] = useState(userIsAdmin ? "customers" : "copyedit");
 
 //   const [customers, setCustomers] = useState(seedCustomers);
 //   const [projects, setProjects] = useState(seedProjects);
@@ -1581,7 +1586,7 @@
 //   const [abbreviations, setAbbreviations] = useState(seedAbbreviations);
 //   const [files, setFiles] = useState(seedFiles);
 
-//   const mainTabs = [
+//   const allMainTabs = [
 //     {
 //       key: "customers",
 //       label: "Customer",
@@ -1618,6 +1623,12 @@
 //       count: files.length,
 //     },
 //   ];
+
+//   // Non-admin users only get the Copy Edit tab — Customer, Project,
+//   // Template and User management stay admin-only.
+//   const mainTabs = userIsAdmin
+//     ? allMainTabs
+//     : allMainTabs.filter((t) => t.key === "copyedit");
 
 //   const activeIndex = Math.max(0, mainTabs.findIndex((t) => t.key === activeTab));
 
@@ -1744,6 +1755,7 @@
 //     </div>
 //   );
 // }
+
 
 
 
@@ -3323,6 +3335,7 @@ export default function Editor() {
   const navigate = useNavigate();
   const userIsAdmin = isAdmin();
   const [activeTab, setActiveTab] = useState(userIsAdmin ? "customers" : "copyedit");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [customers, setCustomers] = useState(seedCustomers);
   const [projects, setProjects] = useState(seedProjects);
@@ -3382,7 +3395,7 @@ export default function Editor() {
   return (
     <div className="editor-page">
       {/* ── Sidebar ──────────────────────────────────────────── */}
-      <aside className="editor-sidebar">
+      <aside className={`editor-sidebar${sidebarCollapsed ? " collapsed" : ""}`}>
         <div className="editor-logo">
           <div className="editor-logo-mark">O</div>
           <div className="editor-logo-text">
@@ -3392,29 +3405,45 @@ export default function Editor() {
         </div>
 
         <nav className="editor-nav">
-          <p className="editor-nav-label">WORKSPACE</p>
-          {SHOW_SUBMIT_PLUS && (
-            <div className="editor-nav-item" onClick={() => navigate("/submit")}>
-              <span className="editor-nav-icon">📑</span>
-              <span>Submit+</span>
-            </div>
-          )}
-          <div className="editor-nav-item active">
-            <span className="editor-nav-icon">📝</span>
-            <span>Editor+</span>
-            <span className="editor-nav-dot"></span>
-          </div>
-          {SHOW_PUBLISH_PLUS && (
-            <div className="editor-nav-item" onClick={() => navigate("/publish")}>
-              <span className="editor-nav-icon">📚</span>
-              <span>Publish+</span>
-            </div>
-          )}
-          {SHOW_ACCESSIBILITY_PLUS && (
-            <div className="editor-nav-item" onClick={() => navigate("/remediate-pdf")}>
-              <span className="editor-nav-icon">🔧</span>
-              <span>Accessibility</span>
-            </div>
+          {userIsAdmin ? (
+            <>
+              <p className="editor-nav-label">WORKSPACE</p>
+              {SHOW_SUBMIT_PLUS && (
+                <div className="editor-nav-item" onClick={() => navigate("/submit")}>
+                  <span className="editor-nav-icon">📑</span>
+                  <span>Submit+</span>
+                </div>
+              )}
+              <div className="editor-nav-item active">
+                <span className="editor-nav-icon">📝</span>
+                <span>Editor+</span>
+                <span className="editor-nav-dot"></span>
+              </div>
+              {SHOW_PUBLISH_PLUS && (
+                <div className="editor-nav-item" onClick={() => navigate("/publish")}>
+                  <span className="editor-nav-icon">📚</span>
+                  <span>Publish+</span>
+                </div>
+              )}
+              {SHOW_ACCESSIBILITY_PLUS && (
+                <div className="editor-nav-item" onClick={() => navigate("/remediate-pdf")}>
+                  <span className="editor-nav-icon">🔧</span>
+                  <span>Accessibility</span>
+                </div>
+              )}
+            </>
+          ) : (
+            <button
+              type="button"
+              className="editor-nav-toggle"
+              onClick={() => setSidebarCollapsed((c) => !c)}
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label="Toggle sidebar"
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           )}
         </nav>
 
@@ -3422,7 +3451,8 @@ export default function Editor() {
           <div className="editor-user-section">
             <p className="editor-user-email">{sessionStorage.getItem("userEmail")}</p>
             <button className="editor-back-btn" onClick={() => navigate("/")} title="Back to Home">
-              ← Back
+              <span className="editor-back-icon">←</span>
+              <span className="editor-back-label">Back</span>
             </button>
           </div>
         </div>

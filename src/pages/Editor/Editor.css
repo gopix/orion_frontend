@@ -131,7 +131,68 @@
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   border-right: 1px solid rgba(255,255,255,0.06);
+  transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+/* ── Collapsed (icon-only) state — non-admin users ─────────────── */
+.editor-sidebar.collapsed {
+  width: 76px;
+  min-width: 76px;
+}
+
+.editor-sidebar.collapsed .editor-logo {
+  justify-content: center;
+  padding: 22px 0;
+}
+
+.editor-sidebar.collapsed .editor-logo-text,
+.editor-sidebar.collapsed .editor-user-email,
+.editor-sidebar.collapsed .editor-back-label {
+  display: none;
+}
+
+.editor-sidebar.collapsed .editor-back-btn {
+  padding: 8px;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+}
+
+.editor-sidebar.collapsed .editor-user-section {
+  align-items: center;
+}
+
+/* ── Nav collapse/expand toggle (shown when there's no menu) ──── */
+.editor-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 8px;
+  color: var(--blue-400);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.editor-nav-toggle:hover {
+  background: rgba(59,130,246,0.2);
+  color: #fff;
+}
+
+.editor-nav-toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.editor-sidebar.collapsed .editor-nav-toggle svg {
+  transform: rotate(180deg);
 }
 
 .editor-logo {
@@ -727,6 +788,11 @@
 }
 
 .editor-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
   padding: 8px 12px;
   background: rgba(59,130,246,0.2);
   border: 1px solid rgba(59,130,246,0.3);
@@ -736,7 +802,6 @@
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition);
-  border: none;
 }
 
 .editor-back-btn:hover {

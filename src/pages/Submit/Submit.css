@@ -57,7 +57,71 @@
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   border-right: 1px solid rgba(255,255,255,0.06);
+  transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+/* ── Collapsed (icon-only) state — non-admin users ─────────────── */
+.submit-sidebar.collapsed {
+  width: 76px;
+  min-width: 76px;
+}
+
+.submit-sidebar.collapsed .submit-logo {
+  justify-content: center;
+  padding: 22px 0;
+}
+
+.submit-sidebar.collapsed .submit-logo-text,
+.submit-sidebar.collapsed .submit-user-email,
+.submit-sidebar.collapsed .submit-back-label {
+  display: none;
+}
+
+.submit-sidebar.collapsed .submit-back-btn {
+  padding: 8px;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-sidebar.collapsed .submit-user-section {
+  align-items: center;
+}
+
+/* ── Nav collapse/expand toggle (shown when there's no menu) ──── */
+.submit-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 8px;
+  color: var(--blue-400);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.submit-nav-toggle:hover {
+  background: rgba(59,130,246,0.2);
+  color: #fff;
+}
+
+.submit-nav-toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.submit-sidebar.collapsed .submit-nav-toggle svg {
+  transform: rotate(180deg);
 }
 
 .submit-logo {
@@ -634,6 +698,10 @@
 }
 
 .submit-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 8px 12px;
   background: rgba(59,130,246,0.2);
   border: 1px solid rgba(59,130,246,0.3);
@@ -643,7 +711,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition);
-  border: none;
+  width: 100%;
 }
 
 .submit-back-btn:hover {
