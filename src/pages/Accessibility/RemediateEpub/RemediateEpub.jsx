@@ -1,9 +1,12 @@
+
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
+// import { isAdmin } from "../../../utils/auth";
 // import "./RemediateEpub.css";
 
 // export default function RemediateEpub() {
 //   const navigate = useNavigate();
+//   const userIsAdmin = isAdmin();
 
 //   const [epubFile, setEpubFile] = useState(null);
 //   const [dragOver, setDragOver] = useState(false);
@@ -87,15 +90,19 @@
 //             <span>Validate EPUB</span>
 //           </div>
 
-//           <p className="re-nav-label" style={{ marginTop: 14 }}>MIS</p>
-//           <div className="re-nav-item" onClick={() => navigate("/mis-pdf")}>
-//             <span className="re-nav-icon">📊</span>
-//             <span>PDF</span>
-//           </div>
-//           <div className="re-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
-//             <span className="re-nav-icon">📊</span>
-//             <span>EPUB</span>
-//           </div>
+//           {userIsAdmin && (
+//             <>
+//               <p className="re-nav-label" style={{ marginTop: 14 }}>MIS</p>
+//               <div className="re-nav-item" onClick={() => navigate("/mis-pdf")}>
+//                 <span className="re-nav-icon">📊</span>
+//                 <span>PDF</span>
+//               </div>
+//               <div className="re-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
+//                 <span className="re-nav-icon">📊</span>
+//                 <span>EPUB</span>
+//               </div>
+//             </>
+//           )}
 //         </nav>
 
 //         <div className="re-sidebar-footer">
@@ -295,6 +302,16 @@ export default function RemediateEpub() {
           <div className="re-nav-item" onClick={() => navigate("/validate-epub")}>
             <span className="re-nav-icon">📗</span>
             <span>Validate EPUB</span>
+          </div>
+
+          <p className="re-nav-label" style={{ marginTop: 14 }}>PPT</p>
+          <div className="re-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+            <span className="re-nav-icon">📽️</span>
+            <span>Remediate PPT</span>
+          </div>
+          <div className="re-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+            <span className="re-nav-icon">📽️</span>
+            <span>Validate PPT</span>
           </div>
 
           {userIsAdmin && (

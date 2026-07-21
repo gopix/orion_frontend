@@ -3,12 +3,14 @@
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { orionRemediatePdf, getRemediationStatus, downloadRemediatedPdf, getRemediationReport, validatePdf, getAccessibilityDashboard } from "../../../services/apiServices";
+// import { isAdmin } from "../../../utils/auth";
 // import "./RemediatePdf.css";
  
 // const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200 MB
  
 // export default function RemediatePdf() {
 //   const navigate = useNavigate();
+//   const userIsAdmin = isAdmin();
  
 //   const [pdfFile, setPdfFile]           = useState(null);
 //   const [dragOver, setDragOver]         = useState(false);
@@ -467,15 +469,19 @@
 //             <span>Validate EPUB</span>
 //           </div>
 
-//           <p className="rp-nav-label" style={{ marginTop: 14 }}>MIS</p>
-//           <div className="rp-nav-item" onClick={() => navigate("/mis-pdf")}>
-//             <span className="rp-nav-icon">📊</span>
-//             <span>PDF</span>
-//           </div>
-//           <div className="rp-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
-//             <span className="rp-nav-icon">📊</span>
-//             <span>EPUB</span>
-//           </div>
+//           {userIsAdmin && (
+//             <>
+//               <p className="rp-nav-label" style={{ marginTop: 14 }}>MIS</p>
+//               <div className="rp-nav-item" onClick={() => navigate("/mis-pdf")}>
+//                 <span className="rp-nav-icon">📊</span>
+//                 <span>PDF</span>
+//               </div>
+//               <div className="rp-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
+//                 <span className="rp-nav-icon">📊</span>
+//                 <span>EPUB</span>
+//               </div>
+//             </>
+//           )}
 
 //           {/* <div className="rp-nav-item" onClick={() => navigate("/template")}>
 //             <span className="rp-nav-icon">📋</span>
@@ -1438,8 +1444,6 @@
 
 
 
-
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { orionRemediatePdf, getRemediationStatus, downloadRemediatedPdf, getRemediationReport, validatePdf, getAccessibilityDashboard } from "../../../services/apiServices";
@@ -1907,6 +1911,16 @@ export default function RemediatePdf() {
           <div className="rp-nav-item" onClick={() => navigate("/validate-epub")}>
             <span className="rp-nav-icon">📗</span>
             <span>Validate EPUB</span>
+          </div>
+
+          <p className="rp-nav-label" style={{ marginTop: 14 }}>PPT</p>
+          <div className="rp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+            <span className="rp-nav-icon">📽️</span>
+            <span>Remediate PPT</span>
+          </div>
+          <div className="rp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+            <span className="rp-nav-icon">📽️</span>
+            <span>Validate PPT</span>
           </div>
 
           {userIsAdmin && (

@@ -1,5 +1,4 @@
 
-
 // import {
 //   BrowserRouter,
 //   Routes,
@@ -25,6 +24,7 @@
 //   SHOW_PUBLISH_PLUS,
 //   SHOW_ACCESSIBILITY_PLUS,
 // } from "../constants/featureFlags";
+// import { isAdmin } from "../utils/auth";
 
 // // ─────────────────────────────────────────────────────────────
 // // ProtectedRoute
@@ -42,6 +42,28 @@
 
 //   if (!token) {
 //     return <Navigate to="/login" replace />;
+//   }
+
+//   return children;
+// }
+
+// // ─────────────────────────────────────────────────────────────
+// // AdminRoute
+// //
+// // Same as ProtectedRoute, but also requires the logged-in user's
+// // role to be ADMIN. Regular USER accounts are redirected to the
+// // dashboard if they try to open an admin-only route (e.g. MIS)
+// // directly via URL.
+// // ─────────────────────────────────────────────────────────────
+// function AdminRoute({ children }) {
+//   const token = sessionStorage.getItem("token");
+
+//   if (!token) {
+//     return <Navigate to="/login" replace />;
+//   }
+
+//   if (!isAdmin()) {
+//     return <Navigate to="/" replace />;
 //   }
 
 //   return children;
@@ -118,9 +140,9 @@
 //           path="/mis-pdf"
 //           element={
 //             SHOW_ACCESSIBILITY_PLUS ? (
-//               <ProtectedRoute>
+//               <AdminRoute>
 //                 <MisPdf />
-//               </ProtectedRoute>
+//               </AdminRoute>
 //             ) : (
 //               <Navigate to="/" replace />
 //             )
@@ -172,7 +194,6 @@
 
 
 
-
 import {
   BrowserRouter,
   Routes,
@@ -184,6 +205,7 @@ import Home           from "../pages/Home/Home";
 import Login          from "../pages/Auth/Login/Login";
 import SignUp         from "../pages/Auth/SignUp/SignUp";
 import Template       from "../pages/Template/Template";
+import AccessibilitySelect from "../pages/Accessibility/AccessibilitySelect/AccessibilitySelect";
 import ValidatePdf    from "../pages/Accessibility/ValidatePdf/ValidatePdf";
 import RemediatePdf   from "../pages/Accessibility/RemediatePdf/RemediatePdf";
 import RemediateEpub  from "../pages/Accessibility/RemediateEpub/RemediateEpub";
@@ -262,6 +284,18 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         /> */}
+        <Route
+          path="/accessibility"
+          element={
+            SHOW_ACCESSIBILITY_PLUS ? (
+              <ProtectedRoute>
+                <AccessibilitySelect />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
         <Route
           path="/validate-pdf"
           element={

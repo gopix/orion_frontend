@@ -1,9 +1,12 @@
+
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
+// import { isAdmin } from "../../../utils/auth";
 // import "./ValidateEpub.css";
 
 // export default function ValidateEpub() {
 //   const navigate = useNavigate();
+//   const userIsAdmin = isAdmin();
 
 //   const [epubFile, setEpubFile] = useState(null);
 //   const [dragOver, setDragOver] = useState(false);
@@ -87,15 +90,19 @@
 //             <span className="ve-nav-dot"></span>
 //           </div>
 
-//           <p className="ve-nav-label" style={{ marginTop: 14 }}>MIS</p>
-//           <div className="ve-nav-item" onClick={() => navigate("/mis-pdf")}>
-//             <span className="ve-nav-icon">📊</span>
-//             <span>PDF</span>
-//           </div>
-//           <div className="ve-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
-//             <span className="ve-nav-icon">📊</span>
-//             <span>EPUB</span>
-//           </div>
+//           {userIsAdmin && (
+//             <>
+//               <p className="ve-nav-label" style={{ marginTop: 14 }}>MIS</p>
+//               <div className="ve-nav-item" onClick={() => navigate("/mis-pdf")}>
+//                 <span className="ve-nav-icon">📊</span>
+//                 <span>PDF</span>
+//               </div>
+//               <div className="ve-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
+//                 <span className="ve-nav-icon">📊</span>
+//                 <span>EPUB</span>
+//               </div>
+//             </>
+//           )}
 //         </nav>
 
 //         <div className="ve-sidebar-footer">
@@ -208,6 +215,8 @@
 
 
 
+
+
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../../../utils/auth";
@@ -297,6 +306,16 @@ export default function ValidateEpub() {
             <span className="ve-nav-icon">📗</span>
             <span>Validate EPUB</span>
             <span className="ve-nav-dot"></span>
+          </div>
+
+          <p className="ve-nav-label" style={{ marginTop: 14 }}>PPT</p>
+          <div className="ve-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+            <span className="ve-nav-icon">📽️</span>
+            <span>Remediate PPT</span>
+          </div>
+          <div className="ve-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+            <span className="ve-nav-icon">📽️</span>
+            <span>Validate PPT</span>
           </div>
 
           {userIsAdmin && (

@@ -40,6 +40,7 @@
 //     if (result.id) {
 //       sessionStorage.setItem("token", result.id);
 //       sessionStorage.setItem("userEmail", result.email);
+//       sessionStorage.setItem("userRole", result.role_name || "USER");
       
 //       // Route based on card selection
 //       if (cardIndex === "0" && SHOW_SUBMIT_PLUS) {
@@ -123,9 +124,6 @@
 
 
 
-
-
-
 import "./Login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
@@ -180,8 +178,9 @@ function Login() {
         // Card 2 (Publish+) goes to publish dashboard
         navigate("/publish");
       } else if (cardIndex === "3" && SHOW_ACCESSIBILITY_PLUS) {
-        // Card 3 (Accessibility Remediation) goes to remediate-pdf
-        navigate("/remediate-pdf");
+        // Card 3 (Accessibility Remediation) goes to the file type
+        // and action selection screen
+        navigate("/accessibility");
       } else {
         // No card selected, or the selected card's module is currently
         // disabled via feature flag — send the user back to the

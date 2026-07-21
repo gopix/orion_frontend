@@ -1,5 +1,4 @@
 
-
 // import { useEffect, useMemo, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { getAccessibilityAuditTemplate, exportAccessibilityAuditTemplateCsv } from "../../../services/apiServices";
@@ -35,6 +34,8 @@
 //   return String(value);
 // };
 
+// const ROWS_PER_PAGE = 10;
+
 // export default function MisPdf() {
 //   const navigate = useNavigate();
 
@@ -48,6 +49,13 @@
 //   const [exportError, setExportError] = useState("");
 
 //   const [search, setSearch] = useState("");
+
+//   // ── Sorting ─────────────────────────────────────────────────
+//   const [sortColumn, setSortColumn] = useState(null);
+//   const [sortDirection, setSortDirection] = useState("asc"); // "asc" | "desc"
+
+//   // ── Pagination ──────────────────────────────────────────────
+//   const [currentPage, setCurrentPage] = useState(1);
 
 //   // ── Load MIS history ─────────────────────────────────────────
 //   const loadHistory = async () => {
@@ -96,6 +104,59 @@
 //       Object.values(row || {}).some((v) => String(v ?? "").toLowerCase().includes(q))
 //     );
 //   }, [rows, search]);
+
+//   // ── Sort filtered rows by the selected column ─────────────────
+//   const sortedRows = useMemo(() => {
+//     if (!sortColumn) return filteredRows;
+//     const dir = sortDirection === "asc" ? 1 : -1;
+//     return [...filteredRows].sort((a, b) => {
+//       const av = a?.[sortColumn];
+//       const bv = b?.[sortColumn];
+//       if (av === null || av === undefined || av === "") return 1;
+//       if (bv === null || bv === undefined || bv === "") return -1;
+
+//       // Numbers compare numerically
+//       const aNum = Number(av);
+//       const bNum = Number(bv);
+//       if (!isNaN(aNum) && !isNaN(bNum) && av !== "" && bv !== "") {
+//         return (aNum - bNum) * dir;
+//       }
+
+//       // ISO dates compare chronologically
+//       if (isIsoDateString(av) && isIsoDateString(bv)) {
+//         return (new Date(av).getTime() - new Date(bv).getTime()) * dir;
+//       }
+
+//       // Fallback: case-insensitive string compare
+//       return String(av).localeCompare(String(bv), undefined, { sensitivity: "base" }) * dir;
+//     });
+//   }, [filteredRows, sortColumn, sortDirection]);
+
+//   const handleSort = (col) => {
+//     if (sortColumn === col) {
+//       setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+//     } else {
+//       setSortColumn(col);
+//       setSortDirection("asc");
+//     }
+//   };
+
+//   // Reset to page 1 whenever the underlying data set changes
+//   useEffect(() => {
+//     setCurrentPage(1);
+//   }, [search, rows]);
+
+//   // ── Paginate sorted rows — 10 records per page ─────────────────
+//   const totalPages = Math.max(1, Math.ceil(sortedRows.length / ROWS_PER_PAGE));
+
+//   useEffect(() => {
+//     if (currentPage > totalPages) setCurrentPage(totalPages);
+//   }, [currentPage, totalPages]);
+
+//   const paginatedRows = useMemo(() => {
+//     const start = (currentPage - 1) * ROWS_PER_PAGE;
+//     return sortedRows.slice(start, start + ROWS_PER_PAGE);
+//   }, [sortedRows, currentPage]);
 
 //   // ── Summary stats ─────────────────────────────────────────────
 //   const uniqueUsers = useMemo(() => {
@@ -305,33 +366,80 @@
 //             )}
 
 //             {!loading && !error && rows.length > 0 && (
-//               <div className="mp-table-scroll">
-//                 <table className="mp-table">
-//                   <thead>
-//                     <tr>
-//                       {columns.map((col) => (
-//                         <th key={col}>{formatHeader(col)}</th>
-//                       ))}
-//                     </tr>
-//                   </thead>
-//                   <tbody>
-//                     {filteredRows.map((row, i) => (
-//                       <tr key={row.id ?? i}>
-//                         {columns.map((col) => (
-//                           <td key={col}>{formatCellValue(row[col])}</td>
-//                         ))}
-//                       </tr>
-//                     ))}
-//                     {filteredRows.length === 0 && (
+//               <>
+//                 <div className="mp-table-scroll">
+//                   <table className="mp-table">
+//                     <thead>
 //                       <tr>
-//                         <td colSpan={columns.length} className="mp-no-match">
-//                           No records match your search.
-//                         </td>
+//                         {columns.map((col) => {
+//                           const isActive = sortColumn === col;
+//                           return (
+//                             <th
+//                               key={col}
+//                               className={`mp-th-sortable${isActive ? " mp-th-sorted" : ""}`}
+//                               onClick={() => handleSort(col)}
+//                               title={`Sort by ${formatHeader(col)}`}
+//                             >
+//                               <span className="mp-th-label">
+//                                 {formatHeader(col)}
+//                                 <span className="mp-sort-icon">
+//                                   {isActive ? (sortDirection === "asc" ? "▲" : "▼") : "⇅"}
+//                                 </span>
+//                               </span>
+//                             </th>
+//                           );
+//                         })}
 //                       </tr>
-//                     )}
-//                   </tbody>
-//                 </table>
-//               </div>
+//                     </thead>
+//                     <tbody>
+//                       {paginatedRows.map((row, i) => (
+//                         <tr key={row.id ?? i}>
+//                           {columns.map((col) => (
+//                             <td key={col}>{formatCellValue(row[col])}</td>
+//                           ))}
+//                         </tr>
+//                       ))}
+//                       {sortedRows.length === 0 && (
+//                         <tr>
+//                           <td colSpan={columns.length} className="mp-no-match">
+//                             No records match your search.
+//                           </td>
+//                         </tr>
+//                       )}
+//                     </tbody>
+//                   </table>
+//                 </div>
+
+//                 {sortedRows.length > 0 && (
+//                   <div className="mp-pagination">
+//                     <span className="mp-pagination-info">
+//                       Showing {(currentPage - 1) * ROWS_PER_PAGE + 1}–
+//                       {Math.min(currentPage * ROWS_PER_PAGE, sortedRows.length)} of {sortedRows.length}
+//                     </span>
+//                     <div className="mp-pagination-controls">
+//                       <button
+//                         type="button"
+//                         className="mp-page-btn"
+//                         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+//                         disabled={currentPage === 1}
+//                       >
+//                         ‹ Prev
+//                       </button>
+//                       <span className="mp-page-indicator">
+//                         Page {currentPage} of {totalPages}
+//                       </span>
+//                       <button
+//                         type="button"
+//                         className="mp-page-btn"
+//                         onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+//                         disabled={currentPage === totalPages}
+//                       >
+//                         Next ›
+//                       </button>
+//                     </div>
+//                   </div>
+//                 )}
+//               </>
 //             )}
 //           </div>
 //         </div>
@@ -339,11 +447,6 @@
 //     </div>
 //   );
 // }
-
-
-
-
-
 
 
 
@@ -513,12 +616,6 @@ export default function MisPdf() {
     return new Set(rows.map((r) => r[key])).size;
   }, [rows, columns]);
 
-  const orgLabel = useMemo(() => {
-    const key = columns.find((c) => /organization.*name/i.test(c));
-    if (!key) return null;
-    return rows[0]?.[key] ?? null;
-  }, [rows, columns]);
-
   // ── Export CSV ───────────────────────────────────────────────
   const handleExportCsv = async () => {
     setExporting(true);
@@ -661,10 +758,6 @@ export default function MisPdf() {
 
           {/* Summary cards */}
           <div className="mp-summary-grid">
-            <div className="mp-summary-card">
-              <span className="mp-summary-label">Organization</span>
-              <span className="mp-summary-value">{orgLabel || `#${organizationId}`}</span>
-            </div>
             <div className="mp-summary-card">
               <span className="mp-summary-label">Total Records</span>
               <span className="mp-summary-value">{loading ? "—" : rows.length}</span>

@@ -1,10 +1,8 @@
 
-
-
-
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { orionValidatePdf } from "../../../services/apiServices";
+// import { isAdmin } from "../../../utils/auth";
 // import "./ValidatePdf.css";
 
 // const downloadAsJson = (data, filename) => {
@@ -48,6 +46,7 @@
 
 // export default function ValidatePdf() {
 //   const navigate = useNavigate();
+//   const userIsAdmin = isAdmin();
 
 //   const [pdfFile, setPdfFile]         = useState(null);
 //   const [dragOver, setDragOver]       = useState(false);
@@ -206,15 +205,19 @@
 //             <span>Validate EPUB</span>
 //           </div>
 
-//           <p className="vp-nav-label" style={{ marginTop: 14 }}>MIS</p>
-//           <div className="vp-nav-item" onClick={() => navigate("/mis-pdf")}>
-//             <span className="vp-nav-icon">📊</span>
-//             <span>PDF</span>
-//           </div>
-//           <div className="vp-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
-//             <span className="vp-nav-icon">📊</span>
-//             <span>EPUB</span>
-//           </div>
+//           {userIsAdmin && (
+//             <>
+//               <p className="vp-nav-label" style={{ marginTop: 14 }}>MIS</p>
+//               <div className="vp-nav-item" onClick={() => navigate("/mis-pdf")}>
+//                 <span className="vp-nav-icon">📊</span>
+//                 <span>PDF</span>
+//               </div>
+//               <div className="vp-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
+//                 <span className="vp-nav-icon">📊</span>
+//                 <span>EPUB</span>
+//               </div>
+//             </>
+//           )}
 
 //           {/* <div className="vp-nav-item" onClick={() => navigate("/template")}>
 //             <span className="vp-nav-icon">📋</span>
@@ -711,14 +714,6 @@
 
 
 
-
-
-
-
-
-
-
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { orionValidatePdf } from "../../../services/apiServices";
@@ -923,6 +918,16 @@ export default function ValidatePdf() {
           <div className="vp-nav-item" onClick={() => navigate("/validate-epub")}>
             <span className="vp-nav-icon">📗</span>
             <span>Validate EPUB</span>
+          </div>
+
+          <p className="vp-nav-label" style={{ marginTop: 14 }}>PPT</p>
+          <div className="vp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+            <span className="vp-nav-icon">📽️</span>
+            <span>Remediate PPT</span>
+          </div>
+          <div className="vp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+            <span className="vp-nav-icon">📽️</span>
+            <span>Validate PPT</span>
           </div>
 
           {userIsAdmin && (
