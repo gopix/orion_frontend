@@ -1,4 +1,6 @@
 
+
+
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { isAdmin } from "../../../utils/auth";
@@ -88,6 +90,16 @@
 //           <div className="re-nav-item" onClick={() => navigate("/validate-epub")}>
 //             <span className="re-nav-icon">📗</span>
 //             <span>Validate EPUB</span>
+//           </div>
+
+//           <p className="re-nav-label" style={{ marginTop: 14 }}>PPT</p>
+//           <div className="re-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+//             <span className="re-nav-icon">📽️</span>
+//             <span>Remediate PPT</span>
+//           </div>
+//           <div className="re-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+//             <span className="re-nav-icon">📽️</span>
+//             <span>Validate PPT</span>
 //           </div>
 
 //           {userIsAdmin && (
@@ -213,6 +225,8 @@
 // }
 
 
+
+
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../../../utils/auth";
@@ -272,79 +286,19 @@ export default function RemediateEpub() {
   return (
     <div className="re-page">
 
-      {/* ── Sidebar ──────────────────────────────────────────── */}
-      <aside className="re-sidebar">
-        <div className="re-logo">
-          <div className="re-logo-mark">O</div>
-          <div className="re-logo-text">
-            <span>ORION</span>
-            <small>Accessibility & Remediation</small>
-          </div>
-        </div>
-
-        <nav className="re-nav">
-          <p className="re-nav-label">PDF</p>
-          <div className="re-nav-item" onClick={() => navigate("/remediate-pdf")}>
-            <span className="re-nav-icon">🛠️</span>
-            <span>Remediate PDF</span>
-          </div>
-          <div className="re-nav-item" onClick={() => navigate("/validate-pdf")}>
-            <span className="re-nav-icon">✅</span>
-            <span>Validate PDF</span>
-          </div>
-
-          <p className="re-nav-label" style={{ marginTop: 14 }}>EPUB</p>
-          <div className="re-nav-item active">
-            <span className="re-nav-icon">📘</span>
-            <span>Remediate EPUB</span>
-            <span className="re-nav-dot"></span>
-          </div>
-          <div className="re-nav-item" onClick={() => navigate("/validate-epub")}>
-            <span className="re-nav-icon">📗</span>
-            <span>Validate EPUB</span>
-          </div>
-
-          <p className="re-nav-label" style={{ marginTop: 14 }}>PPT</p>
-          <div className="re-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
-            <span className="re-nav-icon">📽️</span>
-            <span>Remediate PPT</span>
-          </div>
-          <div className="re-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
-            <span className="re-nav-icon">📽️</span>
-            <span>Validate PPT</span>
-          </div>
-
-          {userIsAdmin && (
-            <>
-              <p className="re-nav-label" style={{ marginTop: 14 }}>MIS</p>
-              <div className="re-nav-item" onClick={() => navigate("/mis-pdf")}>
-                <span className="re-nav-icon">📊</span>
-                <span>PDF</span>
-              </div>
-              <div className="re-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
-                <span className="re-nav-icon">📊</span>
-                <span>EPUB</span>
-              </div>
-            </>
-          )}
-        </nav>
-
-        <div className="re-sidebar-footer">
-          <div className="re-user-section">
-            <p className="re-user-email">{sessionStorage.getItem("userEmail")}</p>
-            <button
-              className="re-back-btn"
-              onClick={() => navigate("/")}
-              title="Back to Home"
-            >
-              ← Back
-            </button>
-          </div>
-        </div>
-      </aside>
+      
 
       {/* ── Main ─────────────────────────────────────────────── */}
       <main className="re-main">
+        <button
+          className="re-back-fab"
+          onClick={() => navigate("/accessibility")}
+          title="Back to Accessibility"
+          aria-label="Back to Accessibility"
+        >
+          ←
+        </button>
+
         <div className="re-container">
 
           {!epubFile ? (

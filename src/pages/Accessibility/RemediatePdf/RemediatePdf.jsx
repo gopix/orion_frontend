@@ -1,5 +1,4 @@
 
-
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { orionRemediatePdf, getRemediationStatus, downloadRemediatedPdf, getRemediationReport, validatePdf, getAccessibilityDashboard } from "../../../services/apiServices";
@@ -467,6 +466,16 @@
 //           <div className="rp-nav-item" onClick={() => navigate("/validate-epub")}>
 //             <span className="rp-nav-icon">📗</span>
 //             <span>Validate EPUB</span>
+//           </div>
+
+//           <p className="rp-nav-label" style={{ marginTop: 14 }}>PPT</p>
+//           <div className="rp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+//             <span className="rp-nav-icon">📽️</span>
+//             <span>Remediate PPT</span>
+//           </div>
+//           <div className="rp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+//             <span className="rp-nav-icon">📽️</span>
+//             <span>Validate PPT</span>
 //           </div>
 
 //           {userIsAdmin && (
@@ -1443,7 +1452,6 @@
 
 
 
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { orionRemediatePdf, getRemediationStatus, downloadRemediatedPdf, getRemediationReport, validatePdf, getAccessibilityDashboard } from "../../../services/apiServices";
@@ -1881,84 +1889,19 @@ export default function RemediatePdf() {
   return (
     <div className="rp-page">
  
-      {/* ── Sidebar ──────────────────────────────────────────── */}
-      <aside className="rp-sidebar">
-        <div className="rp-logo">
-          <div className="rp-logo-mark">O</div>
-          <div className="rp-logo-text">
-            <span>ORION</span>
-            <small>Accessibility & Remediation</small>
-          </div>
-        </div>
- 
-        <nav className="rp-nav">
-          <p className="rp-nav-label">PDF</p>
-          <div className="rp-nav-item active">
-            <span className="rp-nav-icon">🛠️</span>
-            <span>Remediate PDF</span>
-            <span className="rp-nav-dot"></span>
-          </div>
-          <div className="rp-nav-item" onClick={() => navigate("/validate-pdf")}>
-            <span className="rp-nav-icon">✅</span>
-            <span>Validate PDF</span>
-          </div>
-
-          <p className="rp-nav-label" style={{ marginTop: 14 }}>EPUB</p>
-          <div className="rp-nav-item" onClick={() => navigate("/remediate-epub")}>
-            <span className="rp-nav-icon">📘</span>
-            <span>Remediate EPUB</span>
-          </div>
-          <div className="rp-nav-item" onClick={() => navigate("/validate-epub")}>
-            <span className="rp-nav-icon">📗</span>
-            <span>Validate EPUB</span>
-          </div>
-
-          <p className="rp-nav-label" style={{ marginTop: 14 }}>PPT</p>
-          <div className="rp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
-            <span className="rp-nav-icon">📽️</span>
-            <span>Remediate PPT</span>
-          </div>
-          <div className="rp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
-            <span className="rp-nav-icon">📽️</span>
-            <span>Validate PPT</span>
-          </div>
-
-          {userIsAdmin && (
-            <>
-              <p className="rp-nav-label" style={{ marginTop: 14 }}>MIS</p>
-              <div className="rp-nav-item" onClick={() => navigate("/mis-pdf")}>
-                <span className="rp-nav-icon">📊</span>
-                <span>PDF</span>
-              </div>
-              <div className="rp-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
-                <span className="rp-nav-icon">📊</span>
-                <span>EPUB</span>
-              </div>
-            </>
-          )}
-
-          {/* <div className="rp-nav-item" onClick={() => navigate("/template")}>
-            <span className="rp-nav-icon">📋</span>
-            <span>Template</span>
-          </div> */}
-        </nav>
- 
-        <div className="rp-sidebar-footer">
-          <div className="rp-user-section">
-            <p className="rp-user-email">{sessionStorage.getItem("userEmail")}</p>
-            <button 
-              className="rp-back-btn"
-              onClick={() => navigate("/")}
-              title="Back to Home"
-            >
-              ← Back
-            </button>
-          </div>
-        </div>
-      </aside>
+      
  
       {/* ── Main ─────────────────────────────────────────────── */}
       <main className="rp-main">
+        <button
+          className="rp-back-fab"
+          onClick={() => navigate("/accessibility")}
+          title="Back to Accessibility"
+          aria-label="Back to Accessibility"
+        >
+          ←
+        </button>
+
         <div className="rp-container">
  
           {!pdfFile ? (

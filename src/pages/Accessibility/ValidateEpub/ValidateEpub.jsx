@@ -90,6 +90,16 @@
 //             <span className="ve-nav-dot"></span>
 //           </div>
 
+//           <p className="ve-nav-label" style={{ marginTop: 14 }}>PPT</p>
+//           <div className="ve-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+//             <span className="ve-nav-icon">📽️</span>
+//             <span>Remediate PPT</span>
+//           </div>
+//           <div className="ve-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+//             <span className="ve-nav-icon">📽️</span>
+//             <span>Validate PPT</span>
+//           </div>
+
 //           {userIsAdmin && (
 //             <>
 //               <p className="ve-nav-label" style={{ marginTop: 14 }}>MIS</p>
@@ -216,7 +226,6 @@
 
 
 
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../../../utils/auth";
@@ -276,79 +285,19 @@ export default function ValidateEpub() {
   return (
     <div className="ve-page">
 
-      {/* ── Sidebar ──────────────────────────────────────────── */}
-      <aside className="ve-sidebar">
-        <div className="ve-logo">
-          <div className="ve-logo-mark">O</div>
-          <div className="ve-logo-text">
-            <span>ORION</span>
-            <small>Accessibility & Remediation</small>
-          </div>
-        </div>
-
-        <nav className="ve-nav">
-          <p className="ve-nav-label">PDF</p>
-          <div className="ve-nav-item" onClick={() => navigate("/remediate-pdf")}>
-            <span className="ve-nav-icon">🛠️</span>
-            <span>Remediate PDF</span>
-          </div>
-          <div className="ve-nav-item" onClick={() => navigate("/validate-pdf")}>
-            <span className="ve-nav-icon">✅</span>
-            <span>Validate PDF</span>
-          </div>
-
-          <p className="ve-nav-label" style={{ marginTop: 14 }}>EPUB</p>
-          <div className="ve-nav-item" onClick={() => navigate("/remediate-epub")}>
-            <span className="ve-nav-icon">📘</span>
-            <span>Remediate EPUB</span>
-          </div>
-          <div className="ve-nav-item active">
-            <span className="ve-nav-icon">📗</span>
-            <span>Validate EPUB</span>
-            <span className="ve-nav-dot"></span>
-          </div>
-
-          <p className="ve-nav-label" style={{ marginTop: 14 }}>PPT</p>
-          <div className="ve-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
-            <span className="ve-nav-icon">📽️</span>
-            <span>Remediate PPT</span>
-          </div>
-          <div className="ve-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
-            <span className="ve-nav-icon">📽️</span>
-            <span>Validate PPT</span>
-          </div>
-
-          {userIsAdmin && (
-            <>
-              <p className="ve-nav-label" style={{ marginTop: 14 }}>MIS</p>
-              <div className="ve-nav-item" onClick={() => navigate("/mis-pdf")}>
-                <span className="ve-nav-icon">📊</span>
-                <span>PDF</span>
-              </div>
-              <div className="ve-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
-                <span className="ve-nav-icon">📊</span>
-                <span>EPUB</span>
-              </div>
-            </>
-          )}
-        </nav>
-
-        <div className="ve-sidebar-footer">
-          <div className="ve-user-section">
-            <p className="ve-user-email">{sessionStorage.getItem("userEmail")}</p>
-            <button
-              className="ve-back-btn"
-              onClick={() => navigate("/")}
-              title="Back to Home"
-            >
-              ← Back
-            </button>
-          </div>
-        </div>
-      </aside>
+      
 
       {/* ── Main ─────────────────────────────────────────────── */}
       <main className="ve-main">
+        <button
+          className="ve-back-fab"
+          onClick={() => navigate("/accessibility")}
+          title="Back to Accessibility"
+          aria-label="Back to Accessibility"
+        >
+          ←
+        </button>
+
         <div className="ve-container">
 
           {!epubFile ? (

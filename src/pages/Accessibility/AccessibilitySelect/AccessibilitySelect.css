@@ -196,6 +196,10 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
+.as-option-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 .as-option-grid-2 {
   grid-template-columns: repeat(2, 1fr);
 }
@@ -301,6 +305,9 @@
   .as-container {
     padding: 40px 24px;
   }
+  .as-option-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
@@ -329,6 +336,7 @@
     display: none;
   }
   .as-option-grid-3,
+  .as-option-grid-4,
   .as-option-grid-2 {
     grid-template-columns: 1fr;
   }

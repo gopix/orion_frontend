@@ -165,12 +165,6 @@
 //     return new Set(rows.map((r) => r[key])).size;
 //   }, [rows, columns]);
 
-//   const orgLabel = useMemo(() => {
-//     const key = columns.find((c) => /organization.*name/i.test(c));
-//     if (!key) return null;
-//     return rows[0]?.[key] ?? null;
-//   }, [rows, columns]);
-
 //   // ── Export CSV ───────────────────────────────────────────────
 //   const handleExportCsv = async () => {
 //     setExporting(true);
@@ -313,10 +307,6 @@
 
 //           {/* Summary cards */}
 //           <div className="mp-summary-grid">
-//             <div className="mp-summary-card">
-//               <span className="mp-summary-label">Organization</span>
-//               <span className="mp-summary-value">{orgLabel || `#${organizationId}`}</span>
-//             </div>
 //             <div className="mp-summary-card">
 //               <span className="mp-summary-label">Total Records</span>
 //               <span className="mp-summary-value">{loading ? "—" : rows.length}</span>
@@ -651,74 +641,27 @@ export default function MisPdf() {
   return (
     <div className="mp-page">
 
-      {/* ── Sidebar ──────────────────────────────────────────── */}
-      <aside className="mp-sidebar">
-        <div className="mp-logo">
-          <div className="mp-logo-mark">O</div>
-          <div className="mp-logo-text">
-            <span>ORION</span>
-            <small>Accessibility & Remediation</small>
-          </div>
-        </div>
-
-        <nav className="mp-nav">
-          <p className="mp-nav-label">PDF</p>
-          <div className="mp-nav-item" onClick={() => navigate("/remediate-pdf")}>
-            <span className="mp-nav-icon">🛠️</span>
-            <span>Remediate PDF</span>
-          </div>
-          <div className="mp-nav-item" onClick={() => navigate("/validate-pdf")}>
-            <span className="mp-nav-icon">✅</span>
-            <span>Validate PDF</span>
-          </div>
-
-          <p className="mp-nav-label" style={{ marginTop: 14 }}>EPUB</p>
-          <div className="mp-nav-item" onClick={() => navigate("/remediate-epub")}>
-            <span className="mp-nav-icon">📘</span>
-            <span>Remediate EPUB</span>
-          </div>
-          <div className="mp-nav-item" onClick={() => navigate("/validate-epub")}>
-            <span className="mp-nav-icon">📗</span>
-            <span>Validate EPUB</span>
-          </div>
-
-          <p className="mp-nav-label" style={{ marginTop: 14 }}>MIS</p>
-          <div className="mp-nav-item active">
-            <span className="mp-nav-icon">📊</span>
-            <span>PDF</span>
-            <span className="mp-nav-dot"></span>
-          </div>
-          <div className="mp-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
-            <span className="mp-nav-icon">📊</span>
-            <span>EPUB</span>
-          </div>
-        </nav>
-
-        <div className="mp-sidebar-footer">
-          <div className="mp-user-section">
-            <p className="mp-user-email">{sessionStorage.getItem("userEmail")}</p>
-            <button
-              className="mp-back-btn"
-              onClick={() => navigate("/")}
-              title="Back to Home"
-            >
-              ← Back
-            </button>
-          </div>
-        </div>
-      </aside>
-
       {/* ── Main ─────────────────────────────────────────────── */}
       <main className="mp-main">
 
         {/* Topbar */}
         <div className="mp-topbar">
-          <div className="mp-breadcrumb">
-            <span className="mp-bc-root">Accessibility</span>
-            <span className="mp-bc-sep">›</span>
-            <span className="mp-bc-root">MIS</span>
-            <span className="mp-bc-sep">›</span>
-            <span className="mp-bc-current">PDF</span>
+          <div className="mp-topbar-inner">
+            <button
+              className="mp-back-fab"
+              onClick={() => navigate("/accessibility")}
+              title="Back to Accessibility"
+              aria-label="Back to Accessibility"
+            >
+              ←
+            </button>
+            <div className="mp-breadcrumb">
+              <span className="mp-bc-root">Accessibility</span>
+              <span className="mp-bc-sep">›</span>
+              <span className="mp-bc-root">MIS</span>
+              <span className="mp-bc-sep">›</span>
+              <span className="mp-bc-current">PDF</span>
+            </div>
           </div>
         </div>
 

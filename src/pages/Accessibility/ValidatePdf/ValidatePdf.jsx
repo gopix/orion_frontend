@@ -1,4 +1,3 @@
-
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { orionValidatePdf } from "../../../services/apiServices";
@@ -203,6 +202,16 @@
 //           <div className="vp-nav-item" onClick={() => navigate("/validate-epub")}>
 //             <span className="vp-nav-icon">📗</span>
 //             <span>Validate EPUB</span>
+//           </div>
+
+//           <p className="vp-nav-label" style={{ marginTop: 14 }}>PPT</p>
+//           <div className="vp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+//             <span className="vp-nav-icon">📽️</span>
+//             <span>Remediate PPT</span>
+//           </div>
+//           <div className="vp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
+//             <span className="vp-nav-icon">📽️</span>
+//             <span>Validate PPT</span>
 //           </div>
 
 //           {userIsAdmin && (
@@ -710,10 +719,6 @@
 // }
 
 
-
-
-
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { orionValidatePdf } from "../../../services/apiServices";
@@ -889,89 +894,25 @@ export default function ValidatePdf() {
   return (
     <div className="vp-page">
 
-      {/* ── Sidebar ──────────────────────────────────────────── */}
-      <aside className="vp-sidebar">
-        <div className="vp-logo">
-          <div className="vp-logo-mark">O</div>
-          <div className="vp-logo-text">
-            <span>ORION</span>
-            <small>Accessibility & Remediation</small>
-          </div>
-        </div>
-        <nav className="vp-nav">
-          <p className="vp-nav-label">PDF</p>
-          <div className="vp-nav-item" onClick={() => navigate("/remediate-pdf")}>
-            <span className="vp-nav-icon">🛠️</span>
-            <span>Remediate PDF</span>
-          </div>
-          <div className="vp-nav-item active">
-            <span className="vp-nav-icon">✅</span>
-            <span>Validate PDF</span>
-            <span className="vp-nav-dot"></span>
-          </div>
-
-          <p className="vp-nav-label" style={{ marginTop: 14 }}>EPUB</p>
-          <div className="vp-nav-item" onClick={() => navigate("/remediate-epub")}>
-            <span className="vp-nav-icon">📘</span>
-            <span>Remediate EPUB</span>
-          </div>
-          <div className="vp-nav-item" onClick={() => navigate("/validate-epub")}>
-            <span className="vp-nav-icon">📗</span>
-            <span>Validate EPUB</span>
-          </div>
-
-          <p className="vp-nav-label" style={{ marginTop: 14 }}>PPT</p>
-          <div className="vp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
-            <span className="vp-nav-icon">📽️</span>
-            <span>Remediate PPT</span>
-          </div>
-          <div className="vp-nav-item" onClick={() => alert("This dashboard is coming soon.")}>
-            <span className="vp-nav-icon">📽️</span>
-            <span>Validate PPT</span>
-          </div>
-
-          {userIsAdmin && (
-            <>
-              <p className="vp-nav-label" style={{ marginTop: 14 }}>MIS</p>
-              <div className="vp-nav-item" onClick={() => navigate("/mis-pdf")}>
-                <span className="vp-nav-icon">📊</span>
-                <span>PDF</span>
-              </div>
-              <div className="vp-nav-item" onClick={() => alert("EPUB MIS report is coming soon.")}>
-                <span className="vp-nav-icon">📊</span>
-                <span>EPUB</span>
-              </div>
-            </>
-          )}
-
-          {/* <div className="vp-nav-item" onClick={() => navigate("/template")}>
-            <span className="vp-nav-icon">📋</span>
-            <span>Template</span>
-          </div> */}
-        </nav>
-        <div className="vp-sidebar-footer">
-          <div className="vp-user-section">
-            <p className="vp-user-email">{sessionStorage.getItem("userEmail")}</p>
-            <button 
-              className="vp-back-btn"
-              onClick={() => navigate("/")}
-              title="Back to Home"
-            >
-              ← Back
-            </button>
-          </div>
-        </div>
-      </aside>
-
       {/* ── Main ─────────────────────────────────────────────── */}
       <main className="vp-main">
 
         {/* Topbar */}
         <div className="vp-topbar">
-          <div className="vp-breadcrumb">
-            <span className="vp-bc-root">Accessibility</span>
-            <span className="vp-bc-sep">›</span>
-            <span className="vp-bc-current">Validate PDF</span>
+          <div className="vp-topbar-left">
+            <button
+              className="vp-back-fab"
+              onClick={() => navigate("/accessibility")}
+              title="Back to Accessibility"
+              aria-label="Back to Accessibility"
+            >
+              ←
+            </button>
+            <div className="vp-breadcrumb">
+              <span className="vp-bc-root">Accessibility</span>
+              <span className="vp-bc-sep">›</span>
+              <span className="vp-bc-current">Validate PDF</span>
+            </div>
           </div>
           <div className="vp-topbar-right">
             {pdfFile && !submitting && !rawResult && (
