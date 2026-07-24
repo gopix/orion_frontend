@@ -1,5 +1,7 @@
+
 // import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
+// import { isAdmin } from "../../../utils/auth";
 // import "./AccessibilitySelect.css";
 
 // const FILE_TYPES = [
@@ -7,6 +9,8 @@
 //   { id: "epub", label: "EPUB", icon: "📘", desc: "eBook Publication" },
 //   { id: "ppt", label: "PPT", icon: "📽️", desc: "PowerPoint Presentation" },
 // ];
+
+// const MIS_TYPE = { id: "mis", label: "MIS", icon: "📊", desc: "Reports & Analytics" };
 
 // const ACTIONS = [
 //   { id: "remediate", label: "Remediate", icon: "🛠️", desc: "Automatically fix accessibility issues" },
@@ -25,9 +29,12 @@
 
 // export default function AccessibilitySelect() {
 //   const navigate = useNavigate();
+//   const userIsAdmin = isAdmin();
 
-//   const [fileType, setFileType] = useState(null);   // "pdf" | "epub" | "ppt"
+//   const [fileType, setFileType] = useState(null);   // "pdf" | "epub" | "ppt" | "mis"
 //   const [action, setAction]     = useState(null);   // "remediate" | "validate"
+
+//   const fileTypes = userIsAdmin ? [...FILE_TYPES, MIS_TYPE] : FILE_TYPES;
 
 //   const handleFileTypeSelect = (id) => {
 //     setFileType(id);
@@ -35,7 +42,15 @@
 //   };
 
 //   const handleProceed = () => {
-//     if (!fileType || !action) return;
+//     if (!fileType) return;
+
+//     // MIS has no Remediate/Validate step — it goes straight to the report.
+//     if (fileType === "mis") {
+//       navigate("/mis-pdf");
+//       return;
+//     }
+
+//     if (!action) return;
 
 //     if (fileType === "ppt") {
 //       alert("This dashboard is coming soon.");
@@ -84,8 +99,8 @@
 
 //           <section className="as-step">
 //             <p className="as-step-label">Step 1 · File Type</p>
-//             <div className="as-option-grid as-option-grid-3">
-//               {FILE_TYPES.map((type) => (
+//             <div className={`as-option-grid ${userIsAdmin ? "as-option-grid-4" : "as-option-grid-3"}`}>
+//               {fileTypes.map((type) => (
 //                 <label
 //                   key={type.id}
 //                   className={`as-option-card${fileType === type.id ? " as-option-selected" : ""}`}
@@ -106,7 +121,7 @@
 //             </div>
 //           </section>
 
-//           {fileType && (
+//           {fileType && fileType !== "mis" && (
 //             <section className="as-step">
 //               <p className="as-step-label">Step 2 · Action</p>
 //               <div className="as-option-grid as-option-grid-2">
@@ -135,7 +150,7 @@
 //           <button
 //             className="as-proceed-btn"
 //             onClick={handleProceed}
-//             disabled={!fileType || !action}
+//             disabled={!fileType || (fileType !== "mis" && !action)}
 //           >
 //             Proceed →
 //           </button>
@@ -144,6 +159,10 @@
 //     </div>
 //   );
 // }
+
+
+
+
 
 
 import { useState } from "react";
@@ -165,13 +184,14 @@ const ACTIONS = [
 ];
 
 // Where each (fileType, action) combination should go.
-// "ppt" isn't wired up yet, so it isn't listed here — it's handled
-// separately with a "coming soon" alert.
+// "ppt-remediate" isn't wired up yet, so it isn't listed here — it's
+// handled separately with a "coming soon" alert.
 const ROUTES = {
   "pdf-remediate": "/remediate-pdf",
   "pdf-validate": "/validate-pdf",
   "epub-remediate": "/remediate-epub",
   "epub-validate": "/validate-epub",
+  "ppt-validate": "/validate-ppt",
 };
 
 export default function AccessibilitySelect() {
@@ -199,7 +219,7 @@ export default function AccessibilitySelect() {
 
     if (!action) return;
 
-    if (fileType === "ppt") {
+    if (fileType === "ppt" && action === "remediate") {
       alert("This dashboard is coming soon.");
       return;
     }

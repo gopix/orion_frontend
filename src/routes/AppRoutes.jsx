@@ -10,6 +10,7 @@
 // import Login          from "../pages/Auth/Login/Login";
 // import SignUp         from "../pages/Auth/SignUp/SignUp";
 // import Template       from "../pages/Template/Template";
+// import AccessibilitySelect from "../pages/Accessibility/AccessibilitySelect/AccessibilitySelect";
 // import ValidatePdf    from "../pages/Accessibility/ValidatePdf/ValidatePdf";
 // import RemediatePdf   from "../pages/Accessibility/RemediatePdf/RemediatePdf";
 // import RemediateEpub  from "../pages/Accessibility/RemediateEpub/RemediateEpub";
@@ -88,6 +89,18 @@
 //             </ProtectedRoute>
 //           }
 //         /> */}
+//         <Route
+//           path="/accessibility"
+//           element={
+//             SHOW_ACCESSIBILITY_PLUS ? (
+//               <ProtectedRoute>
+//                 <AccessibilitySelect />
+//               </ProtectedRoute>
+//             ) : (
+//               <Navigate to="/" replace />
+//             )
+//           }
+//         />
 //         <Route
 //           path="/validate-pdf"
 //           element={
@@ -194,6 +207,7 @@
 
 
 
+
 import {
   BrowserRouter,
   Routes,
@@ -207,6 +221,7 @@ import SignUp         from "../pages/Auth/SignUp/SignUp";
 import Template       from "../pages/Template/Template";
 import AccessibilitySelect from "../pages/Accessibility/AccessibilitySelect/AccessibilitySelect";
 import ValidatePdf    from "../pages/Accessibility/ValidatePdf/ValidatePdf";
+import ValidatePpt    from "../pages/Accessibility/ValidatePpt/ValidatePpt";
 import RemediatePdf   from "../pages/Accessibility/RemediatePdf/RemediatePdf";
 import RemediateEpub  from "../pages/Accessibility/RemediateEpub/RemediateEpub";
 import ValidateEpub   from "../pages/Accessibility/ValidateEpub/ValidateEpub";
@@ -302,6 +317,18 @@ function AppRoutes() {
             SHOW_ACCESSIBILITY_PLUS ? (
               <ProtectedRoute>
                 <ValidatePdf />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/validate-ppt"
+          element={
+            SHOW_ACCESSIBILITY_PLUS ? (
+              <ProtectedRoute>
+                <ValidatePpt />
               </ProtectedRoute>
             ) : (
               <Navigate to="/" replace />
