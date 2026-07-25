@@ -12,6 +12,7 @@
 // import Template       from "../pages/Template/Template";
 // import AccessibilitySelect from "../pages/Accessibility/AccessibilitySelect/AccessibilitySelect";
 // import ValidatePdf    from "../pages/Accessibility/ValidatePdf/ValidatePdf";
+// import ValidatePpt    from "../pages/Accessibility/ValidatePpt/ValidatePpt";
 // import RemediatePdf   from "../pages/Accessibility/RemediatePdf/RemediatePdf";
 // import RemediateEpub  from "../pages/Accessibility/RemediateEpub/RemediateEpub";
 // import ValidateEpub   from "../pages/Accessibility/ValidateEpub/ValidateEpub";
@@ -114,6 +115,18 @@
 //           }
 //         />
 //         <Route
+//           path="/validate-ppt"
+//           element={
+//             SHOW_ACCESSIBILITY_PLUS ? (
+//               <ProtectedRoute>
+//                 <ValidatePpt />
+//               </ProtectedRoute>
+//             ) : (
+//               <Navigate to="/" replace />
+//             )
+//           }
+//         />
+//         <Route
 //           path="/remediate-pdf"
 //           element={
 //             SHOW_ACCESSIBILITY_PLUS ? (
@@ -208,6 +221,10 @@
 
 
 
+
+
+
+
 import {
   BrowserRouter,
   Routes,
@@ -223,6 +240,7 @@ import AccessibilitySelect from "../pages/Accessibility/AccessibilitySelect/Acce
 import ValidatePdf    from "../pages/Accessibility/ValidatePdf/ValidatePdf";
 import ValidatePpt    from "../pages/Accessibility/ValidatePpt/ValidatePpt";
 import RemediatePdf   from "../pages/Accessibility/RemediatePdf/RemediatePdf";
+import RemediatePpt   from "../pages/Accessibility/RemediatePpt/RemediatePpt";
 import RemediateEpub  from "../pages/Accessibility/RemediateEpub/RemediateEpub";
 import ValidateEpub   from "../pages/Accessibility/ValidateEpub/ValidateEpub";
 import MisPdf         from "../pages/Accessibility/MisPdf/MisPdf";
@@ -341,6 +359,18 @@ function AppRoutes() {
             SHOW_ACCESSIBILITY_PLUS ? (
               <ProtectedRoute>
                 <RemediatePdf />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/remediate-ppt"
+          element={
+            SHOW_ACCESSIBILITY_PLUS ? (
+              <ProtectedRoute>
+                <RemediatePpt />
               </ProtectedRoute>
             ) : (
               <Navigate to="/" replace />

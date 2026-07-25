@@ -1,4 +1,5 @@
 
+
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 
@@ -25,6 +26,8 @@
 //   return response.json();
 // };
 
+
+// /─────────────────────────────────────────────────
 
 // // GET all checks from master table
 // export const getMasterAccessibilityChecks = async () => {
@@ -116,12 +119,25 @@
 //   return response;
 // };
 
-// // ── Orion Remediate PDF ───────────────────────────────────────
-// // POST /api/v1/accessibility/orion-remediate-pdf
+// // ── Orion Validate PPT (new API) ────────────────────────────────
+// // POST /api/v1/ppt-accessibility/orion-validate-ppt
 // // Query params: organization_id, project_id
 // // Body: multipart/form-data with "file"
-// // Returns: job_id, status, issues_detected, issues_fixed, issues_remaining,
-// //          auto_fixable_count, download_url, report_url
+// export const orionValidatePpt = async (pptFile, organizationId = 1, projectId = 1) => {
+//   const formData = new FormData();
+//   formData.append("file", pptFile, pptFile.name);
+
+//   const url = `${BASE_URL}/ppt-accessibility/orion-validate-ppt?organization_id=${organizationId}&project_id=${projectId}`;
+
+//   const response = await fetch(url, {
+//     method: "POST",
+//     body: formData,
+//     // Do NOT set Content-Type — browser sets it with boundary automatically
+//   });
+//   return response;
+// };
+
+
 // export const orionRemediatePdf = async (pdfFile, organizationId = 1, projectId = 1) => {
 //   const formData = new FormData();
 //   formData.append("file", pdfFile, pdfFile.name);
@@ -148,10 +164,7 @@
 //   return response;
 // };
 
-// // ── Remediation Report (NEW) ──────────────────────────────────
-// // GET /api/v1/accessibility/remediation-report/{job_id}
-// // Path param: job_id (string, required)
-// // Returns: response_code, message, data (full validation + remediation + re-validation report), errors
+
 // export const getRemediationReport = async (jobId) => {
 //   const response = await fetch(`${BASE_URL}/accessibility/remediation-report/${jobId}`, {
 //     method: "GET",
@@ -160,10 +173,7 @@
 //   return response;
 // };
 
-// // ── Download Remediated PDF ────────────────────────────────────
-// // GET /api/v1/accessibility/download-remediated-pdf/{job_id}
-// // Path param: job_id (string, required)
-// // Returns: the remediated PDF file (binary)
+// // ── Download Remediated PDF 
 // export const downloadRemediatedPdf = async (jobId) => {
 //   const response = await fetch(`${BASE_URL}/accessibility/download-remediated-pdf/${jobId}`, {
 //     method: "GET",
@@ -171,10 +181,7 @@
 //   return response;
 // };
 
-// // ── Accessibility Dashboard (NEW) ───────────────────────────────
-// // GET /api/v1/accessibility/dashboard/{job_id}
-// // Path param: job_id (string, required)
-// // Returns: response_code, message, data (dashboard: accessibility_score, pdfua_compliance, wcag_risk, critical_issues, ...)
+
 // export const getAccessibilityDashboard = async (jobId) => {
 //   const response = await fetch(`${BASE_URL}/accessibility/dashboard/${jobId}`, {
 //     method: "GET",
@@ -221,6 +228,11 @@
 //   });
 //   return response.json();
 // };
+
+
+
+
+
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -375,6 +387,58 @@ export const orionValidatePpt = async (pptFile, organizationId = 1, projectId = 
     method: "POST",
     body: formData,
     // Do NOT set Content-Type — browser sets it with boundary automatically
+  });
+  return response;
+};
+
+// ── Orion Remediate PPT ────────────────────────────────────────
+// POST /api/v1/ppt-accessibility/orion-remediate-ppt
+// Query params: organization_id, project_id
+// Body: multipart/form-data with "file"
+// Returns: response_code 202, message, data { job_id, status, status_url, download_url, report_url }, errors
+export const orionRemediatePpt = async (pptFile, organizationId = 1, projectId = 1) => {
+  const formData = new FormData();
+  formData.append("file", pptFile, pptFile.name);
+
+  const url = `${BASE_URL}/ppt-accessibility/orion-remediate-ppt?organization_id=${organizationId}&project_id=${projectId}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    body: formData,
+    // Do NOT set Content-Type — browser sets it with boundary automatically
+  });
+  return response;
+};
+
+// ── PPT Remediation Status ──────────────────────────────────────
+// GET /api/v1/ppt-accessibility/ppt-remediation-status/{job_id}
+// Path param: job_id (string, required)
+export const getPptRemediationStatus = async (jobId) => {
+  const response = await fetch(`${BASE_URL}/ppt-accessibility/ppt-remediation-status/${jobId}`, {
+    method: "GET",
+    headers: { "Accept": "application/json" },
+  });
+  return response;
+};
+
+// ── Download Remediated PPT ─────────────────────────────────────
+// GET /api/v1/ppt-accessibility/download-remediated-ppt/{job_id}
+// Path param: job_id (string, required)
+// Returns: the remediated PPT file (binary)
+export const downloadRemediatedPpt = async (jobId) => {
+  const response = await fetch(`${BASE_URL}/ppt-accessibility/download-remediated-ppt/${jobId}`, {
+    method: "GET",
+  });
+  return response;
+};
+
+// ── PPT Remediation Report ──────────────────────────────────────
+// GET /api/v1/ppt-accessibility/remediation-report/{job_id}
+// Path param: job_id (string, required)
+export const getPptRemediationReport = async (jobId) => {
+  const response = await fetch(`${BASE_URL}/ppt-accessibility/remediation-report/${jobId}`, {
+    method: "GET",
+    headers: { "Accept": "application/json" },
   });
   return response;
 };

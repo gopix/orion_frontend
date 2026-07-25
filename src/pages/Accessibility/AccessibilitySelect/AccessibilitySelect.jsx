@@ -18,13 +18,14 @@
 // ];
 
 // // Where each (fileType, action) combination should go.
-// // "ppt" isn't wired up yet, so it isn't listed here — it's handled
-// // separately with a "coming soon" alert.
+// // "ppt-remediate" isn't wired up yet, so it isn't listed here — it's
+// // handled separately with a "coming soon" alert.
 // const ROUTES = {
 //   "pdf-remediate": "/remediate-pdf",
 //   "pdf-validate": "/validate-pdf",
 //   "epub-remediate": "/remediate-epub",
 //   "epub-validate": "/validate-epub",
+//   "ppt-validate": "/validate-ppt",
 // };
 
 // export default function AccessibilitySelect() {
@@ -52,7 +53,7 @@
 
 //     if (!action) return;
 
-//     if (fileType === "ppt") {
+//     if (fileType === "ppt" && action === "remediate") {
 //       alert("This dashboard is coming soon.");
 //       return;
 //     }
@@ -165,6 +166,7 @@
 
 
 
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../../../utils/auth";
@@ -184,14 +186,13 @@ const ACTIONS = [
 ];
 
 // Where each (fileType, action) combination should go.
-// "ppt-remediate" isn't wired up yet, so it isn't listed here — it's
-// handled separately with a "coming soon" alert.
 const ROUTES = {
   "pdf-remediate": "/remediate-pdf",
   "pdf-validate": "/validate-pdf",
   "epub-remediate": "/remediate-epub",
   "epub-validate": "/validate-epub",
   "ppt-validate": "/validate-ppt",
+  "ppt-remediate": "/remediate-ppt",
 };
 
 export default function AccessibilitySelect() {
@@ -218,11 +219,6 @@ export default function AccessibilitySelect() {
     }
 
     if (!action) return;
-
-    if (fileType === "ppt" && action === "remediate") {
-      alert("This dashboard is coming soon.");
-      return;
-    }
 
     const route = ROUTES[`${fileType}-${action}`];
     if (route) navigate(route);
