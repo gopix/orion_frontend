@@ -1,3 +1,6 @@
+
+
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -5,6 +8,7 @@ import {
   getPptRemediationStatus,
   downloadRemediatedPpt,
   getPptRemediationReport,
+  getPptAccessibilityDashboard,
 } from "../../../services/apiServices";
 import "./RemediatePpt.css";
 
@@ -54,6 +58,11 @@ export default function RemediatePpt() {
   const [reportError, setReportError]     = useState("");
   const [downloadingReport, setDownloadingReport] = useState(false);
 
+  // ── Dashboard (KPI) state ──────────────────────────────────────
+  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [dashboardData, setDashboardData]       = useState(null);
+  const [dashboardError, setDashboardError]     = useState("");
+
   const pptInputRef = useRef(null);
   const pollRef = useRef(null);
 
@@ -83,6 +92,9 @@ export default function RemediatePpt() {
     setReportData(null);
     setReportError("");
     setDownloadingReport(false);
+    setDashboardLoading(false);
+    setDashboardData(null);
+    setDashboardError("");
     if (pollRef.current) {
       clearInterval(pollRef.current);
       pollRef.current = null;
@@ -246,7 +258,8 @@ export default function RemediatePpt() {
         throw new Error(errMsg);
       }
       const data = await response.json();
-      setReportData(data);
+      const d = data?.data ?? data;
+      setReportData(d);
     } catch (err) {
       setReportError(err.message || "Could not fetch the remediation report. Please try again.");
     } finally {
@@ -260,6 +273,29 @@ export default function RemediatePpt() {
     const timestamp = new Date().toISOString().split("T")[0];
     downloadAsJson(reportData, `ppt-remediation-report-${jobId}-${timestamp}.json`);
     setDownloadingReport(false);
+  };
+
+  // ── Fetch PPT accessibility dashboard (KPIs) ──────────────────
+  const handleViewDashboard = async () => {
+    if (!jobId) return;
+    setDashboardLoading(true);
+    setDashboardError("");
+    try {
+      const response = await getPptAccessibilityDashboard(jobId);
+      if (!response.ok) {
+        let errMsg = `Server error: ${response.status}`;
+        try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
+        catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
+        throw new Error(errMsg);
+      }
+      const data = await response.json();
+      const d = data?.data ?? data;
+      setDashboardData(d);
+    } catch (err) {
+      setDashboardError(err.message || "Could not fetch the accessibility dashboard. Please try again.");
+    } finally {
+      setDashboardLoading(false);
+    }
   };
 
   const copyJobId = async () => {
@@ -546,19 +582,212 @@ export default function RemediatePpt() {
                     </div>
                   </div>
 
+                  {/* Card 5 — PPT Dashboard */}
+                  <div className="rpp-card rpp-card-action">
+                    <div className={`rpp-card-icon-wrap ${isDone ? "ic-done" : "ic-locked"}`}>
+                      <span>📊</span>
+                    </div>
+                    <div className="rpp-card-body">
+                      <span className="rpp-card-label">PPT Dashboard</span>
+                      <span className="rpp-card-sub">
+                        {isDone ? "See headline accessibility KPIs for this job." : "Available once remediation completes."}
+                      </span>
+                      {!dashboardData ? (
+                        <button
+                          className="rpp-card-btn"
+                          onClick={handleViewDashboard}
+                          disabled={!isDone || dashboardLoading}
+                        >
+                          {dashboardLoading
+                            ? <><span className="rpp-btn-spin"></span> Loading…</>
+                            : "View Dashboard"}
+                        </button>
+                      ) : (
+                        <button
+                          className="rpp-card-btn rpp-card-btn-secondary"
+                          onClick={handleViewDashboard}
+                          disabled={dashboardLoading}
+                        >
+                          {dashboardLoading
+                            ? <><span className="rpp-btn-spin"></span> Refreshing…</>
+                            : "Refresh Dashboard"}
+                        </button>
+                      )}
+                      {dashboardError && <span className="rpp-card-sub rpp-card-sub-error">{dashboardError}</span>}
+                    </div>
+                  </div>
+
                 </div>
               )}
 
-              {/* ── Report preview ── */}
+              {/* ── PPT Dashboard preview (KPIs) ── */}
+              {dashboardData && (
+                <div className="rpp-dashboard-preview">
+                  <div className="rpp-report-preview-head">
+                    <span className="rpp-report-preview-icon">📊</span>
+                    <h3>PPT Accessibility Dashboard</h3>
+                  </div>
+                  <p className="rpp-report-preview-msg">
+                    {dashboardData?.document?.name ? `${dashboardData.document.name} · ` : ""}
+                    Job <code className="rpp-inline-code">{dashboardData?.job_id || jobId}</code>
+                  </p>
+
+                  <div className="rpp-kpi-grid">
+                    <div className="rpp-kpi-tile kpi-before">
+                      <span className="rpp-kpi-label">Score Before</span>
+                      <span className="rpp-kpi-value">
+                        {dashboardData?.dashboard?.accessibility_score_before ?? "—"}
+                      </span>
+                    </div>
+                    <div className="rpp-kpi-tile kpi-after">
+                      <span className="rpp-kpi-label">Score After</span>
+                      <span className="rpp-kpi-value">
+                        {dashboardData?.dashboard?.accessibility_score_after ?? "—"}
+                      </span>
+                    </div>
+                    <div className="rpp-kpi-tile kpi-fixed">
+                      <span className="rpp-kpi-label">Issues Fixed</span>
+                      <span className="rpp-kpi-value">
+                        {dashboardData?.dashboard?.issues_fixed ?? "—"}
+                      </span>
+                    </div>
+                    <div className="rpp-kpi-tile kpi-remaining">
+                      <span className="rpp-kpi-label">Issues Remaining</span>
+                      <span className="rpp-kpi-value">
+                        {dashboardData?.dashboard?.issues_remaining ?? "—"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {dashboardData?.summary && (
+                    <div className="rpp-dashboard-subrow">
+                      <span><strong>{dashboardData.summary.issues_before ?? "—"}</strong> issues before</span>
+                      <span><strong>{dashboardData.summary.issues_failed ?? "—"}</strong> failed to fix</span>
+                      <span><strong>{dashboardData.summary.agents_run ?? "—"}</strong> agents run</span>
+                      <span><strong>{dashboardData.summary.agents_errored ?? "—"}</strong> agents errored</span>
+                      <span><strong>{dashboardData.summary.regressions?.length ?? 0}</strong> regressions</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Report preview (full breakdown) ── */}
               {reportData && (
                 <div className="rpp-report-preview">
                   <div className="rpp-report-preview-head">
                     <span className="rpp-report-preview-icon">📄</span>
-                    <h3>Report Summary</h3>
+                    <h3>Remediation Report</h3>
                   </div>
                   <p className="rpp-report-preview-msg">
-                    {reportData?.message || "Report fetched successfully. Download the full JSON for complete details."}
+                    {reportData?.document?.name ? `${reportData.document.name} · ` : ""}
+                    Status: <strong>{reportData?.status || "—"}</strong>
+                    {reportData?.created_at ? ` · ${new Date(reportData.created_at).toLocaleString()}` : ""}
                   </p>
+
+                  {reportData?.summary && (
+                    <div className="rpp-kpi-grid rpp-kpi-grid-7">
+                      <div className="rpp-kpi-tile kpi-before">
+                        <span className="rpp-kpi-label">Score Before</span>
+                        <span className="rpp-kpi-value">{reportData.summary.score_before ?? "—"}</span>
+                      </div>
+                      <div className="rpp-kpi-tile kpi-after">
+                        <span className="rpp-kpi-label">Score After</span>
+                        <span className="rpp-kpi-value">{reportData.summary.score_after ?? "—"}</span>
+                      </div>
+                      <div className="rpp-kpi-tile kpi-fixed">
+                        <span className="rpp-kpi-label">Fixed</span>
+                        <span className="rpp-kpi-value">{reportData.summary.issues_fixed ?? "—"}</span>
+                      </div>
+                      <div className="rpp-kpi-tile kpi-failed">
+                        <span className="rpp-kpi-label">Failed</span>
+                        <span className="rpp-kpi-value">{reportData.summary.issues_failed ?? "—"}</span>
+                      </div>
+                      <div className="rpp-kpi-tile kpi-remaining">
+                        <span className="rpp-kpi-label">Remaining</span>
+                        <span className="rpp-kpi-value">{reportData.summary.issues_remaining ?? "—"}</span>
+                      </div>
+                      <div className="rpp-kpi-tile kpi-before">
+                        <span className="rpp-kpi-label">Agents Run</span>
+                        <span className="rpp-kpi-value">{reportData.summary.agents_run ?? "—"}</span>
+                      </div>
+                      <div className="rpp-kpi-tile kpi-failed">
+                        <span className="rpp-kpi-label">Agents Errored</span>
+                        <span className="rpp-kpi-value">{reportData.summary.agents_errored ?? "—"}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {Array.isArray(reportData?.issues_fixed) && reportData.issues_fixed.length > 0 && (
+                    <div className="rpp-report-section">
+                      <h4 className="rpp-report-section-title">
+                        <span className="rpp-report-section-dot dot-fixed"></span>
+                        Issues Fixed ({reportData.issues_fixed.length})
+                      </h4>
+                      <div className="rpp-issue-list">
+                        {reportData.issues_fixed.map((issue, i) => (
+                          <div className="rpp-issue-row" key={`fixed-${issue.rule_id}-${i}`}>
+                            <span className={`rpp-severity-badge sev-${(issue.severity || "").toLowerCase()}`}>
+                              {issue.severity}
+                            </span>
+                            <div className="rpp-issue-body">
+                              <span className="rpp-issue-rule">{issue.rule_id} · {issue.category}</span>
+                              <span className="rpp-issue-msg">{issue.message}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {Array.isArray(reportData?.issues_failed) && reportData.issues_failed.length > 0 && (
+                    <div className="rpp-report-section">
+                      <h4 className="rpp-report-section-title">
+                        <span className="rpp-report-section-dot dot-failed"></span>
+                        Needs Manual Review ({reportData.issues_failed.length})
+                      </h4>
+                      <div className="rpp-issue-list">
+                        {reportData.issues_failed.map((issue, i) => (
+                          <div className="rpp-issue-row" key={`failed-${issue.rule_id}-${i}`}>
+                            <span className={`rpp-severity-badge sev-${(issue.severity || "").toLowerCase()}`}>
+                              {issue.severity}
+                            </span>
+                            <div className="rpp-issue-body">
+                              <span className="rpp-issue-rule">{issue.rule_id} · {issue.category}</span>
+                              <span className="rpp-issue-msg">{issue.message}</span>
+                              {issue.remediation_error && (
+                                <span className="rpp-issue-error">{issue.remediation_error}</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {Array.isArray(reportData?.remediation_results) && reportData.remediation_results.length > 0 && (
+                    <div className="rpp-report-section">
+                      <h4 className="rpp-report-section-title">
+                        <span className="rpp-report-section-dot dot-agent"></span>
+                        Remediation Actions ({reportData.remediation_results.length})
+                      </h4>
+                      <div className="rpp-issue-list">
+                        {reportData.remediation_results.map((res, i) => (
+                          <div className="rpp-issue-row" key={`res-${res.rule_id}-${i}`}>
+                            <span className={`rpp-result-icon ${res.success ? "res-ok" : "res-fail"}`}>
+                              {res.success ? "✓" : "✕"}
+                            </span>
+                            <div className="rpp-issue-body">
+                              <span className="rpp-issue-rule">{res.rule_id} · {res.agent_name}</span>
+                              {res.changes_made && res.changes_made.length > 0 && (
+                                <span className="rpp-issue-msg">{res.changes_made.join("; ")}</span>
+                              )}
+                              {res.error && <span className="rpp-issue-error">{res.error}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -1,4 +1,6 @@
 
+
+
 // import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { isAdmin } from "../../../utils/auth";
@@ -18,14 +20,13 @@
 // ];
 
 // // Where each (fileType, action) combination should go.
-// // "ppt-remediate" isn't wired up yet, so it isn't listed here — it's
-// // handled separately with a "coming soon" alert.
 // const ROUTES = {
 //   "pdf-remediate": "/remediate-pdf",
 //   "pdf-validate": "/validate-pdf",
 //   "epub-remediate": "/remediate-epub",
 //   "epub-validate": "/validate-epub",
 //   "ppt-validate": "/validate-ppt",
+//   "ppt-remediate": "/remediate-ppt",
 // };
 
 // export default function AccessibilitySelect() {
@@ -52,11 +53,6 @@
 //     }
 
 //     if (!action) return;
-
-//     if (fileType === "ppt" && action === "remediate") {
-//       alert("This dashboard is coming soon.");
-//       return;
-//     }
 
 //     const route = ROUTES[`${fileType}-${action}`];
 //     if (route) navigate(route);
@@ -165,8 +161,6 @@
 
 
 
-
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../../../utils/auth";
@@ -181,8 +175,8 @@ const FILE_TYPES = [
 const MIS_TYPE = { id: "mis", label: "MIS", icon: "📊", desc: "Reports & Analytics" };
 
 const ACTIONS = [
-  { id: "remediate", label: "Remediate", icon: "🛠️", desc: "Automatically fix accessibility issues" },
   { id: "validate", label: "Validate", icon: "✅", desc: "Check compliance against accessibility standards" },
+  { id: "remediate", label: "Remediate", icon: "🛠️", desc: "Automatically fix accessibility issues" },
 ];
 
 // Where each (fileType, action) combination should go.
