@@ -1,363 +1,5 @@
 
-
-// import { useState, useRef } from "react";
-// import { useNavigate } from "react-router-dom";
-// import {
-//   SHOW_EDITOR_PLUS,
-//   SHOW_PUBLISH_PLUS,
-//   SHOW_ACCESSIBILITY_PLUS,
-// } from "../../constants/featureFlags";
-// import { isAdmin } from "../../utils/auth";
-// import "./Submit.css";
-
-// export default function Submit() {
-//   const navigate = useNavigate();
-//   const userIsAdmin = isAdmin();
-//   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-//   const [docFile, setDocFile] = useState(null);
-//   const [dragOver, setDragOver] = useState(false);
-//   const [uploadError, setUploadError] = useState("");
-//   const [validationResult, setValidationResult] = useState(null);
-
-//   const docInputRef = useRef(null);
-
-//   const validateFile = (file) => {
-//     if (!file) return null;
-//     const validTypes = [".doc", ".docx", ".pdf"];
-//     const isValid = validTypes.some(type => file.name.toLowerCase().endsWith(type));
-//     if (!isValid) {
-//       setUploadError("Only .doc, .docx, and .pdf files are supported.");
-//       return null;
-//     }
-//     if (file.size > 50 * 1024 * 1024) {
-//       setUploadError("File exceeds the 50 MB limit. Please upload a smaller file.");
-//       return null;
-//     }
-//     return file;
-//   };
-
-//   const applyFile = (file) => {
-//     const valid = validateFile(file);
-//     if (!valid) return;
-//     setDocFile(valid);
-//     setUploadError("");
-//     setValidationResult(null);
-//   };
-
-//   const handleFileSelect = (e) => {
-//     const file = e.target.files[0];
-//     if (file) applyFile(file);
-//     e.target.value = "";
-//   };
-
-//   const handleDrop = (e) => {
-//     e.preventDefault();
-//     setDragOver(false);
-//     const file = e.dataTransfer.files[0];
-//     if (file) applyFile(file);
-//   };
-
-//   const handleRemove = (e) => {
-//     e.stopPropagation();
-//     setDocFile(null);
-//     setUploadError("");
-//     setValidationResult(null);
-//   };
-
-//   const formatBytes = (bytes) => {
-//     if (bytes < 1024) return `${bytes} B`;
-//     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-//     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-//   };
-
-//   const handleValidate = () => {
-//     if (!docFile) {
-//       setUploadError("Please upload a file first.");
-//       return;
-//     }
-//     // Simulate validation
-//     setValidationResult({
-//       status: "success",
-//       message: "Validation completed successfully",
-//       metrics: {
-//         originality: 98,
-//         compliance: 95,
-//         readability: 92,
-//         formatting: 87
-//       },
-//       issues: [
-//         { type: "warning", text: "Document contains 3 inconsistent formatting styles" },
-//         { type: "warning", text: "Some references are not properly cited" }
-//       ]
-//     });
-//   };
-
-//   return (
-//     <div className="submit-page">
-//       {/* ── Sidebar ──────────────────────────────────────────── */}
-//       <aside className={`submit-sidebar${sidebarCollapsed ? " collapsed" : ""}`}>
-//         <div className="submit-logo">
-//           <div className="submit-logo-mark">O</div>
-//           <div className="submit-logo-text">
-//             <span>ORION</span>
-//             <small>Pre-Editorial Validation</small>
-//           </div>
-//         </div>
-
-//         <nav className="submit-nav">
-//           {userIsAdmin ? (
-//             <>
-//               <p className="submit-nav-label">WORKSPACE</p>
-//               <div className="submit-nav-item active">
-//                 <span className="submit-nav-icon">📑</span>
-//                 <span>Submit+</span>
-//                 <span className="submit-nav-dot"></span>
-//               </div>
-//               {SHOW_EDITOR_PLUS && (
-//                 <div className="submit-nav-item" onClick={() => navigate("/editor")}>
-//                   <span className="submit-nav-icon">📝</span>
-//                   <span>Editor+</span>
-//                 </div>
-//               )}
-//               {SHOW_PUBLISH_PLUS && (
-//                 <div className="submit-nav-item" onClick={() => navigate("/publish")}>
-//                   <span className="submit-nav-icon">📚</span>
-//                   <span>Publish+</span>
-//                 </div>
-//               )}
-//               {SHOW_ACCESSIBILITY_PLUS && (
-//                 <div className="submit-nav-item" onClick={() => navigate("/remediate-pdf")}>
-//                   <span className="submit-nav-icon">🔧</span>
-//                   <span>Accessibility</span>
-//                 </div>
-//               )}
-//             </>
-//           ) : (
-//             <button
-//               type="button"
-//               className="submit-nav-toggle"
-//               onClick={() => setSidebarCollapsed((c) => !c)}
-//               title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-//               aria-label="Toggle sidebar"
-//             >
-//               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-//                 <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-//               </svg>
-//             </button>
-//           )}
-//         </nav>
-
-//         <div className="submit-sidebar-footer">
-//           <div className="submit-user-section">
-//             <p className="submit-user-email">{sessionStorage.getItem("userEmail")}</p>
-//             <button 
-//               className="submit-back-btn"
-//               onClick={() => navigate("/")}
-//               title="Back to Home"
-//             >
-//               <span className="submit-back-icon">←</span>
-//               <span className="submit-back-label">Back</span>
-//             </button>
-//           </div>
-//         </div>
-//       </aside>
-
-//       {/* ── Main ─────────────────────────────────────────────── */}
-//       <main className="submit-main">
-//         <div className="submit-container">
-//           {!docFile ? (
-//             <section className="submit-upload-section">
-//               <div className="submit-upload-wrapper">
-//                 <div className="submit-upload-icon">📤</div>
-//                 <h1 className="submit-upload-title">Submit Document for Validation</h1>
-//                 <p className="submit-upload-desc">
-//                   Upload your manuscript or document for pre-editorial validation
-//                 </p>
-//                 <p className="submit-upload-subdesc">
-//                   Maximum file size: 50 MB. Supports .doc, .docx, .pdf files.
-//                 </p>
-
-//                 <div
-//                   className={`submit-drop-zone ${dragOver ? "submit-drag-over" : ""}`}
-//                   onDragOver={() => setDragOver(true)}
-//                   onDragLeave={() => setDragOver(false)}
-//                   onDrop={handleDrop}
-//                   onClick={() => docInputRef.current?.click()}
-//                 >
-//                   <div className="submit-drop-content">
-//                     <div className="submit-drop-icon">📁</div>
-//                     <p className="submit-drop-text">Drop your document here</p>
-//                     <p className="submit-drop-subtext">or <strong>click to select</strong></p>
-//                   </div>
-//                 </div>
-
-//                 <input
-//                   ref={docInputRef}
-//                   type="file"
-//                   accept=".doc,.docx,.pdf"
-//                   onChange={handleFileSelect}
-//                   style={{ display: "none" }}
-//                 />
-
-//                 {uploadError && (
-//                   <div className="submit-error-banner">
-//                     <span className="submit-error-ico">⚠</span>
-//                     <div>
-//                       <p className="submit-error-ttl">Upload Failed</p>
-//                       <p className="submit-error-msg">{uploadError}</p>
-//                     </div>
-//                   </div>
-//                 )}
-//               </div>
-//             </section>
-//           ) : (
-//             <section className="submit-work-section">
-//               <div className="submit-work-container">
-//                 <div className="submit-file-management-section">
-//                   <div className="submit-fm-header">
-//                     <h3 className="submit-fm-title">Step 1: Document Analysis</h3>
-//                   </div>
-
-//                   {docFile && (
-//                     <div className="submit-fm-content">
-//                       <div className="submit-file-card">
-//                         <div className="submit-file-icon">📄</div>
-//                         <div className="submit-file-info">
-//                           <p className="submit-file-name">{docFile.name}</p>
-//                           <p className="submit-file-size">{formatBytes(docFile.size)}</p>
-//                         </div>
-//                         <button
-//                           className="submit-file-remove"
-//                           onClick={handleRemove}
-//                           title="Remove file"
-//                         >
-//                           ✕
-//                         </button>
-//                       </div>
-
-//                       <button
-//                         className="submit-btn"
-//                         onClick={handleValidate}
-//                       >
-//                         <span className="submit-btn-icon">✓</span>
-//                         Validate Document
-//                       </button>
-//                     </div>
-//                   )}
-//                 </div>
-
-//                 {validationResult && (
-//                   <section className="submit-results-section">
-//                     <div className="submit-results-header">
-//                       <h3 className="submit-results-title">Validation Results</h3>
-//                       <p className="submit-results-desc">
-//                         Pre-editorial validation analysis complete
-//                       </p>
-//                     </div>
-
-//                     {validationResult.status === "success" && (
-//                       <div className="submit-success-banner">
-//                         <span className="submit-banner-icon">✓</span>
-//                         <div className="submit-banner-content">
-//                           <p className="submit-banner-title">Validation Complete</p>
-//                           <p className="submit-banner-message">{validationResult.message}</p>
-//                         </div>
-//                       </div>
-//                     )}
-
-//                     <div className="submit-metrics-section">
-//                       <h4 className="submit-metrics-title">Quality Metrics</h4>
-//                       <div className="submit-metrics-grid">
-//                         <div className="submit-metric-card">
-//                           <div className="submit-metric-label">Originality</div>
-//                           <div className="submit-metric-bar">
-//                             <div 
-//                               className="submit-metric-fill" 
-//                               style={{ width: `${validationResult.metrics.originality}%` }}
-//                             ></div>
-//                           </div>
-//                           <div className="submit-metric-value">{validationResult.metrics.originality}%</div>
-//                         </div>
-
-//                         <div className="submit-metric-card">
-//                           <div className="submit-metric-label">Compliance</div>
-//                           <div className="submit-metric-bar">
-//                             <div 
-//                               className="submit-metric-fill" 
-//                               style={{ width: `${validationResult.metrics.compliance}%` }}
-//                             ></div>
-//                           </div>
-//                           <div className="submit-metric-value">{validationResult.metrics.compliance}%</div>
-//                         </div>
-
-//                         <div className="submit-metric-card">
-//                           <div className="submit-metric-label">Readability</div>
-//                           <div className="submit-metric-bar">
-//                             <div 
-//                               className="submit-metric-fill" 
-//                               style={{ width: `${validationResult.metrics.readability}%` }}
-//                             ></div>
-//                           </div>
-//                           <div className="submit-metric-value">{validationResult.metrics.readability}%</div>
-//                         </div>
-
-//                         <div className="submit-metric-card">
-//                           <div className="submit-metric-label">Formatting</div>
-//                           <div className="submit-metric-bar">
-//                             <div 
-//                               className="submit-metric-fill" 
-//                               style={{ width: `${validationResult.metrics.formatting}%` }}
-//                             ></div>
-//                           </div>
-//                           <div className="submit-metric-value">{validationResult.metrics.formatting}%</div>
-//                         </div>
-//                       </div>
-//                     </div>
-
-//                     {validationResult.issues && validationResult.issues.length > 0 && (
-//                       <div className="submit-issues-section">
-//                         <h4 className="submit-issues-title">Found Issues</h4>
-//                         <div className="submit-issues-list">
-//                           {validationResult.issues.map((issue, idx) => (
-//                             <div key={idx} className={`submit-issue-item submit-issue-${issue.type}`}>
-//                               <span className="submit-issue-icon">⚠️</span>
-//                               <p className="submit-issue-text">{issue.text}</p>
-//                             </div>
-//                           ))}
-//                         </div>
-//                       </div>
-//                     )}
-
-//                     <div className="submit-action-row">
-//                       <button 
-//                         className="submit-action-btn submit-action-primary"
-//                         onClick={() => setValidationResult(null)}
-//                       >
-//                         <span className="submit-btn-icon">🔄</span> Validate Another
-//                       </button>
-//                       <button 
-//                         className="submit-action-btn submit-action-secondary"
-//                         onClick={() => setDocFile(null)}
-//                       >
-//                         <span className="submit-btn-icon">✕</span> Close
-//                       </button>
-//                     </div>
-//                   </section>
-//                 )}
-//               </div>
-//             </section>
-//           )}
-//         </div>
-//       </main>
-//     </div>
-//   );
-// }
-
-
-
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   SHOW_EDITOR_PLUS,
@@ -365,6 +7,7 @@ import {
   SHOW_ACCESSIBILITY_PLUS,
 } from "../../constants/featureFlags";
 import { isAdmin } from "../../utils/auth";
+import { getBookForgeProjects, updateBookForgeProject, deleteBookForgeProject } from "../../services/apiServices";
 import "./Submit.css";
 
 /* ── Dummy seed data (no API yet) ─────────────────────────────── */
@@ -374,18 +17,6 @@ const INITIAL_PROJECTS = [
   { id: 3, title: "Class 10 Science NCERT+", stage: "Outline", sme: "Ms. Verma", deadline: "Aug 5", overdue: false, progress: 20 },
   { id: 4, title: "JEE Advanced Chemistry", stage: "Export Ready", sme: "Dr. Mehta", deadline: "Done", overdue: false, progress: 100 },
   { id: 5, title: "NEET Biology Vol.2", stage: "Overdue", sme: "Dr. Singh", deadline: "Jun 28", overdue: true, progress: 58 },
-];
-
-const INITIAL_APPROVALS = [
-  { id: 1, title: "Ch. 4 Draft — UPSC GS1", status: "Awaiting SME", type: "review", detail: "Dr. Sharma left 3 open comments about terminology consistency in Chapter 4. Resolve before the outline can move to drafting." },
-  { id: 2, title: "Outline v2 — SSC CGL Math", status: "Awaiting Editor", type: "review", detail: "The editor flagged 2 sections that need more worked examples before this outline can be approved." },
-  { id: 3, title: "Final Export — JEE Chemistry", status: "Approved", type: "download", detail: "JEE_Advanced_Chemistry_Final.pdf", size: "12.4 MB" },
-];
-
-const SME_ACTIVITY = [
-  { initials: "DS", color: "purple", text: <><strong>Dr. Sharma</strong> added 3 interview notes</>, meta: "UPSC GS1 · 2 hours ago" },
-  { initials: "PG", color: "green", text: <><strong>Prof. Gupta</strong> approved Chapter 2 outline</>, meta: "SSC CGL Math · Yesterday" },
-  { initials: "MV", color: "blue", text: <><strong>Ms. Verma</strong> flagged a concept gap</>, meta: "Class 10 Science · 2 days ago" },
 ];
 
 const STEP_LABELS = ["Project Basics", "Audience & Format", "Subject Scope", "Collaborators"];
@@ -411,16 +42,16 @@ const EMPTY_FORM = {
   notes: "",
 };
 
-const stageChipClass = (stage) => {
-  switch (stage) {
-    case "Review": return "bf-chip-review";
-    case "Drafting": return "bf-chip-progress";
-    case "Outline": return "bf-chip-draft";
-    case "Export Ready": return "bf-chip-complete";
-    case "Overdue": return "bf-chip-overdue";
-    default: return "bf-chip-draft";
-  }
+const bookStatusChipClass = (status) => {
+  const s = (status || "").toLowerCase();
+  if (s.includes("complete") || s.includes("done") || s.includes("export")) return "bf-chip-complete";
+  if (s.includes("review")) return "bf-chip-review";
+  if (s.includes("overdue")) return "bf-chip-overdue";
+  if (s.includes("progress") || s.includes("draft")) return "bf-chip-progress";
+  return "bf-chip-draft";
 };
+ 
+
 
 export default function Submit() {
   const navigate = useNavigate();
@@ -428,15 +59,56 @@ export default function Submit() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [projects, setProjects] = useState(INITIAL_PROJECTS);
-  const [approvals, setApprovals] = useState(INITIAL_APPROVALS);
+  const [projects, setProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState("");
+
+  const mapApiProject = (p) => ({
+    ...p,
+    title: p.book_title || "Untitled",
+    stage: p.book_status || "Unknown",
+    sme: p.publisher_name || "Unassigned",
+    deadline: p.submission_deadline || "Not set",
+    overdue: p.submission_deadline
+      ? new Date(p.submission_deadline) < new Date() &&
+        !(p.book_status || "").toLowerCase().includes("complete")
+      : false,
+    progress:
+      p.chapter_count && p.expected_pages
+        ? Math.min(100, Math.round((p.chapter_count / p.expected_pages) * 100))
+        : null,
+  });
+
+  const [refreshTick, setRefreshTick] = useState(0);
+  const refreshProjects = () => setRefreshTick((t) => t + 1);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setProjectsLoading(true);
+      setProjectsError("");
+      try {
+        const res = await getBookForgeProjects(0, 100);
+        const rows = Array.isArray(res?.data) ? res.data : [];
+        if (!cancelled) setProjects(rows.filter((p) => !p.is_deleted).map(mapApiProject));
+      } catch (err) {
+        console.error("Failed to load Book Forge projects:", err);
+        if (!cancelled) {
+          setProjectsError("Failed to load projects from the server. Please try again.");
+          setProjects([]);
+        }
+      } finally {
+        if (!cancelled) setProjectsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [refreshTick]);
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(EMPTY_FORM);
   const [stepError, setStepError] = useState("");
   const [successBanner, setSuccessBanner] = useState("");
 
-  const [reviewModal, setReviewModal] = useState(null); // approval object or null
 
   const updateField = (field, value) => {
     setForm((f) => ({ ...f, [field]: value }));
@@ -491,29 +163,44 @@ export default function Submit() {
     window.setTimeout(() => setSuccessBanner(""), 4500);
   };
 
-  const openReview = (item) => setReviewModal(item);
-  const closeReview = () => setReviewModal(null);
+  const [editingProject, setEditingProject] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
-  const resolveApproval = (id, newStatus) => {
-    setApprovals((list) => list.map((a) => (a.id === id ? { ...a, status: newStatus } : a)));
-    setReviewModal(null);
+  const handleEditSave = async (payload) => {
+    if (!editingProject) return;
+    setSavingEdit(true);
+    try {
+      await updateBookForgeProject(editingProject.id, payload);
+      setEditingProject(null);
+      refreshProjects();
+    } catch (err) {
+      console.error("Failed to update project:", err);
+      setProjectsError("Failed to update the project. Please try again.");
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
-  const handleDownload = (item) => {
-    const content = `BookForge — dummy export\n\nFile: ${item.detail}\nSize: ${item.size}\nStatus: ${item.status}\nGenerated: ${new Date().toLocaleString()}\n`;
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = (item.detail || "export").replace(/\.[^/.]+$/, "") + ".txt";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+  const handleDeleteProject = async (project) => {
+    const confirmed = window.confirm(`Delete "${project.title}"? This cannot be undone.`);
+    if (!confirmed) return;
+    setDeletingId(project.id);
+    try {
+      await deleteBookForgeProject(project.id);
+      refreshProjects();
+    } catch (err) {
+      console.error("Failed to delete project:", err);
+      setProjectsError("Failed to delete the project. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const activeProjects = projects.length;
-  const pendingReviews = projects.filter((p) => p.stage === "Review").length + approvals.filter(a => a.status.startsWith("Awaiting")).length;
+  const pendingReviews = projects.filter((p) => p.stage.toLowerCase().includes("review")).length;
+  const chaptersTotal = projects.reduce((sum, p) => sum + (Number(p.chapter_count) || 0), 0);
+  const pagesTotal = projects.reduce((sum, p) => sum + (Number(p.expected_pages) || 0), 0);
 
   return (
     <div className="submit-page">
@@ -634,88 +321,99 @@ export default function Submit() {
                   <div className="bf-kpi-sub">Needs attention</div>
                 </div>
                 <div className="bf-kpi-card bf-kpi-green">
-                  <div className="bf-kpi-label">Chapters Drafted</div>
-                  <div className="bf-kpi-value">84</div>
-                  <div className="bf-kpi-sub">This month</div>
+                  <div className="bf-kpi-label">Chapters (Total)</div>
+                  <div className="bf-kpi-value">{chaptersTotal}</div>
+                  <div className="bf-kpi-sub">Across all projects</div>
                 </div>
                 <div className="bf-kpi-card bf-kpi-navy">
-                  <div className="bf-kpi-label">SME Sessions</div>
-                  <div className="bf-kpi-value">5</div>
-                  <div className="bf-kpi-sub">2 awaiting capture</div>
+                  <div className="bf-kpi-label">Expected Pages (Total)</div>
+                  <div className="bf-kpi-value">{pagesTotal}</div>
+                  <div className="bf-kpi-sub">Across all projects</div>
                 </div>
               </div>
 
-              <div className="bf-two-col">
-                <div className="bf-card">
-                  <div className="bf-card-title">📋 Project Pipeline</div>
-                  <div className="bf-table-wrap">
+              <div className="bf-card">
+                <div className="bf-card-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>📋 Project Pipeline</span>
+                  <button
+                    type="button"
+                    onClick={refreshProjects}
+                    title="Refresh from server"
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: "14px", opacity: 0.7 }}
+                  >
+                    🔄
+                  </button>
+                </div>
+                {projectsError && <div className="bf-error-banner">{projectsError}</div>}
+                <div className="bf-table-wrap">
+                  {projectsLoading ? (
+                    <p style={{ padding: "16px", opacity: 0.7 }}>Loading projects…</p>
+                  ) : projects.length === 0 ? (
+                    <p style={{ padding: "16px", opacity: 0.7 }}>No projects found yet.</p>
+                  ) : (
                     <table className="bf-table">
                       <thead>
                         <tr>
                           <th>Book Title</th>
-                          <th>Stage</th>
-                          <th>SME</th>
+                          <th>Status</th>
+                          <th>Publisher</th>
                           <th>Deadline</th>
                           <th>Progress</th>
+                          <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {projects.map((p) => (
                           <tr key={p.id}>
                             <td><strong>{p.title}</strong></td>
-                            <td><span className={`bf-chip ${stageChipClass(p.stage)}`}>{p.stage}</span></td>
-                            <td>{p.sme || "Unassigned"}</td>
+                            <td><span className={`bf-chip ${bookStatusChipClass(p.stage)}`}>{p.stage}</span></td>
+                            <td>{p.sme}</td>
                             <td className={p.overdue ? "bf-deadline-overdue" : ""}>{p.deadline}</td>
                             <td>
-                              <div className="bf-progress-wrap">
-                                <div
-                                  className={`bf-progress-bar${p.progress === 100 ? " complete" : p.overdue ? " overdue" : ""}`}
-                                  style={{ width: `${p.progress}%` }}
-                                ></div>
+                              {p.progress === null ? (
+                                <span style={{ opacity: 0.6 }}>—</span>
+                              ) : (
+                                <>
+                                  <div className="bf-progress-wrap">
+                                    <div
+                                      className={`bf-progress-bar${p.progress === 100 ? " complete" : p.overdue ? " overdue" : ""}`}
+                                      style={{ width: `${p.progress}%` }}
+                                    ></div>
+                                  </div>
+                                  <div className={`bf-progress-label${p.overdue ? " overdue" : p.progress === 100 ? " complete" : ""}`}>{p.progress}%</div>
+                                </>
+                              )}
+                            </td>
+                            <td>
+                              <div style={{ display: "flex", gap: "8px" }}>
+                                <button
+                                  type="button"
+                                  className="bf-icon-btn"
+                                  title="Edit project"
+                                  aria-label="Edit project"
+                                  onClick={() => setEditingProject(p)}
+                                  style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  type="button"
+                                  className="bf-icon-btn"
+                                  title="Delete project"
+                                  aria-label="Delete project"
+                                  disabled={deletingId === p.id}
+                                  onClick={() => handleDeleteProject(p)}
+                                  style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
+                                >
+                                  {deletingId === p.id ? "…" : "🗑️"}
+                                </button>
                               </div>
-                              <div className={`bf-progress-label${p.overdue ? " overdue" : p.progress === 100 ? " complete" : ""}`}>{p.progress}%</div>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </div>
-                </div>
-
-                <div className="bf-side-col">
-                  <div className="bf-card">
-                    <div className="bf-card-title">⏳ Pending Approvals</div>
-                    <div className="bf-approval-list">
-                      {approvals.map((a) => (
-                        <div className="bf-approval-row" key={a.id}>
-                          <span className="bf-approval-title">{a.title}</span>
-                          <div className="bf-approval-actions">
-                            <span className={`bf-chip ${a.status === "Approved" ? "bf-chip-complete" : "bf-chip-review"}`}>{a.status}</span>
-                            {a.type === "review" ? (
-                              <button className="bf-btn bf-btn-sm bf-btn-primary" onClick={() => openReview(a)}>Review</button>
-                            ) : (
-                              <button className="bf-btn bf-btn-sm bf-btn-secondary" onClick={() => handleDownload(a)}>Download</button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bf-card">
-                    <div className="bf-card-title">🧠 Recent SME Activity</div>
-                    <div className="bf-activity-list">
-                      {SME_ACTIVITY.map((s, i) => (
-                        <div className="bf-activity-row" key={i}>
-                          <span className={`bf-avatar bf-avatar-${s.color}`}>{s.initials}</span>
-                          <div>
-                            <p className="bf-activity-text">{s.text}</p>
-                            <span className="bf-activity-meta">{s.meta}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -888,21 +586,88 @@ export default function Submit() {
         </div>
       </main>
 
-      {reviewModal && (
-        <div className="bf-modal-overlay" onClick={closeReview}>
-          <div className="bf-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="bf-modal-header">
-              <h3>{reviewModal.title}</h3>
-              <button className="bf-modal-close" onClick={closeReview}>✕</button>
-            </div>
-            <p className="bf-modal-body">{reviewModal.detail}</p>
-            <div className="bf-modal-actions">
-              <button className="bf-btn bf-btn-secondary" onClick={() => resolveApproval(reviewModal.id, "Changes Requested")}>Request Changes</button>
-              <button className="bf-btn bf-btn-primary" onClick={() => resolveApproval(reviewModal.id, "Approved")}>Approve</button>
-            </div>
-          </div>
-        </div>
+      {editingProject && (
+        <EditProjectModal
+          project={editingProject}
+          onClose={() => setEditingProject(null)}
+          onSave={handleEditSave}
+          saving={savingEdit}
+        />
       )}
+    </div>
+  );
+}
+
+function EditProjectModal({ project, onClose, onSave, saving }) {
+  const [bookTitle, setBookTitle] = useState(project.book_title || "");
+  const [bookStatus, setBookStatus] = useState(project.book_status || "");
+  const [publisherName, setPublisherName] = useState(project.publisher_name || "");
+  const [submissionDeadline, setSubmissionDeadline] = useState(project.submission_deadline || "");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      book_title: bookTitle,
+      book_status: bookStatus,
+      publisher_name: publisherName,
+      submission_deadline: submissionDeadline || null,
+    });
+  };
+
+  return (
+    <div className="bf-modal-overlay" onClick={onClose}>
+      <div className="bf-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="bf-modal-header">
+          <h3>Edit Project</h3>
+          <button className="bf-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "20px" }}>
+            <label style={{ fontSize: "13px", fontWeight: 600 }}>
+              Book Title
+              <input
+                type="text"
+                value={bookTitle}
+                onChange={(e) => setBookTitle(e.target.value)}
+                required
+                style={{ width: "100%", marginTop: "6px", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--slate-200)", fontSize: "13.5px" }}
+              />
+            </label>
+            <label style={{ fontSize: "13px", fontWeight: 600 }}>
+              Status
+              <input
+                type="text"
+                value={bookStatus}
+                onChange={(e) => setBookStatus(e.target.value)}
+                placeholder="e.g. Drafting, In Review, Complete"
+                style={{ width: "100%", marginTop: "6px", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--slate-200)", fontSize: "13.5px" }}
+              />
+            </label>
+            <label style={{ fontSize: "13px", fontWeight: 600 }}>
+              Publisher
+              <input
+                type="text"
+                value={publisherName}
+                onChange={(e) => setPublisherName(e.target.value)}
+                style={{ width: "100%", marginTop: "6px", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--slate-200)", fontSize: "13.5px" }}
+              />
+            </label>
+            <label style={{ fontSize: "13px", fontWeight: 600 }}>
+              Submission Deadline
+              <input
+                type="date"
+                value={submissionDeadline}
+                onChange={(e) => setSubmissionDeadline(e.target.value)}
+                style={{ width: "100%", marginTop: "6px", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--slate-200)", fontSize: "13.5px" }}
+              />
+            </label>
+          </div>
+          <div className="bf-modal-actions">
+            <button type="button" className="bf-btn bf-btn-secondary" onClick={onClose} disabled={saving}>Cancel</button>
+            <button type="submit" className="bf-btn bf-btn-primary" disabled={saving}>{saving ? "Saving…" : "Save Changes"}</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

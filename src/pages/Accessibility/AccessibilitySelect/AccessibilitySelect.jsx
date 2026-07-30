@@ -1,6 +1,7 @@
 
 
 
+
 // import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { isAdmin } from "../../../utils/auth";
@@ -15,8 +16,8 @@
 // const MIS_TYPE = { id: "mis", label: "MIS", icon: "📊", desc: "Reports & Analytics" };
 
 // const ACTIONS = [
-//   { id: "remediate", label: "Remediate", icon: "🛠️", desc: "Automatically fix accessibility issues" },
 //   { id: "validate", label: "Validate", icon: "✅", desc: "Check compliance against accessibility standards" },
+//   { id: "remediate", label: "Remediate", icon: "🛠️", desc: "Automatically fix accessibility issues" },
 // ];
 
 // // Where each (fileType, action) combination should go.
@@ -160,7 +161,6 @@
 
 
 
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../../../utils/auth";
@@ -201,20 +201,17 @@ export default function AccessibilitySelect() {
   const handleFileTypeSelect = (id) => {
     setFileType(id);
     setAction(null);
-  };
-
-  const handleProceed = () => {
-    if (!fileType) return;
 
     // MIS has no Remediate/Validate step — it goes straight to the report.
-    if (fileType === "mis") {
+    if (id === "mis") {
       navigate("/mis-pdf");
-      return;
     }
+  };
 
-    if (!action) return;
+  const handleActionSelect = (id) => {
+    setAction(id);
 
-    const route = ROUTES[`${fileType}-${action}`];
+    const route = ROUTES[`${fileType}-${id}`];
     if (route) navigate(route);
   };
 
@@ -292,7 +289,7 @@ export default function AccessibilitySelect() {
                       name="as-action"
                       value={act.id}
                       checked={action === act.id}
-                      onChange={() => setAction(act.id)}
+                      onChange={() => handleActionSelect(act.id)}
                       className="as-radio"
                     />
                     <span className="as-option-icon">{act.icon}</span>
@@ -303,14 +300,6 @@ export default function AccessibilitySelect() {
               </div>
             </section>
           )}
-
-          <button
-            className="as-proceed-btn"
-            onClick={handleProceed}
-            disabled={!fileType || (fileType !== "mis" && !action)}
-          >
-            Proceed →
-          </button>
         </div>
       </main>
     </div>
