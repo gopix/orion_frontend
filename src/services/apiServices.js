@@ -1,5 +1,4 @@
 
-
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 // // ── Auth ─────────────────────────────────────────────────────
@@ -363,6 +362,7 @@
 
 
 
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 // ── Auth ─────────────────────────────────────────────────────
@@ -692,6 +692,16 @@ export const getOrganizations = async () => {
 
 // ── Book Forge ───────────────────────────────────────────────
 
+// POST /api/v1/book-forge/projects  (Create Project)
+export const createBookForgeProject = async (payload) => {
+  const response = await fetch(`${BASE_URL}/book-forge/projects`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  return response.json();
+};
+
 // GET /api/v1/book-forge/projects  (List Projects, paginated)
 export const getBookForgeProjects = async (skip = 0, limit = 100, bookStatus) => {
   const params = new URLSearchParams({ skip, limit });
@@ -718,6 +728,19 @@ export const deleteBookForgeProject = async (projectId) => {
   const response = await fetch(`${BASE_URL}/book-forge/projects/${projectId}`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" }
+  });
+  return response.json();
+};
+
+// POST /api/v1/book-forge/projects/{project_id}/documents  (Upload Document)
+export const uploadBookForgeDocument = async (projectId, file, createdBy, documentType = "") => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("created_by", createdBy);
+  formData.append("document_type", documentType);
+  const response = await fetch(`${BASE_URL}/book-forge/projects/${projectId}/documents`, {
+    method: "POST",
+    body: formData
   });
   return response.json();
 };

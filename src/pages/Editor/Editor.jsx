@@ -1649,7 +1649,7 @@ export default function Editor() {
               {SHOW_SUBMIT_PLUS && (
                 <div className="editor-nav-item" onClick={() => navigate("/submit")}>
                   <span className="editor-nav-icon">📑</span>
-                  <span>Submit+</span>
+                  <span>BookForge</span>
                 </div>
               )}
               <div className="editor-nav-item active">

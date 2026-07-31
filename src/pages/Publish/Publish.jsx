@@ -127,7 +127,7 @@ export default function Publish() {
               {SHOW_SUBMIT_PLUS && (
                 <div className="publish-nav-item" onClick={() => navigate("/submit")}>
                   <span className="publish-nav-icon">📑</span>
-                  <span>Submit+</span>
+                  <span>BookForge</span>
                 </div>
               )}
               {SHOW_EDITOR_PLUS && (

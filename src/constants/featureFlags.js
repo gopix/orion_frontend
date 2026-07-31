@@ -9,7 +9,7 @@
 // (e.g. before a client demo) — when a card is turned off, the
 // remaining cards automatically reflow to fill the screen.
 //
-//   SHOW_SUBMIT_PLUS        -> Submit+            (/submit)
+//   SHOW_SUBMIT_PLUS        -> BookForge          (/submit)
 //   SHOW_EDITOR_PLUS        -> Editor+            (/editor)
 //   SHOW_PUBLISH_PLUS       -> Publish+           (/publish)
 //   SHOW_ACCESSIBILITY_PLUS -> Accessibility

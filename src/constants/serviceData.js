@@ -8,7 +8,7 @@ import {
 
 export const services = [
   {
-    title: "BookFroge",
+    title: "BookForge",
     description:
       "Pre-Editorial Validation Service ensuring manuscript originality, compliance, and editorial readiness before editing begins.",
 

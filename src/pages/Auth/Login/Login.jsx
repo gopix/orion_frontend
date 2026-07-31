@@ -44,7 +44,7 @@
       
 //       // Route based on card selection
 //       if (cardIndex === "0" && SHOW_SUBMIT_PLUS) {
-//         // Card 0 (Submit+) goes to submit page
+//         // Card 0 (BookForge) goes to submit page
 //         navigate("/submit");
 //       } else if (cardIndex === "1" && SHOW_EDITOR_PLUS) {
 //         // Card 1 (Editor+) goes to editor page
@@ -169,7 +169,7 @@ function Login() {
       
       // Route based on card selection
       if (cardIndex === "0" && SHOW_SUBMIT_PLUS) {
-        // Card 0 (Submit+) goes to submit page
+        // Card 0 (BookForge) goes to submit page
         navigate("/submit");
       } else if (cardIndex === "1" && SHOW_EDITOR_PLUS) {
         // Card 1 (Editor+) goes to editor page
