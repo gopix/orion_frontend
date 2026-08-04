@@ -1156,6 +1156,96 @@
   gap: 10px;
 }
 
+/* ── Documents modal (list per project) ──────────────────────── */
+.bf-modal-docs {
+  max-width: 560px;
+}
+
+.bf-modal-docs .bf-modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.bf-doc-item-modal {
+  padding: 12px;
+}
+
+.bf-doc-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.bf-doc-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--slate-100);
+  border: 1px solid var(--slate-200);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.bf-doc-action-btn:hover:not(:disabled) {
+  background: var(--blue-50);
+  border-color: var(--blue-200);
+}
+
+.bf-doc-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bf-doc-action-danger:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+/* ── Document metadata modal ─────────────────────────────────── */
+.bf-modal-metadata {
+  max-width: 460px;
+}
+
+.bf-metadata-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.bf-metadata-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--slate-100);
+}
+
+.bf-metadata-row:last-child {
+  border-bottom: none;
+}
+
+.bf-metadata-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--slate-500);
+  flex-shrink: 0;
+}
+
+.bf-metadata-value {
+  font-size: 12.5px;
+  color: var(--slate-700);
+  text-align: right;
+  word-break: break-word;
+}
+
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 980px) {
   .bf-kpi-row { grid-template-columns: repeat(2, 1fr); }

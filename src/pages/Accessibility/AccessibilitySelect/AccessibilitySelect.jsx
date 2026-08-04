@@ -2,6 +2,7 @@
 
 
 
+
 // import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { isAdmin } from "../../../utils/auth";
@@ -42,20 +43,17 @@
 //   const handleFileTypeSelect = (id) => {
 //     setFileType(id);
 //     setAction(null);
-//   };
-
-//   const handleProceed = () => {
-//     if (!fileType) return;
 
 //     // MIS has no Remediate/Validate step — it goes straight to the report.
-//     if (fileType === "mis") {
+//     if (id === "mis") {
 //       navigate("/mis-pdf");
-//       return;
 //     }
+//   };
 
-//     if (!action) return;
+//   const handleActionSelect = (id) => {
+//     setAction(id);
 
-//     const route = ROUTES[`${fileType}-${action}`];
+//     const route = ROUTES[`${fileType}-${id}`];
 //     if (route) navigate(route);
 //   };
 
@@ -133,7 +131,7 @@
 //                       name="as-action"
 //                       value={act.id}
 //                       checked={action === act.id}
-//                       onChange={() => setAction(act.id)}
+//                       onChange={() => handleActionSelect(act.id)}
 //                       className="as-radio"
 //                     />
 //                     <span className="as-option-icon">{act.icon}</span>
@@ -144,20 +142,11 @@
 //               </div>
 //             </section>
 //           )}
-
-//           <button
-//             className="as-proceed-btn"
-//             onClick={handleProceed}
-//             disabled={!fileType || (fileType !== "mis" && !action)}
-//           >
-//             Proceed →
-//           </button>
 //         </div>
 //       </main>
 //     </div>
 //   );
 // }
-
 
 
 
@@ -170,6 +159,7 @@ const FILE_TYPES = [
   { id: "pdf", label: "PDF", icon: "📄", desc: "Portable Document Format" },
   { id: "epub", label: "EPUB", icon: "📘", desc: "eBook Publication" },
   { id: "ppt", label: "PPT", icon: "📽️", desc: "PowerPoint Presentation" },
+  { id: "web", label: "Web", icon: "🌐", desc: "Web Pages / HTML Content" },
 ];
 
 const MIS_TYPE = { id: "mis", label: "MIS", icon: "📊", desc: "Reports & Analytics" };
@@ -180,6 +170,7 @@ const ACTIONS = [
 ];
 
 // Where each (fileType, action) combination should go.
+// "web" has no dashboard yet, so it's intentionally left out — see handleActionSelect.
 const ROUTES = {
   "pdf-remediate": "/remediate-pdf",
   "pdf-validate": "/validate-pdf",
@@ -210,6 +201,12 @@ export default function AccessibilitySelect() {
 
   const handleActionSelect = (id) => {
     setAction(id);
+
+    // Web has no dashboard yet — surface a heads-up instead of navigating.
+    if (fileType === "web") {
+      alert("Dashboard Coming Soon");
+      return;
+    }
 
     const route = ROUTES[`${fileType}-${id}`];
     if (route) navigate(route);
@@ -253,7 +250,7 @@ export default function AccessibilitySelect() {
 
           <section className="as-step">
             <p className="as-step-label">Step 1 · File Type</p>
-            <div className={`as-option-grid ${userIsAdmin ? "as-option-grid-4" : "as-option-grid-3"}`}>
+            <div className={`as-option-grid ${userIsAdmin ? "as-option-grid-5" : "as-option-grid-4"}`}>
               {fileTypes.map((type) => (
                 <label
                   key={type.id}
