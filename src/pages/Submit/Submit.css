@@ -986,6 +986,10 @@
   cursor: not-allowed;
 }
 
+.bf-docs-info {
+  font-size: 20px;
+}
+
 .bf-doc-list {
   display: flex;
   flex-direction: column;
@@ -1035,6 +1039,22 @@
 
 .bf-doc-empty-error {
   color: var(--red-600);
+}
+
+.bf-project-title-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bf-project-title-btn:hover strong {
+  color: var(--blue-600);
+  text-decoration: underline;
 }
 
 /* ── Dashboard: per-row documents dropdown ───────────────────── */

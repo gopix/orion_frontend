@@ -1,5 +1,4 @@
 
-
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 // ── Auth ─────────────────────────────────────────────────────
@@ -344,6 +343,15 @@ export const getBookForgeProjects = async (skip = 0, limit = 100, bookStatus) =>
   const params = new URLSearchParams({ skip, limit });
   if (bookStatus) params.append("book_status", bookStatus);
   const response = await fetch(`${BASE_URL}/book-forge/projects?${params.toString()}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" }
+  });
+  return response.json();
+};
+
+// GET /api/v1/book-forge/projects/{project_id}  (Get Project)
+export const getBookForgeProjectById = async (projectId) => {
+  const response = await fetch(`${BASE_URL}/book-forge/projects/${projectId}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" }
   });
