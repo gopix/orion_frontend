@@ -1,3 +1,6 @@
+
+
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
 /* ─── Design Tokens ────────────────────────────────────────── */
@@ -988,6 +991,10 @@
 
 .bf-docs-info {
   font-size: 20px;
+}
+
+.bf-docs-upload {
+  font-size: 17px;
 }
 
 .bf-doc-list {
