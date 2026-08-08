@@ -10,7 +10,7 @@ export const services = [
   {
     title: "BookForge",
     description:
-      "Pre-Editorial Validation Service ensuring manuscript originality, compliance, and editorial readiness before editing begins.",
+      "BookForge is an AI-powered book planning and authoring platform that transforms a prescribed syllabus, reference materials, and SME expertise into a structured, publisher-ready book blueprint. Its purpose is to assist authors and publishers in creating high-quality books efficiently through AI-guided collaboration, rather than replacing the author by autonomously writing an entire book..",
 
     icon: "📑",
     hidden: !SHOW_SUBMIT_PLUS,
