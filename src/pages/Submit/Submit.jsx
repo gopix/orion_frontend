@@ -1,5 +1,4 @@
 
-
 // import { useState, useEffect, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
@@ -13,6 +12,7 @@
 //   deleteBookForgeDocument,
 //   downloadBookForgeDocument,
 // } from "../../services/apiServices";
+// import { isAdmin, isUser } from "../../utils/auth";
 // import "./Submit.css";
 
 // /* ── Form matches POST /api/v1/book-forge/projects exactly ─────── */
@@ -86,13 +86,118 @@
 
 // const UPLOAD_ACCEPT = ".doc,.docx,.pdf,.txt";
 
+// /* ── Admin allocation — mock/local-only store ────────────────────
+//    NOTE: there is no GET /users, PATCH /users/{id}/role, or project-
+//    assignment API yet (see message to Gopal), so the Admin "Allocate
+//    Roles & Projects" screen persists to localStorage instead of the
+//    backend. This keeps it usable across logins in the same browser
+//    for demo/testing, but it is NOT synced to the real DB — role
+//    changes here do not affect what /auth/login actually returns.
+//    Swap ADMIN_DIRECTORY_KEY/ADMIN_ASSIGN_KEY reads/writes for real
+//    API calls once those endpoints exist. */
+// const ADMIN_DIRECTORY_KEY = "bf_admin_user_directory";   // [{ id, name, email, role }]
+// const ADMIN_ASSIGN_KEY = "bf_admin_project_assignments"; // { [projectId]: userId }
+// const ROLE_OPTIONS = ["USER", "SME", "EDITOR", "ADMIN"];
+
+// const loadAdminDirectory = () => {
+//   try {
+//     const raw = localStorage.getItem(ADMIN_DIRECTORY_KEY);
+//     const parsed = raw ? JSON.parse(raw) : [];
+//     return Array.isArray(parsed) ? parsed : [];
+//   } catch {
+//     return [];
+//   }
+// };
+
+// const loadAdminAssignments = () => {
+//   try {
+//     const raw = localStorage.getItem(ADMIN_ASSIGN_KEY);
+//     const parsed = raw ? JSON.parse(raw) : {};
+//     return parsed && typeof parsed === "object" ? parsed : {};
+//   } catch {
+//     return {};
+//   }
+// };
+
 // export default function Submit() {
 //   const navigate = useNavigate();
+
+//   /* ── Role gates (BookForge-scoped) ────────────────────────────
+//      USER  -> Dashboard / New Project / Brief Upload only, own
+//                projects only, no edit/delete, read-only elsewhere.
+//      ADMIN -> full access + the new Allocate Roles & Projects screen.
+//      SME / EDITOR -> unrestricted for now (not in scope yet). */
+//   const userIsAdmin = isAdmin();
+//   const userIsUser = isUser();
+//   const currentUserId = Number(sessionStorage.getItem("token")) || 0;
 
 //   const [activeTab, setActiveTab] = useState("dashboard");
 //   const [projects, setProjects] = useState([]);
 //   const [projectsLoading, setProjectsLoading] = useState(true);
 //   const [projectsError, setProjectsError] = useState("");
+
+//   /* ── Admin: user directory + project assignments (mock/local) ── */
+//   const [adminDirectory, setAdminDirectory] = useState(loadAdminDirectory);
+//   const [adminAssignments, setAdminAssignments] = useState(loadAdminAssignments);
+//   const [newDirUserId, setNewDirUserId] = useState("");
+//   const [newDirUserName, setNewDirUserName] = useState("");
+//   const [newDirUserEmail, setNewDirUserEmail] = useState("");
+
+//   const persistAdminDirectory = (next) => {
+//     setAdminDirectory(next);
+//     localStorage.setItem(ADMIN_DIRECTORY_KEY, JSON.stringify(next));
+//   };
+
+//   const persistAdminAssignments = (next) => {
+//     setAdminAssignments(next);
+//     localStorage.setItem(ADMIN_ASSIGN_KEY, JSON.stringify(next));
+//   };
+
+//   const handleAddDirectoryUser = () => {
+//     const id = newDirUserId.trim();
+//     const name = newDirUserName.trim();
+//     const email = newDirUserEmail.trim();
+//     if (!id || !email) return;
+//     if (adminDirectory.some((u) => String(u.id) === String(id))) return;
+//     persistAdminDirectory([...adminDirectory, { id, name: name || email, email, role: "USER" }]);
+//     setNewDirUserId("");
+//     setNewDirUserName("");
+//     setNewDirUserEmail("");
+//   };
+
+//   const handleRemoveDirectoryUser = (id) => {
+//     persistAdminDirectory(adminDirectory.filter((u) => String(u.id) !== String(id)));
+//     const nextAssignments = { ...adminAssignments };
+//     Object.keys(nextAssignments).forEach((projectId) => {
+//       if (String(nextAssignments[projectId]) === String(id)) delete nextAssignments[projectId];
+//     });
+//     persistAdminAssignments(nextAssignments);
+//   };
+
+//   const handleChangeDirectoryUserRole = (id, role) => {
+//     persistAdminDirectory(adminDirectory.map((u) => (String(u.id) === String(id) ? { ...u, role } : u)));
+//   };
+
+//   const handleAssignProjectToUser = (projectId, userId) => {
+//     const next = { ...adminAssignments };
+//     // Enforce one active assignment per user — drop any prior project they had.
+//     Object.keys(next).forEach((pid) => {
+//       if (String(next[pid]) === String(userId)) delete next[pid];
+//     });
+//     if (projectId) next[projectId] = userId;
+//     persistAdminAssignments(next);
+//   };
+
+//   /* ── User role: which projects are "his" ──────────────────────
+//      Own creations (created_by) + anything Admin assigned to him
+//      via the mock directory above. */
+//   const visibleProjects = userIsUser
+//     ? projects.filter(
+//         (p) =>
+//           Number(p.created_by) === currentUserId ||
+//           String(adminAssignments[p.id]) === String(currentUserId)
+//       )
+//     : projects;
 
 //   const mapApiProject = (p) => ({
 //     ...p,
@@ -598,10 +703,10 @@
 //     }
 //   };
 
-//   const activeProjects = projects.length;
-//   const pendingReviews = projects.filter((p) => p.stage.toLowerCase().includes("review")).length;
-//   const chaptersTotal = projects.reduce((sum, p) => sum + (Number(p.chapter_count) || 0), 0);
-//   const pagesTotal = projects.reduce((sum, p) => sum + (Number(p.expected_pages) || 0), 0);
+//   const activeProjects = visibleProjects.length;
+//   const pendingReviews = visibleProjects.filter((p) => p.stage.toLowerCase().includes("review")).length;
+//   const chaptersTotal = visibleProjects.reduce((sum, p) => sum + (Number(p.chapter_count) || 0), 0);
+//   const pagesTotal = visibleProjects.reduce((sum, p) => sum + (Number(p.expected_pages) || 0), 0);
 
 //   return (
 //     <div className="submit-page">
@@ -641,14 +746,26 @@
 //             <span>Brief Upload</span>
 //             {activeTab === "upload-brief" && <span className="submit-nav-dot"></span>}
 //           </div>
-//           <div
-//             className={`submit-nav-item${activeTab === "sme-capture" ? " active" : ""}`}
-//             onClick={() => setActiveTab("sme-capture")}
-//           >
-//             <span className="submit-nav-icon">🎙️</span>
-//             <span>SME Capture</span>
-//             {activeTab === "sme-capture" && <span className="submit-nav-dot"></span>}
-//           </div>
+//           {!userIsUser && (
+//             <div
+//               className={`submit-nav-item${activeTab === "sme-capture" ? " active" : ""}`}
+//               onClick={() => setActiveTab("sme-capture")}
+//             >
+//               <span className="submit-nav-icon">🎙️</span>
+//               <span>SME Capture</span>
+//               {activeTab === "sme-capture" && <span className="submit-nav-dot"></span>}
+//             </div>
+//           )}
+//           {userIsAdmin && (
+//             <div
+//               className={`submit-nav-item${activeTab === "allocate" ? " active" : ""}`}
+//               onClick={() => setActiveTab("allocate")}
+//             >
+//               <span className="submit-nav-icon">🛠️</span>
+//               <span>Allocate Roles &amp; Projects</span>
+//               {activeTab === "allocate" && <span className="submit-nav-dot"></span>}
+//             </div>
+//           )}
 //         </nav>
 
 //         <div className="submit-sidebar-footer">
@@ -727,8 +844,10 @@
 //                 <div className="bf-table-wrap">
 //                   {projectsLoading ? (
 //                     <p style={{ padding: "16px", opacity: 0.7 }}>Loading projects…</p>
-//                   ) : projects.length === 0 ? (
-//                     <p style={{ padding: "16px", opacity: 0.7 }}>No projects found yet.</p>
+//                   ) : visibleProjects.length === 0 ? (
+//                     <p style={{ padding: "16px", opacity: 0.7 }}>
+//                       {userIsUser ? "No projects assigned to you yet." : "No projects found yet."}
+//                     </p>
 //                   ) : (
 //                     <table className="bf-table">
 //                       <thead>
@@ -739,11 +858,11 @@
 //                           <th>Publisher</th>
 //                           <th>Deadline</th>
 //                           <th>Progress</th>
-//                           <th>Actions</th>
+//                           {!userIsUser && <th>Actions</th>}
 //                         </tr>
 //                       </thead>
 //                       <tbody>
-//                         {projects.map((p) => (
+//                         {visibleProjects.map((p) => (
 //                           <tr key={p.id}>
 //                             <td className="bf-td-toggle">
 //                               <button
@@ -786,31 +905,33 @@
 //                                 </>
 //                               )}
 //                             </td>
-//                             <td>
-//                               <div style={{ display: "flex", gap: "8px" }}>
-//                                 <button
-//                                   type="button"
-//                                   className="bf-icon-btn"
-//                                   title="Edit project"
-//                                   aria-label="Edit project"
-//                                   onClick={() => setEditingProject(p)}
-//                                   style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
-//                                 >
-//                                   ✏️
-//                                 </button>
-//                                 <button
-//                                   type="button"
-//                                   className="bf-icon-btn"
-//                                   title="Delete project"
-//                                   aria-label="Delete project"
-//                                   disabled={deletingId === p.id}
-//                                   onClick={() => handleDeleteProject(p)}
-//                                   style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
-//                                 >
-//                                   {deletingId === p.id ? "…" : "🗑️"}
-//                                 </button>
-//                               </div>
-//                             </td>
+//                             {!userIsUser && (
+//                               <td>
+//                                 <div style={{ display: "flex", gap: "8px" }}>
+//                                   <button
+//                                     type="button"
+//                                     className="bf-icon-btn"
+//                                     title="Edit project"
+//                                     aria-label="Edit project"
+//                                     onClick={() => setEditingProject(p)}
+//                                     style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
+//                                   >
+//                                     ✏️
+//                                   </button>
+//                                   <button
+//                                     type="button"
+//                                     className="bf-icon-btn"
+//                                     title="Delete project"
+//                                     aria-label="Delete project"
+//                                     disabled={deletingId === p.id}
+//                                     onClick={() => handleDeleteProject(p)}
+//                                     style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
+//                                   >
+//                                     {deletingId === p.id ? "…" : "🗑️"}
+//                                   </button>
+//                                 </div>
+//                               </td>
+//                             )}
 //                           </tr>
 //                         ))}
 //                       </tbody>
@@ -1006,7 +1127,7 @@
 //                       className="bf-form-input"
 //                       value={createdProject?.id || ""}
 //                       onChange={(e) => {
-//                         const selected = projects.find((p) => String(p.id) === e.target.value);
+//                         const selected = visibleProjects.find((p) => String(p.id) === e.target.value);
 //                         setCreatedProject(selected ? { id: selected.id, book_title: selected.title } : null);
 //                         setBriefFiles([]);
 //                       }}
@@ -1014,7 +1135,7 @@
 //                       <option value="">
 //                         {projectsLoading ? "Loading projects…" : "Select a project…"}
 //                       </option>
-//                       {projects.map((p) => (
+//                       {visibleProjects.map((p) => (
 //                         <option key={p.id} value={p.id}>{p.title}</option>
 //                       ))}
 //                     </select>
@@ -1181,11 +1302,18 @@
 //                 </div>
 //               </div>
 
+//               {userIsUser && (
+//                 <div className="bf-readonly-banner">
+//                   👁️ View only — your role doesn't have edit access on this screen.
+//                 </div>
+//               )}
+
 //               <div className="bf-sme-mode-toggle">
 //                 <button
 //                   type="button"
 //                   className={`bf-sme-mode-btn${smeInterviewMode === "live" ? " active" : ""}`}
 //                   onClick={() => setSmeInterviewMode("live")}
+//                   disabled={userIsUser}
 //                 >
 //                   🎙️ Live Mode
 //                 </button>
@@ -1193,12 +1321,13 @@
 //                   type="button"
 //                   className={`bf-sme-mode-btn${smeInterviewMode === "async" ? " active" : ""}`}
 //                   onClick={() => setSmeInterviewMode("async")}
+//                   disabled={userIsUser}
 //                 >
 //                   📝 Async Q&amp;A Mode
 //                 </button>
 //               </div>
 
-//               <div className="bf-sme-grid">
+//               <div className={`bf-sme-grid${userIsUser ? " bf-readonly" : ""}`}>
 //                 {/* ── Interview Questions ─────────────────────── */}
 //                 <div className="bf-card bf-sme-col">
 //                   <div className="bf-card-title">Interview Questions</div>
@@ -1209,7 +1338,7 @@
 //                         <div
 //                           key={q.id}
 //                           className={`bf-sme-question${status === "active" ? " active" : ""}`}
-//                           onClick={() => setSmeActiveQuestionId(q.id)}
+//                           onClick={userIsUser ? undefined : () => setSmeActiveQuestionId(q.id)}
 //                         >
 //                           <div className="bf-sme-question-meta">
 //                             <span>Q{i + 1} · {status === "answered" ? "Answered" : status === "active" ? "Active" : "Pending"}</span>
@@ -1237,6 +1366,7 @@
 //                         value={smeActiveQuestion.answer}
 //                         onChange={(e) => updateSmeAnswer(smeActiveQuestion.id, e.target.value)}
 //                         placeholder="Type or paste the SME's response…"
+//                         disabled={userIsUser}
 //                       />
 //                     </div>
 //                   )}
@@ -1249,6 +1379,7 @@
 //                       value={smeNotes}
 //                       onChange={(e) => setSmeNotes(e.target.value)}
 //                       placeholder="Free-form notes captured during the interview…"
+//                       disabled={userIsUser}
 //                     />
 //                   </div>
 
@@ -1259,16 +1390,16 @@
 //                     ) : (
 //                       <p className="bf-sme-summary-empty">No summary yet — add notes or answers, then generate one.</p>
 //                     )}
-//                     <button type="button" className="bf-btn bf-btn-secondary bf-btn-sm" onClick={handleGenerateSmeSummary}>
+//                     <button type="button" className="bf-btn bf-btn-secondary bf-btn-sm" onClick={handleGenerateSmeSummary} disabled={userIsUser}>
 //                       Generate Summary
 //                     </button>
 //                   </div>
 
 //                   <div className="bf-step-actions">
-//                     <button type="button" className="bf-btn bf-btn-secondary" onClick={handleMarkSmeApproved}>
+//                     <button type="button" className="bf-btn bf-btn-secondary" onClick={handleMarkSmeApproved} disabled={userIsUser}>
 //                       {smeApproved ? "✓ Approved" : "Mark as Approved"}
 //                     </button>
-//                     <button type="button" className="bf-btn bf-btn-primary" onClick={handleConvertToChapterNotes}>
+//                     <button type="button" className="bf-btn bf-btn-primary" onClick={handleConvertToChapterNotes} disabled={userIsUser}>
 //                       Convert to Chapter Notes →
 //                     </button>
 //                   </div>
@@ -1283,7 +1414,7 @@
 //                     {smeKeyTopics.map((topic) => (
 //                       <span className="bf-sme-tag" key={topic}>
 //                         {topic}
-//                         <button type="button" onClick={() => removeSmeKeyTopic(topic)} aria-label={`Remove ${topic}`}>✕</button>
+//                         <button type="button" onClick={() => removeSmeKeyTopic(topic)} aria-label={`Remove ${topic}`} disabled={userIsUser}>✕</button>
 //                       </span>
 //                     ))}
 //                     {smeKeyTopics.length === 0 && <p className="bf-doc-empty" style={{ padding: "2px 0" }}>No topics added yet.</p>}
@@ -1295,8 +1426,9 @@
 //                       onChange={(e) => setSmeKeyTopicInput(e.target.value)}
 //                       onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSmeKeyTopic())}
 //                       placeholder="e.g. Percentage"
+//                       disabled={userIsUser}
 //                     />
-//                     <button type="button" className="bf-btn bf-btn-secondary bf-btn-sm" onClick={handleAddSmeKeyTopic}>Add</button>
+//                     <button type="button" className="bf-btn bf-btn-secondary bf-btn-sm" onClick={handleAddSmeKeyTopic} disabled={userIsUser}>Add</button>
 //                   </div>
 
 //                   <div className="bf-sme-subsection-label" style={{ marginTop: "18px" }}>Pedagogy Flags</div>
@@ -1304,7 +1436,7 @@
 //                     {smePedagogyFlags.map((flag, i) => (
 //                       <div className="bf-sme-flag" key={`${flag}-${i}`}>
 //                         <span>⚠️ {flag}</span>
-//                         <button type="button" onClick={() => removeSmePedagogyFlag(i)} aria-label="Remove flag">✕</button>
+//                         <button type="button" onClick={() => removeSmePedagogyFlag(i)} aria-label="Remove flag" disabled={userIsUser}>✕</button>
 //                       </div>
 //                     ))}
 //                     {smePedagogyFlags.length === 0 && <p className="bf-doc-empty" style={{ padding: "2px 0" }}>No flags yet.</p>}
@@ -1316,8 +1448,9 @@
 //                       onChange={(e) => setSmePedagogyFlagInput(e.target.value)}
 //                       onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSmePedagogyFlag())}
 //                       placeholder="e.g. Bilingual glossary needed"
+//                       disabled={userIsUser}
 //                     />
-//                     <button type="button" className="bf-btn bf-btn-secondary bf-btn-sm" onClick={handleAddSmePedagogyFlag}>Add</button>
+//                     <button type="button" className="bf-btn bf-btn-secondary bf-btn-sm" onClick={handleAddSmePedagogyFlag} disabled={userIsUser}>Add</button>
 //                   </div>
 
 //                   <div className="bf-sme-subsection-label" style={{ marginTop: "18px" }}>Follow-up Flags</div>
@@ -1343,6 +1476,130 @@
 //                 <button className="bf-btn bf-btn-primary" onClick={() => setActiveTab("dashboard")}>
 //                   Save &amp; Return to Dashboard
 //                 </button>
+//               </div>
+//             </div>
+//           )}
+
+//           {activeTab === "allocate" && userIsAdmin && (
+//             <div className="bf-dashboard">
+//               <div className="bf-header" style={{ marginBottom: "8px" }}>
+//                 <div>
+//                   <h2 className="bf-card-title" style={{ marginBottom: "4px", fontSize: "18px" }}>Allocate Roles &amp; Projects</h2>
+//                   <p className="bf-upload-subtitle" style={{ margin: 0 }}>
+//                     Add a user to the directory, set their role, and assign them a project.
+//                   </p>
+//                 </div>
+//               </div>
+
+//               <div className="bf-readonly-banner">
+//                 ℹ️ There's no user-list / role-assign / project-assign API yet, so this directory is stored locally
+//                 in your browser (not the real database). It's ready to swap for real API calls once those endpoints exist.
+//               </div>
+
+//               <div className="bf-card" style={{ marginBottom: "18px" }}>
+//                 <div className="bf-card-title">Add User to Directory</div>
+//                 <div className="bf-form-row" style={{ gridTemplateColumns: "1fr 1fr 1fr auto" }}>
+//                   <div className="bf-form-group">
+//                     <label className="bf-form-label">User ID</label>
+//                     <input
+//                       className="bf-form-input"
+//                       value={newDirUserId}
+//                       onChange={(e) => setNewDirUserId(e.target.value)}
+//                       placeholder="e.g. 4"
+//                     />
+//                   </div>
+//                   <div className="bf-form-group">
+//                     <label className="bf-form-label">Name</label>
+//                     <input
+//                       className="bf-form-input"
+//                       value={newDirUserName}
+//                       onChange={(e) => setNewDirUserName(e.target.value)}
+//                       placeholder="e.g. Rajat"
+//                     />
+//                   </div>
+//                   <div className="bf-form-group">
+//                     <label className="bf-form-label">Email</label>
+//                     <input
+//                       className="bf-form-input"
+//                       value={newDirUserEmail}
+//                       onChange={(e) => setNewDirUserEmail(e.target.value)}
+//                       placeholder="e.g. rajat@gmail.com"
+//                     />
+//                   </div>
+//                   <div className="bf-form-group" style={{ display: "flex", alignItems: "flex-end" }}>
+//                     <button type="button" className="bf-btn bf-btn-primary" onClick={handleAddDirectoryUser}>
+//                       + Add
+//                     </button>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               <div className="bf-card">
+//                 <div className="bf-card-title">User Directory</div>
+//                 {adminDirectory.length === 0 ? (
+//                   <p className="bf-doc-empty">No users added yet — add one above to assign a role and project.</p>
+//                 ) : (
+//                   <div className="bf-table-wrap">
+//                     <table className="bf-table">
+//                       <thead>
+//                         <tr>
+//                           <th>User</th>
+//                           <th>Email</th>
+//                           <th>Role</th>
+//                           <th>Assigned Project</th>
+//                           <th>Actions</th>
+//                         </tr>
+//                       </thead>
+//                       <tbody>
+//                         {adminDirectory.map((u) => (
+//                           <tr key={u.id}>
+//                             <td><strong>{u.name}</strong> <span style={{ color: "var(--slate-400)", fontSize: "11.5px" }}>#{u.id}</span></td>
+//                             <td>{u.email}</td>
+//                             <td>
+//                               <select
+//                                 className="bf-form-input"
+//                                 value={u.role}
+//                                 onChange={(e) => handleChangeDirectoryUserRole(u.id, e.target.value)}
+//                               >
+//                                 {ROLE_OPTIONS.map((r) => (
+//                                   <option key={r} value={r}>{r}</option>
+//                                 ))}
+//                               </select>
+//                             </td>
+//                             <td>
+//                               <select
+//                                 className="bf-form-input"
+//                                 value={
+//                                   Object.keys(adminAssignments).find(
+//                                     (projectId) => String(adminAssignments[projectId]) === String(u.id)
+//                                   ) || ""
+//                                 }
+//                                 onChange={(e) => handleAssignProjectToUser(e.target.value || null, u.id)}
+//                               >
+//                                 <option value="">Unassigned</option>
+//                                 {projects.map((p) => (
+//                                   <option key={p.id} value={p.id}>{p.title}</option>
+//                                 ))}
+//                               </select>
+//                             </td>
+//                             <td>
+//                               <button
+//                                 type="button"
+//                                 className="bf-icon-btn"
+//                                 title="Remove from directory"
+//                                 aria-label="Remove from directory"
+//                                 onClick={() => handleRemoveDirectoryUser(u.id)}
+//                                 style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
+//                               >
+//                                 🗑️
+//                               </button>
+//                             </td>
+//                           </tr>
+//                         ))}
+//                       </tbody>
+//                     </table>
+//                   </div>
+//                 )}
 //               </div>
 //             </div>
 //           )}
@@ -1644,7 +1901,8 @@ import {
   deleteBookForgeDocument,
   downloadBookForgeDocument,
 } from "../../services/apiServices";
-import { isAdmin, isUser } from "../../utils/auth";
+import { canAccessBookForgeDashboard } from "../../utils/auth";
+import SmeCapture from "./SmeCapture/SmeCapture";
 import "./Submit.css";
 
 /* ── Form matches POST /api/v1/book-forge/projects exactly ─────── */
@@ -1699,7 +1957,7 @@ const formatDocDate = (value) => {
 
 /* ── BookForge wizard sequence (screen order) ───────────────────
    Create Project → Upload Brief → SME Capture → Outline → Draft →
-   Review → Export. Only the first three are implemented today; the
+   Review → Export. Only the first two are implemented today; the
    rest render as upcoming, non-clickable steps in the stepper. */
 const WIZARD_STEPS = [
   "Create Project",
@@ -1711,125 +1969,44 @@ const WIZARD_STEPS = [
   "Export",
 ];
 
-/* Step number -> activeTab, for the implemented steps only. Lets the
-   stepper circles/labels jump straight to a step (no gating — a step
-   is reachable any time, same as the sidebar nav items). */
-const WIZARD_STEP_TABS = { 1: "new-project", 2: "upload-brief", 3: "sme-capture" };
-
 const UPLOAD_ACCEPT = ".doc,.docx,.pdf,.txt";
-
-/* ── Admin allocation — mock/local-only store ────────────────────
-   NOTE: there is no GET /users, PATCH /users/{id}/role, or project-
-   assignment API yet (see message to Gopal), so the Admin "Allocate
-   Roles & Projects" screen persists to localStorage instead of the
-   backend. This keeps it usable across logins in the same browser
-   for demo/testing, but it is NOT synced to the real DB — role
-   changes here do not affect what /auth/login actually returns.
-   Swap ADMIN_DIRECTORY_KEY/ADMIN_ASSIGN_KEY reads/writes for real
-   API calls once those endpoints exist. */
-const ADMIN_DIRECTORY_KEY = "bf_admin_user_directory";   // [{ id, name, email, role }]
-const ADMIN_ASSIGN_KEY = "bf_admin_project_assignments"; // { [projectId]: userId }
-const ROLE_OPTIONS = ["USER", "SME", "EDITOR", "ADMIN"];
-
-const loadAdminDirectory = () => {
-  try {
-    const raw = localStorage.getItem(ADMIN_DIRECTORY_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
-const loadAdminAssignments = () => {
-  try {
-    const raw = localStorage.getItem(ADMIN_ASSIGN_KEY);
-    const parsed = raw ? JSON.parse(raw) : {};
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-};
 
 export default function Submit() {
   const navigate = useNavigate();
 
-  /* ── Role gates (BookForge-scoped) ────────────────────────────
-     USER  -> Dashboard / New Project / Brief Upload only, own
-               projects only, no edit/delete, read-only elsewhere.
-     ADMIN -> full access + the new Allocate Roles & Projects screen.
-     SME / EDITOR -> unrestricted for now (not in scope yet). */
-  const userIsAdmin = isAdmin();
-  const userIsUser = isUser();
-  const currentUserId = Number(sessionStorage.getItem("token")) || 0;
+  // The BookForge "Dashboard" pipeline view (and the SME Capture nav
+  // item) are Admin + SME only — plain USER accounts create projects
+  // and upload briefs, but aren't authorized to see the management
+  // dashboard, so they never land there and never see it in the nav.
+  const canSeeDashboard = canAccessBookForgeDashboard();
 
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState(canSeeDashboard ? "dashboard" : "new-project");
+
+  // Defensive guard: if activeTab is ever "dashboard" or "sme" for a
+  // user who isn't authorized (e.g. role changes mid-session), bounce
+  // them back to a screen they're allowed to see instead of rendering
+  // a blank/forbidden tab.
+  useEffect(() => {
+    if (!canSeeDashboard && (activeTab === "dashboard" || activeTab === "sme")) {
+      setActiveTab("new-project");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canSeeDashboard, activeTab]);
+
+  // Continue / Cancel / Back-to-Dashboard buttons inside the wizard:
+  // Admins and SMEs go back to the BookForge Dashboard tab; everyone
+  // else (plain USER) is sent to the main ORION user dashboard, since
+  // they aren't authorized to see the BookForge management dashboard.
+  const goBackFromWizard = () => {
+    if (canSeeDashboard) {
+      setActiveTab("dashboard");
+    } else {
+      navigate("/");
+    }
+  };
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [projectsError, setProjectsError] = useState("");
-
-  /* ── Admin: user directory + project assignments (mock/local) ── */
-  const [adminDirectory, setAdminDirectory] = useState(loadAdminDirectory);
-  const [adminAssignments, setAdminAssignments] = useState(loadAdminAssignments);
-  const [newDirUserId, setNewDirUserId] = useState("");
-  const [newDirUserName, setNewDirUserName] = useState("");
-  const [newDirUserEmail, setNewDirUserEmail] = useState("");
-
-  const persistAdminDirectory = (next) => {
-    setAdminDirectory(next);
-    localStorage.setItem(ADMIN_DIRECTORY_KEY, JSON.stringify(next));
-  };
-
-  const persistAdminAssignments = (next) => {
-    setAdminAssignments(next);
-    localStorage.setItem(ADMIN_ASSIGN_KEY, JSON.stringify(next));
-  };
-
-  const handleAddDirectoryUser = () => {
-    const id = newDirUserId.trim();
-    const name = newDirUserName.trim();
-    const email = newDirUserEmail.trim();
-    if (!id || !email) return;
-    if (adminDirectory.some((u) => String(u.id) === String(id))) return;
-    persistAdminDirectory([...adminDirectory, { id, name: name || email, email, role: "USER" }]);
-    setNewDirUserId("");
-    setNewDirUserName("");
-    setNewDirUserEmail("");
-  };
-
-  const handleRemoveDirectoryUser = (id) => {
-    persistAdminDirectory(adminDirectory.filter((u) => String(u.id) !== String(id)));
-    const nextAssignments = { ...adminAssignments };
-    Object.keys(nextAssignments).forEach((projectId) => {
-      if (String(nextAssignments[projectId]) === String(id)) delete nextAssignments[projectId];
-    });
-    persistAdminAssignments(nextAssignments);
-  };
-
-  const handleChangeDirectoryUserRole = (id, role) => {
-    persistAdminDirectory(adminDirectory.map((u) => (String(u.id) === String(id) ? { ...u, role } : u)));
-  };
-
-  const handleAssignProjectToUser = (projectId, userId) => {
-    const next = { ...adminAssignments };
-    // Enforce one active assignment per user — drop any prior project they had.
-    Object.keys(next).forEach((pid) => {
-      if (String(next[pid]) === String(userId)) delete next[pid];
-    });
-    if (projectId) next[projectId] = userId;
-    persistAdminAssignments(next);
-  };
-
-  /* ── User role: which projects are "his" ──────────────────────
-     Own creations (created_by) + anything Admin assigned to him
-     via the mock directory above. */
-  const visibleProjects = userIsUser
-    ? projects.filter(
-        (p) =>
-          Number(p.created_by) === currentUserId ||
-          String(adminAssignments[p.id]) === String(currentUserId)
-      )
-    : projects;
 
   const mapApiProject = (p) => ({
     ...p,
@@ -2216,91 +2393,6 @@ export default function Submit() {
 
   const hasUploadedBrief = briefFiles.some((f) => f.status === "uploaded");
 
-  /* ── SME Interview Capture (screen after Brief Upload) ───────
-     NOTE: mock/local-state only for now — there is no SME-Interview
-     API in apiServices.js yet. Everything below is shaped so it's
-     easy to swap for real calls once that endpoint exists:
-       - smeInterviewMode      -> POST payload "mode" field
-       - smeQuestions[].answer -> POST /sme-interview/{project}/answers
-       - smeNotes              -> POST /sme-interview/{project}/notes
-       - smeSummary            -> GET  /sme-interview/{project}/summary (AI)
-       - smeKeyTopics / smePedagogyFlags -> extracted-concepts response */
-  const SME_QUESTIONS_SEED = [
-    { id: "q1", question: "What topics do learners find hardest?" },
-    { id: "q2", question: "What's the best teaching sequence for this subject?" },
-    { id: "q3", question: "How many practice questions per chapter are ideal?" },
-    { id: "q4", question: "Which prior-year questions should be prioritized?" },
-  ];
-
-  const [smeInterviewMode, setSmeInterviewMode] = useState("live"); // "live" | "async"
-  const [smeQuestions, setSmeQuestions] = useState(
-    SME_QUESTIONS_SEED.map((q) => ({ ...q, answer: "" }))
-  );
-  const [smeActiveQuestionId, setSmeActiveQuestionId] = useState(SME_QUESTIONS_SEED[0].id);
-  const [smeNotes, setSmeNotes] = useState("");
-  const [smeSummary, setSmeSummary] = useState("");
-  const [smeApproved, setSmeApproved] = useState(false);
-  const [smeKeyTopics, setSmeKeyTopics] = useState([]);
-  const [smeKeyTopicInput, setSmeKeyTopicInput] = useState("");
-  const [smePedagogyFlags, setSmePedagogyFlags] = useState([]);
-  const [smePedagogyFlagInput, setSmePedagogyFlagInput] = useState("");
-
-  const smeActiveQuestion = smeQuestions.find((q) => q.id === smeActiveQuestionId) || null;
-
-  const smeQuestionStatus = (q) => {
-    if (q.id === smeActiveQuestionId) return "active";
-    if (q.answer.trim()) return "answered";
-    return "pending";
-  };
-
-  const updateSmeAnswer = (id, value) => {
-    setSmeQuestions((prev) => prev.map((q) => (q.id === id ? { ...q, answer: value } : q)));
-  };
-
-  const handleGenerateSmeSummary = () => {
-    // Placeholder client-side "summary" until the real AI-summary API is wired up.
-    const answered = smeQuestions.filter((q) => q.answer.trim());
-    if (!smeNotes.trim() && answered.length === 0) return;
-    const bulletized = answered.map((q) => `• ${q.question} — ${q.answer.trim()}`).join("\n");
-    setSmeSummary([smeNotes.trim(), bulletized].filter(Boolean).join("\n\n"));
-  };
-
-  const handleAddSmeKeyTopic = () => {
-    const value = smeKeyTopicInput.trim();
-    if (!value || smeKeyTopics.includes(value)) return;
-    setSmeKeyTopics((prev) => [...prev, value]);
-    setSmeKeyTopicInput("");
-  };
-
-  const removeSmeKeyTopic = (topic) => {
-    setSmeKeyTopics((prev) => prev.filter((t) => t !== topic));
-  };
-
-  const handleAddSmePedagogyFlag = () => {
-    const value = smePedagogyFlagInput.trim();
-    if (!value) return;
-    setSmePedagogyFlags((prev) => [...prev, value]);
-    setSmePedagogyFlagInput("");
-  };
-
-  const removeSmePedagogyFlag = (index) => {
-    setSmePedagogyFlags((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const smePendingQuestions = smeQuestions.filter((q) => !q.answer.trim());
-
-  const handleMarkSmeApproved = () => {
-    setSmeApproved(true);
-    setSuccessBanner("SME interview marked as approved.");
-    window.setTimeout(() => setSuccessBanner(""), 4500);
-  };
-
-  const handleConvertToChapterNotes = () => {
-    // Placeholder — will POST to the chapter-notes API once it exists.
-    setSuccessBanner("Converted to chapter notes (draft).");
-    window.setTimeout(() => setSuccessBanner(""), 4500);
-  };
-
   const [editingProject, setEditingProject] = useState(null);
   const [savingEdit, setSavingEdit] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -2335,10 +2427,10 @@ export default function Submit() {
     }
   };
 
-  const activeProjects = visibleProjects.length;
-  const pendingReviews = visibleProjects.filter((p) => p.stage.toLowerCase().includes("review")).length;
-  const chaptersTotal = visibleProjects.reduce((sum, p) => sum + (Number(p.chapter_count) || 0), 0);
-  const pagesTotal = visibleProjects.reduce((sum, p) => sum + (Number(p.expected_pages) || 0), 0);
+  const activeProjects = projects.length;
+  const pendingReviews = projects.filter((p) => p.stage.toLowerCase().includes("review")).length;
+  const chaptersTotal = projects.reduce((sum, p) => sum + (Number(p.chapter_count) || 0), 0);
+  const pagesTotal = projects.reduce((sum, p) => sum + (Number(p.expected_pages) || 0), 0);
 
   return (
     <div className="submit-page">
@@ -2354,14 +2446,16 @@ export default function Submit() {
 
         <nav className="submit-nav">
           <p className="submit-nav-label">BOOKFORGE</p>
-          <div
-            className={`submit-nav-item${activeTab === "dashboard" ? " active" : ""}`}
-            onClick={() => setActiveTab("dashboard")}
-          >
-            <span className="submit-nav-icon">📊</span>
-            <span>Dashboard</span>
-            {activeTab === "dashboard" && <span className="submit-nav-dot"></span>}
-          </div>
+          {canSeeDashboard && (
+            <div
+              className={`submit-nav-item${activeTab === "dashboard" ? " active" : ""}`}
+              onClick={() => setActiveTab("dashboard")}
+            >
+              <span className="submit-nav-icon">📊</span>
+              <span>Dashboard</span>
+              {activeTab === "dashboard" && <span className="submit-nav-dot"></span>}
+            </div>
+          )}
           <div
             className={`submit-nav-item${activeTab === "new-project" ? " active" : ""}`}
             onClick={goToNewProject}
@@ -2378,24 +2472,14 @@ export default function Submit() {
             <span>Brief Upload</span>
             {activeTab === "upload-brief" && <span className="submit-nav-dot"></span>}
           </div>
-          {!userIsUser && (
+          {canSeeDashboard && (
             <div
-              className={`submit-nav-item${activeTab === "sme-capture" ? " active" : ""}`}
-              onClick={() => setActiveTab("sme-capture")}
+              className={`submit-nav-item${activeTab === "sme" ? " active" : ""}`}
+              onClick={() => setActiveTab("sme")}
             >
-              <span className="submit-nav-icon">🎙️</span>
+              <span className="submit-nav-icon">🎤</span>
               <span>SME Capture</span>
-              {activeTab === "sme-capture" && <span className="submit-nav-dot"></span>}
-            </div>
-          )}
-          {userIsAdmin && (
-            <div
-              className={`submit-nav-item${activeTab === "allocate" ? " active" : ""}`}
-              onClick={() => setActiveTab("allocate")}
-            >
-              <span className="submit-nav-icon">🛠️</span>
-              <span>Allocate Roles &amp; Projects</span>
-              {activeTab === "allocate" && <span className="submit-nav-dot"></span>}
+              {activeTab === "sme" && <span className="submit-nav-dot"></span>}
             </div>
           )}
         </nav>
@@ -2476,10 +2560,8 @@ export default function Submit() {
                 <div className="bf-table-wrap">
                   {projectsLoading ? (
                     <p style={{ padding: "16px", opacity: 0.7 }}>Loading projects…</p>
-                  ) : visibleProjects.length === 0 ? (
-                    <p style={{ padding: "16px", opacity: 0.7 }}>
-                      {userIsUser ? "No projects assigned to you yet." : "No projects found yet."}
-                    </p>
+                  ) : projects.length === 0 ? (
+                    <p style={{ padding: "16px", opacity: 0.7 }}>No projects found yet.</p>
                   ) : (
                     <table className="bf-table">
                       <thead>
@@ -2490,11 +2572,11 @@ export default function Submit() {
                           <th>Publisher</th>
                           <th>Deadline</th>
                           <th>Progress</th>
-                          {!userIsUser && <th>Actions</th>}
+                          <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {visibleProjects.map((p) => (
+                        {projects.map((p) => (
                           <tr key={p.id}>
                             <td className="bf-td-toggle">
                               <button
@@ -2537,33 +2619,31 @@ export default function Submit() {
                                 </>
                               )}
                             </td>
-                            {!userIsUser && (
-                              <td>
-                                <div style={{ display: "flex", gap: "8px" }}>
-                                  <button
-                                    type="button"
-                                    className="bf-icon-btn"
-                                    title="Edit project"
-                                    aria-label="Edit project"
-                                    onClick={() => setEditingProject(p)}
-                                    style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
-                                  >
-                                    ✏️
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="bf-icon-btn"
-                                    title="Delete project"
-                                    aria-label="Delete project"
-                                    disabled={deletingId === p.id}
-                                    onClick={() => handleDeleteProject(p)}
-                                    style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
-                                  >
-                                    {deletingId === p.id ? "…" : "🗑️"}
-                                  </button>
-                                </div>
-                              </td>
-                            )}
+                            <td>
+                              <div style={{ display: "flex", gap: "8px" }}>
+                                <button
+                                  type="button"
+                                  className="bf-icon-btn"
+                                  title="Edit project"
+                                  aria-label="Edit project"
+                                  onClick={() => setEditingProject(p)}
+                                  style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  type="button"
+                                  className="bf-icon-btn"
+                                  title="Delete project"
+                                  aria-label="Delete project"
+                                  disabled={deletingId === p.id}
+                                  onClick={() => handleDeleteProject(p)}
+                                  style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
+                                >
+                                  {deletingId === p.id ? "…" : "🗑️"}
+                                </button>
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -2579,13 +2659,8 @@ export default function Submit() {
               <div className="bf-steps">
                 {WIZARD_STEPS.map((label, i) => {
                   const n = i + 1;
-                  const stepTab = WIZARD_STEP_TABS[n];
                   return (
-                    <div
-                      className={`bf-step${stepTab ? " bf-step-clickable" : ""}`}
-                      key={label}
-                      onClick={stepTab ? () => setActiveTab(stepTab) : undefined}
-                    >
+                    <div className="bf-step" key={label}>
                       <div className={`bf-step-circle${n === 1 ? " active" : ""}`}>{n}</div>
                       <div className={`bf-step-label${n === 1 ? " active" : ""}`}>{label}</div>
                       {n < WIZARD_STEPS.length && <div className="bf-step-connector"></div>}
@@ -2713,7 +2788,7 @@ export default function Submit() {
                 {formError && <p className="bf-step-error">{formError}</p>}
 
                 <div className="bf-step-actions">
-                  <button className="bf-btn bf-btn-secondary" onClick={() => setActiveTab("dashboard")}>Cancel</button>
+                  <button className="bf-btn bf-btn-secondary" onClick={goBackFromWizard}>Cancel</button>
                   <button className="bf-btn bf-btn-primary" onClick={handleCreateProject} disabled={creating}>
                     {creating ? "Creating…" : "Create Project ✓"}
                   </button>
@@ -2727,20 +2802,13 @@ export default function Submit() {
               <div className="bf-steps">
                 {WIZARD_STEPS.map((label, i) => {
                   const n = i + 1;
-                  const stepTab = WIZARD_STEP_TABS[n];
-                  const done = n === 1 && !!createdProject?.id;
-                  const active = n === 2;
                   return (
-                    <div
-                      className={`bf-step${stepTab ? " bf-step-clickable" : ""}`}
-                      key={label}
-                      onClick={stepTab ? () => setActiveTab(stepTab) : undefined}
-                    >
-                      <div className={`bf-step-circle${done ? " done" : ""}${active ? " active" : ""}`}>
-                        {done ? "✓" : n}
+                    <div className="bf-step" key={label}>
+                      <div className={`bf-step-circle${n === 1 ? " done" : ""}${n === 2 ? " active" : ""}`}>
+                        {n === 1 ? "✓" : n}
                       </div>
-                      <div className={`bf-step-label${done || active ? " active" : ""}`}>{label}</div>
-                      {n < WIZARD_STEPS.length && <div className={`bf-step-connector${done ? " done" : ""}`}></div>}
+                      <div className={`bf-step-label${n <= 2 ? " active" : ""}`}>{label}</div>
+                      {n < WIZARD_STEPS.length && <div className={`bf-step-connector${n === 1 ? " done" : ""}`}></div>}
                     </div>
                   );
                 })}
@@ -2759,7 +2827,7 @@ export default function Submit() {
                       className="bf-form-input"
                       value={createdProject?.id || ""}
                       onChange={(e) => {
-                        const selected = visibleProjects.find((p) => String(p.id) === e.target.value);
+                        const selected = projects.find((p) => String(p.id) === e.target.value);
                         setCreatedProject(selected ? { id: selected.id, book_title: selected.title } : null);
                         setBriefFiles([]);
                       }}
@@ -2767,7 +2835,7 @@ export default function Submit() {
                       <option value="">
                         {projectsLoading ? "Loading projects…" : "Select a project…"}
                       </option>
-                      {visibleProjects.map((p) => (
+                      {projects.map((p) => (
                         <option key={p.id} value={p.id}>{p.title}</option>
                       ))}
                     </select>
@@ -2882,12 +2950,13 @@ export default function Submit() {
                 </div>
 
                 <div className="bf-step-actions">
-                  <button className="bf-btn bf-btn-secondary" onClick={() => setActiveTab("dashboard")}>
-                    Back to Dashboard
+                  <button className="bf-btn bf-btn-secondary" onClick={goBackFromWizard}>
+                    {canSeeDashboard ? "Back to Dashboard" : "Back to Home"}
                   </button>
                   <button
                     className="bf-btn bf-btn-primary"
-                    onClick={() => setActiveTab("sme-capture")}
+                    disabled={!hasUploadedBrief}
+                    onClick={() => navigate("/")}
                   >
                     Continue →
                   </button>
@@ -2896,345 +2965,7 @@ export default function Submit() {
             </div>
           )}
 
-          {activeTab === "sme-capture" && (
-            <div className="bf-wizard">
-              <div className="bf-steps">
-                {WIZARD_STEPS.map((label, i) => {
-                  const n = i + 1;
-                  const stepTab = WIZARD_STEP_TABS[n];
-                  const done = (n === 1 && !!createdProject?.id) || (n === 2 && hasUploadedBrief);
-                  const active = n === 3;
-                  return (
-                    <div
-                      className={`bf-step${stepTab ? " bf-step-clickable" : ""}`}
-                      key={label}
-                      onClick={stepTab ? () => setActiveTab(stepTab) : undefined}
-                    >
-                      <div className={`bf-step-circle${done ? " done" : ""}${active ? " active" : ""}`}>
-                        {done ? "✓" : n}
-                      </div>
-                      <div className={`bf-step-label${done || active ? " active" : ""}`}>{label}</div>
-                      {n < WIZARD_STEPS.length && <div className={`bf-step-connector${done ? " done" : ""}`}></div>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="bf-sme-header">
-                <div>
-                  <div className="bf-card-title" style={{ marginBottom: "4px" }}>SME Interview Capture</div>
-                  <p className="bf-upload-subtitle" style={{ margin: 0 }}>
-                    Capture expert knowledge via live interview or async Q&amp;A. AI summarizes and extracts concepts.
-                  </p>
-                </div>
-                <div className="bf-sme-meta">
-                  SME: <strong>{createdProject?.publisher_name || "Unassigned"}</strong>
-                  <span className="bf-sme-meta-divider">|</span>
-                  Project: <strong>{createdProject?.book_title || "Untitled"}</strong>
-                </div>
-              </div>
-
-              {userIsUser && (
-                <div className="bf-readonly-banner">
-                  👁️ View only — your role doesn't have edit access on this screen.
-                </div>
-              )}
-
-              <div className="bf-sme-mode-toggle">
-                <button
-                  type="button"
-                  className={`bf-sme-mode-btn${smeInterviewMode === "live" ? " active" : ""}`}
-                  onClick={() => setSmeInterviewMode("live")}
-                  disabled={userIsUser}
-                >
-                  🎙️ Live Mode
-                </button>
-                <button
-                  type="button"
-                  className={`bf-sme-mode-btn${smeInterviewMode === "async" ? " active" : ""}`}
-                  onClick={() => setSmeInterviewMode("async")}
-                  disabled={userIsUser}
-                >
-                  📝 Async Q&amp;A Mode
-                </button>
-              </div>
-
-              <div className={`bf-sme-grid${userIsUser ? " bf-readonly" : ""}`}>
-                {/* ── Interview Questions ─────────────────────── */}
-                <div className="bf-card bf-sme-col">
-                  <div className="bf-card-title">Interview Questions</div>
-                  <div className="bf-sme-question-list">
-                    {smeQuestions.map((q, i) => {
-                      const status = smeQuestionStatus(q);
-                      return (
-                        <div
-                          key={q.id}
-                          className={`bf-sme-question${status === "active" ? " active" : ""}`}
-                          onClick={userIsUser ? undefined : () => setSmeActiveQuestionId(q.id)}
-                        >
-                          <div className="bf-sme-question-meta">
-                            <span>Q{i + 1} · {status === "answered" ? "Answered" : status === "active" ? "Active" : "Pending"}</span>
-                          </div>
-                          <div className="bf-sme-question-text">{q.question}</div>
-                          <div className="bf-sme-question-answer">
-                            {q.answer.trim() ? q.answer : <span className="bf-sme-question-placeholder">Awaiting response…</span>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* ── Notes / Transcript ──────────────────────── */}
-                <div className="bf-card bf-sme-col">
-                  <div className="bf-card-title">Notes / Transcript</div>
-
-                  {smeActiveQuestion && (
-                    <div className="bf-form-group" style={{ marginBottom: "14px" }}>
-                      <label className="bf-form-label">Answer — {smeActiveQuestion.question}</label>
-                      <textarea
-                        className="bf-form-input bf-textarea"
-                        rows={3}
-                        value={smeActiveQuestion.answer}
-                        onChange={(e) => updateSmeAnswer(smeActiveQuestion.id, e.target.value)}
-                        placeholder="Type or paste the SME's response…"
-                        disabled={userIsUser}
-                      />
-                    </div>
-                  )}
-
-                  <div className="bf-form-group">
-                    <label className="bf-form-label">Transcript / Notes</label>
-                    <textarea
-                      className="bf-form-input bf-textarea"
-                      rows={6}
-                      value={smeNotes}
-                      onChange={(e) => setSmeNotes(e.target.value)}
-                      placeholder="Free-form notes captured during the interview…"
-                      disabled={userIsUser}
-                    />
-                  </div>
-
-                  <div className="bf-sme-summary-box">
-                    <div className="bf-sme-summary-title">🤖 AI-Generated Summary</div>
-                    {smeSummary ? (
-                      <p className="bf-sme-summary-text">{smeSummary}</p>
-                    ) : (
-                      <p className="bf-sme-summary-empty">No summary yet — add notes or answers, then generate one.</p>
-                    )}
-                    <button type="button" className="bf-btn bf-btn-secondary bf-btn-sm" onClick={handleGenerateSmeSummary} disabled={userIsUser}>
-                      Generate Summary
-                    </button>
-                  </div>
-
-                  <div className="bf-step-actions">
-                    <button type="button" className="bf-btn bf-btn-secondary" onClick={handleMarkSmeApproved} disabled={userIsUser}>
-                      {smeApproved ? "✓ Approved" : "Mark as Approved"}
-                    </button>
-                    <button type="button" className="bf-btn bf-btn-primary" onClick={handleConvertToChapterNotes} disabled={userIsUser}>
-                      Convert to Chapter Notes →
-                    </button>
-                  </div>
-                </div>
-
-                {/* ── Extracted Concepts ──────────────────────── */}
-                <div className="bf-card bf-sme-col">
-                  <div className="bf-card-title">Extracted Concepts</div>
-
-                  <div className="bf-sme-subsection-label">Key Topics</div>
-                  <div className="bf-sme-tag-row">
-                    {smeKeyTopics.map((topic) => (
-                      <span className="bf-sme-tag" key={topic}>
-                        {topic}
-                        <button type="button" onClick={() => removeSmeKeyTopic(topic)} aria-label={`Remove ${topic}`} disabled={userIsUser}>✕</button>
-                      </span>
-                    ))}
-                    {smeKeyTopics.length === 0 && <p className="bf-doc-empty" style={{ padding: "2px 0" }}>No topics added yet.</p>}
-                  </div>
-                  <div className="bf-sme-inline-add">
-                    <input
-                      className="bf-form-input"
-                      value={smeKeyTopicInput}
-                      onChange={(e) => setSmeKeyTopicInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSmeKeyTopic())}
-                      placeholder="e.g. Percentage"
-                      disabled={userIsUser}
-                    />
-                    <button type="button" className="bf-btn bf-btn-secondary bf-btn-sm" onClick={handleAddSmeKeyTopic} disabled={userIsUser}>Add</button>
-                  </div>
-
-                  <div className="bf-sme-subsection-label" style={{ marginTop: "18px" }}>Pedagogy Flags</div>
-                  <div className="bf-sme-flag-list">
-                    {smePedagogyFlags.map((flag, i) => (
-                      <div className="bf-sme-flag" key={`${flag}-${i}`}>
-                        <span>⚠️ {flag}</span>
-                        <button type="button" onClick={() => removeSmePedagogyFlag(i)} aria-label="Remove flag" disabled={userIsUser}>✕</button>
-                      </div>
-                    ))}
-                    {smePedagogyFlags.length === 0 && <p className="bf-doc-empty" style={{ padding: "2px 0" }}>No flags yet.</p>}
-                  </div>
-                  <div className="bf-sme-inline-add">
-                    <input
-                      className="bf-form-input"
-                      value={smePedagogyFlagInput}
-                      onChange={(e) => setSmePedagogyFlagInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSmePedagogyFlag())}
-                      placeholder="e.g. Bilingual glossary needed"
-                      disabled={userIsUser}
-                    />
-                    <button type="button" className="bf-btn bf-btn-secondary bf-btn-sm" onClick={handleAddSmePedagogyFlag} disabled={userIsUser}>Add</button>
-                  </div>
-
-                  <div className="bf-sme-subsection-label" style={{ marginTop: "18px" }}>Follow-up Flags</div>
-                  {smePendingQuestions.length === 0 ? (
-                    <p className="bf-doc-empty" style={{ padding: "2px 0" }}>All questions answered.</p>
-                  ) : (
-                    <div className="bf-sme-followup-list">
-                      {smePendingQuestions.map((q) => {
-                        const idx = smeQuestions.findIndex((x) => x.id === q.id) + 1;
-                        return (
-                          <div className="bf-sme-followup" key={q.id}>❓ Q{idx} answer pending</div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="bf-step-actions">
-                <button className="bf-btn bf-btn-secondary" onClick={() => setActiveTab("upload-brief")}>
-                  ← Back
-                </button>
-                <button className="bf-btn bf-btn-primary" onClick={() => setActiveTab("dashboard")}>
-                  Save &amp; Return to Dashboard
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "allocate" && userIsAdmin && (
-            <div className="bf-dashboard">
-              <div className="bf-header" style={{ marginBottom: "8px" }}>
-                <div>
-                  <h2 className="bf-card-title" style={{ marginBottom: "4px", fontSize: "18px" }}>Allocate Roles &amp; Projects</h2>
-                  <p className="bf-upload-subtitle" style={{ margin: 0 }}>
-                    Add a user to the directory, set their role, and assign them a project.
-                  </p>
-                </div>
-              </div>
-
-              <div className="bf-readonly-banner">
-                ℹ️ There's no user-list / role-assign / project-assign API yet, so this directory is stored locally
-                in your browser (not the real database). It's ready to swap for real API calls once those endpoints exist.
-              </div>
-
-              <div className="bf-card" style={{ marginBottom: "18px" }}>
-                <div className="bf-card-title">Add User to Directory</div>
-                <div className="bf-form-row" style={{ gridTemplateColumns: "1fr 1fr 1fr auto" }}>
-                  <div className="bf-form-group">
-                    <label className="bf-form-label">User ID</label>
-                    <input
-                      className="bf-form-input"
-                      value={newDirUserId}
-                      onChange={(e) => setNewDirUserId(e.target.value)}
-                      placeholder="e.g. 4"
-                    />
-                  </div>
-                  <div className="bf-form-group">
-                    <label className="bf-form-label">Name</label>
-                    <input
-                      className="bf-form-input"
-                      value={newDirUserName}
-                      onChange={(e) => setNewDirUserName(e.target.value)}
-                      placeholder="e.g. Rajat"
-                    />
-                  </div>
-                  <div className="bf-form-group">
-                    <label className="bf-form-label">Email</label>
-                    <input
-                      className="bf-form-input"
-                      value={newDirUserEmail}
-                      onChange={(e) => setNewDirUserEmail(e.target.value)}
-                      placeholder="e.g. rajat@gmail.com"
-                    />
-                  </div>
-                  <div className="bf-form-group" style={{ display: "flex", alignItems: "flex-end" }}>
-                    <button type="button" className="bf-btn bf-btn-primary" onClick={handleAddDirectoryUser}>
-                      + Add
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bf-card">
-                <div className="bf-card-title">User Directory</div>
-                {adminDirectory.length === 0 ? (
-                  <p className="bf-doc-empty">No users added yet — add one above to assign a role and project.</p>
-                ) : (
-                  <div className="bf-table-wrap">
-                    <table className="bf-table">
-                      <thead>
-                        <tr>
-                          <th>User</th>
-                          <th>Email</th>
-                          <th>Role</th>
-                          <th>Assigned Project</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {adminDirectory.map((u) => (
-                          <tr key={u.id}>
-                            <td><strong>{u.name}</strong> <span style={{ color: "var(--slate-400)", fontSize: "11.5px" }}>#{u.id}</span></td>
-                            <td>{u.email}</td>
-                            <td>
-                              <select
-                                className="bf-form-input"
-                                value={u.role}
-                                onChange={(e) => handleChangeDirectoryUserRole(u.id, e.target.value)}
-                              >
-                                {ROLE_OPTIONS.map((r) => (
-                                  <option key={r} value={r}>{r}</option>
-                                ))}
-                              </select>
-                            </td>
-                            <td>
-                              <select
-                                className="bf-form-input"
-                                value={
-                                  Object.keys(adminAssignments).find(
-                                    (projectId) => String(adminAssignments[projectId]) === String(u.id)
-                                  ) || ""
-                                }
-                                onChange={(e) => handleAssignProjectToUser(e.target.value || null, u.id)}
-                              >
-                                <option value="">Unassigned</option>
-                                {projects.map((p) => (
-                                  <option key={p.id} value={p.id}>{p.title}</option>
-                                ))}
-                              </select>
-                            </td>
-                            <td>
-                              <button
-                                type="button"
-                                className="bf-icon-btn"
-                                title="Remove from directory"
-                                aria-label="Remove from directory"
-                                onClick={() => handleRemoveDirectoryUser(u.id)}
-                                style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
-                              >
-                                🗑️
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {activeTab === "sme" && canSeeDashboard && <SmeCapture />}
         </div>
       </main>
 

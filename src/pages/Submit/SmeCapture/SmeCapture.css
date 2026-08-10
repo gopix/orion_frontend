@@ -1,0 +1,242 @@
+/* ═══════════════════════════════════════════════════════════
+   SME Interview Capture
+   Reuses design tokens + shared classes (bf-card, bf-btn, bf-form-*,
+   bf-doc-*, bf-success-banner, bf-error-banner) defined in Submit.css.
+   ═══════════════════════════════════════════════════════════ */
+
+.sme-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.sme-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.sme-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--blue-600);
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+.sme-back-link:hover {
+  text-decoration: underline;
+}
+
+.sme-assign-note {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--slate-400);
+  font-style: italic;
+}
+
+/* ── Project picker ───────────────────────────────────────── */
+.sme-project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.sme-project-card {
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.sme-project-card:hover {
+  border-color: var(--blue-400);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.sme-project-card-icon {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.sme-project-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin-bottom: 6px;
+}
+
+.sme-project-card-meta {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--slate-500);
+}
+
+/* ── Mode toggle ───────────────────────────────────────────── */
+.sme-mode-toggle {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sme-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 9px 14px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--slate-200);
+  background: #fff;
+  color: var(--slate-600);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.sme-mode-btn:hover {
+  border-color: var(--blue-400);
+}
+
+.sme-mode-btn.active {
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+}
+
+/* ── Two-column capture layout ────────────────────────────── */
+.sme-columns {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.sme-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.sme-col-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sme-count-chip {
+  background: var(--blue-50);
+  color: var(--blue-600);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 99px;
+}
+
+/* ── Q&A list ──────────────────────────────────────────────── */
+.sme-qa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.sme-qa-item {
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  background: var(--slate-50);
+  transition: var(--transition);
+}
+
+.sme-qa-item.editing {
+  border-color: var(--blue-400);
+  background: var(--blue-50);
+}
+
+.sme-qa-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.sme-qa-index {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--blue-600);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.sme-qa-item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.sme-qa-action {
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sme-qa-action:hover {
+  border-color: var(--blue-400);
+}
+
+.sme-qa-action-danger:hover {
+  border-color: var(--red-600);
+}
+
+.sme-qa-question {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin-bottom: 4px;
+}
+
+.sme-qa-answer {
+  font-size: 13px;
+  color: var(--slate-600);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* ── Form card ─────────────────────────────────────────────── */
+.sme-form-card .bf-textarea {
+  resize: vertical;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .sme-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .sme-header {
+    flex-direction: column;
+  }
+}
