@@ -442,8 +442,104 @@
 //   return { blob, filename };
 // };
 
+// // ── Book Forge — SME Interview Capture ─────────────────────────
+// // ⚠️ PLACEHOLDER / MOCK — the backend does not have SME Q&A
+// // endpoints yet. Everything below (except submitSmeQaSession, which
+// // calls the real uploadBookForgeDocument API) is kept in
+// // localStorage so the SME Capture screen is fully usable today.
+// //
+// // When Gopal Sir ships the real endpoints, replace the body of each
+// // function below with the matching fetch() call. Function names,
+// // params, and the { response_code, message, data, errors } return
+// // shape are already written to match the rest of this file, so
+// // nothing in the UI should need to change.
 
-import { buildSmeQaPdfFile } from "../utils/smeQaPdf";
+// const smeQaStorageKey = (projectId) => `bf_sme_qa_${projectId}`;
+
+// const readSmeQaStore = (projectId) => {
+//   try {
+//     const raw = localStorage.getItem(smeQaStorageKey(projectId));
+//     return raw ? JSON.parse(raw) : [];
+//   } catch {
+//     return [];
+//   }
+// };
+
+// const writeSmeQaStore = (projectId, entries) => {
+//   localStorage.setItem(smeQaStorageKey(projectId), JSON.stringify(entries));
+// };
+
+// // GET-equivalent — list Q&A entries captured so far for a project.
+// // TODO(backend): replace with GET /api/v1/book-forge/projects/{project_id}/sme-qa
+// export const getSmeQaEntries = async (projectId) => {
+//   const data = readSmeQaStore(projectId);
+//   return { response_code: 200, message: "OK (mock)", data, errors: [] };
+// };
+
+// // POST-equivalent — create one Q&A entry.
+// // TODO(backend): replace with POST /api/v1/book-forge/projects/{project_id}/sme-qa
+// export const createSmeQaEntry = async (projectId, { question, answer }, createdBy) => {
+//   const entries = readSmeQaStore(projectId);
+//   const entry = {
+//     id: `qa-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+//     project_id: projectId,
+//     question: (question || "").trim(),
+//     answer: (answer || "").trim(),
+//     created_by: createdBy,
+//     created_at: new Date().toISOString(),
+//     updated_at: new Date().toISOString(),
+//   };
+//   entries.push(entry);
+//   writeSmeQaStore(projectId, entries);
+//   return { response_code: 201, message: "Question added (mock)", data: entry, errors: [] };
+// };
+
+// // PUT-equivalent — update one Q&A entry's question/answer text.
+// // TODO(backend): replace with PUT /api/v1/book-forge/sme-qa/{entry_id}
+// export const updateSmeQaEntry = async (projectId, entryId, { question, answer }) => {
+//   const entries = readSmeQaStore(projectId);
+//   const idx = entries.findIndex((e) => e.id === entryId);
+//   if (idx === -1) {
+//     return { response_code: 404, message: "Not found (mock)", data: null, errors: [{ message: "Entry not found" }] };
+//   }
+//   entries[idx] = { ...entries[idx], question, answer, updated_at: new Date().toISOString() };
+//   writeSmeQaStore(projectId, entries);
+//   return { response_code: 200, message: "Updated (mock)", data: entries[idx], errors: [] };
+// };
+
+// // DELETE-equivalent — remove one Q&A entry.
+// // TODO(backend): replace with DELETE /api/v1/book-forge/sme-qa/{entry_id}
+// export const deleteSmeQaEntry = async (projectId, entryId) => {
+//   const entries = readSmeQaStore(projectId).filter((e) => e.id !== entryId);
+//   writeSmeQaStore(projectId, entries);
+//   return { response_code: 200, message: "Deleted (mock)", data: null, errors: [] };
+// };
+
+// // Which projects should an SME see when they open SME Capture?
+// // TODO(backend): replace with a real filtered endpoint, e.g.
+// //   GET /api/v1/book-forge/projects?assigned_sme={sme_id}
+// // For now this calls the REAL "list projects" API and returns every
+// // non-deleted project, since the backend can't yet tell us which
+// // ones are actually assigned to this SME.
+// export const getAssignedBookForgeProjectsForSme = async (skip = 0, limit = 100) => {
+//   const res = await getBookForgeProjects(skip, limit);
+//   const rows = Array.isArray(res?.data) ? res.data.filter((p) => !p.is_deleted) : [];
+//   return { ...res, data: rows };
+// };
+
+// // Submit a project's Q&A session: turns the captured questions and
+// // answers into a PDF (client-side) and uploads it as a real document
+// // on the project using the existing, REAL document-upload API — so
+// // it shows up immediately under that project's Documents list.
+// export const submitSmeQaSession = async (project, qaEntries, createdBy, smeLabel = "") => {
+//   if (!qaEntries || qaEntries.length === 0) {
+//     return { response_code: 400, message: "Nothing to submit.", data: null, errors: [{ message: "Add at least one question before submitting." }] };
+//   }
+//   const file = buildSmeQaPdfFile(project, qaEntries, smeLabel);
+//   const res = await uploadBookForgeDocument(project.id, file, createdBy, "SME Interview Notes");
+//   return res;
+// };
+
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -888,17 +984,38 @@ export const downloadBookForgeDocument = async (documentId) => {
   return { blob, filename };
 };
 
+// POST /api/v1/book-forge/projects/{project_id}/interview  (Submit SME Interview)
+// Pass either `text` (typed Q&A — the backend renders it to a PDF) or a
+// `file` (an existing PDF, stored as-is). If a file is given, it takes
+// priority over text. Either way it's stored under document_type
+// "sme_interview" and shows up in the project's Documents list.
+export const submitBookForgeInterview = async (projectId, createdBy, { text, file } = {}) => {
+  const formData = new FormData();
+  formData.append("created_by", createdBy);
+  if (file) {
+    formData.append("file", file);
+  } else {
+    formData.append("text", text || "");
+  }
+  const response = await fetch(`${BASE_URL}/book-forge/projects/${projectId}/interview`, {
+    method: "POST",
+    body: formData
+  });
+  return response.json();
+};
+
 // ── Book Forge — SME Interview Capture ─────────────────────────
-// ⚠️ PLACEHOLDER / MOCK — the backend does not have SME Q&A
-// endpoints yet. Everything below (except submitSmeQaSession, which
-// calls the real uploadBookForgeDocument API) is kept in
-// localStorage so the SME Capture screen is fully usable today.
+// ⚠️ PLACEHOLDER / MOCK — the backend does not have SME Q&A entry
+// endpoints yet. Everything below is kept in localStorage so the
+// SME Capture screen is fully usable today. Final submission
+// (submitSmeQaSession) is REAL — it calls submitBookForgeInterview
+// above.
 //
-// When Gopal Sir ships the real endpoints, replace the body of each
-// function below with the matching fetch() call. Function names,
-// params, and the { response_code, message, data, errors } return
-// shape are already written to match the rest of this file, so
-// nothing in the UI should need to change.
+// When Gopal Sir ships the real entry endpoints, replace the body of
+// each function below with the matching fetch() call. Function
+// names, params, and the { response_code, message, data, errors }
+// return shape are already written to match the rest of this file,
+// so nothing in the UI should need to change.
 
 const smeQaStorageKey = (projectId) => `bf_sme_qa_${projectId}`;
 
@@ -973,15 +1090,35 @@ export const getAssignedBookForgeProjectsForSme = async (skip = 0, limit = 100) 
   return { ...res, data: rows };
 };
 
-// Submit a project's Q&A session: turns the captured questions and
-// answers into a PDF (client-side) and uploads it as a real document
-// on the project using the existing, REAL document-upload API — so
-// it shows up immediately under that project's Documents list.
-export const submitSmeQaSession = async (project, qaEntries, createdBy, smeLabel = "") => {
-  if (!qaEntries || qaEntries.length === 0) {
-    return { response_code: 400, message: "Nothing to submit.", data: null, errors: [{ message: "Add at least one question before submitting." }] };
+// Turns the captured Q&A entries into a single readable text block —
+// this is what the backend renders into the sme_interview PDF.
+const formatSmeQaAsText = (project, qaEntries, smeLabel) => {
+  const lines = [
+    `SME Interview — ${project.title || "Untitled Project"}`,
+    smeLabel ? `Captured by: ${smeLabel}` : null,
+    `Date: ${new Date().toLocaleString()}`,
+    ""
+  ].filter(Boolean);
+
+  qaEntries.forEach((qa, i) => {
+    lines.push(`Q${i + 1}: ${qa.question}`);
+    lines.push(`A${i + 1}: ${qa.answer}`);
+    lines.push("");
+  });
+
+  return lines.join("\n");
+};
+
+// Submit a project's Q&A session: sends the captured questions and
+// answers as text to the REAL interview API, which stores it as a
+// PDF under that project's documents — so it shows up immediately
+// in the project's Documents list. If an interview file is passed
+// instead (e.g. a PDF the SME already has), that's uploaded as-is.
+export const submitSmeQaSession = async (project, qaEntries, createdBy, smeLabel = "", file = null) => {
+  if (!file && (!qaEntries || qaEntries.length === 0)) {
+    return { response_code: 400, message: "Nothing to submit.", data: null, errors: [{ message: "Add at least one question, or attach a file, before submitting." }] };
   }
-  const file = buildSmeQaPdfFile(project, qaEntries, smeLabel);
-  const res = await uploadBookForgeDocument(project.id, file, createdBy, "SME Interview Notes");
+  const text = file ? "" : formatSmeQaAsText(project, qaEntries, smeLabel);
+  const res = await submitBookForgeInterview(project.id, createdBy, { text, file });
   return res;
 };

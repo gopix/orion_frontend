@@ -1,4 +1,375 @@
-import { useEffect, useState } from "react";
+
+
+// import { useEffect, useState } from "react";
+// import {
+//   getAssignedBookForgeProjectsForSme,
+//   getBookForgeProjects,
+//   getSmeQaEntries,
+//   createSmeQaEntry,
+//   updateSmeQaEntry,
+//   deleteSmeQaEntry,
+//   getBookForgeDocuments,
+// } from "../../../services/apiServices";
+// import { isAdmin } from "../../../utils/auth";
+// import "./SmeCapture.css";
+
+// const EMPTY_ENTRY_FORM = { question: "", answer: "" };
+
+// export default function SmeCapture() {
+//   const admin = isAdmin();
+//   const smeLabel = sessionStorage.getItem("userEmail") || "";
+//   const createdBy = Number(sessionStorage.getItem("token")) || 0;
+
+//   /* ── Step 1: project selection ─────────────────────────────── */
+//   const [projects, setProjects] = useState([]);
+//   const [projectsLoading, setProjectsLoading] = useState(true);
+//   const [projectsError, setProjectsError] = useState("");
+//   const [selectedProject, setSelectedProject] = useState(null);
+
+//   useEffect(() => {
+//     let cancelled = false;
+//     (async () => {
+//       setProjectsLoading(true);
+//       setProjectsError("");
+//       try {
+//         // Admins browse every project; SMEs only see projects assigned
+//         // to them (see TODO note in apiServices.js — filtering is not
+//         // yet real on the backend, so today this still returns every
+//         // active project for SMEs too).
+//         const res = admin ? await getBookForgeProjects(0, 100) : await getAssignedBookForgeProjectsForSme();
+//         const rows = Array.isArray(res?.data) ? res.data.filter((p) => !p.is_deleted) : [];
+//         if (!cancelled) setProjects(rows);
+//       } catch (err) {
+//         console.error("Failed to load projects for SME Capture:", err);
+//         if (!cancelled) setProjectsError("Failed to load projects. Please try again.");
+//       } finally {
+//         if (!cancelled) setProjectsLoading(false);
+//       }
+//     })();
+//     return () => { cancelled = true; };
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, []);
+
+//   /* ── Step 2: Q&A capture for the selected project ──────────── */
+//   const [qaEntries, setQaEntries] = useState([]);
+//   const [qaLoading, setQaLoading] = useState(false);
+//   const [qaError, setQaError] = useState("");
+//   const [mode, setMode] = useState("live"); // "live" | "async" — cosmetic toggle, same data underneath
+
+//   const [entryForm, setEntryForm] = useState(EMPTY_ENTRY_FORM);
+//   const [editingEntryId, setEditingEntryId] = useState(null);
+//   const [savingEntry, setSavingEntry] = useState(false);
+//   const [entryFormError, setEntryFormError] = useState("");
+//   const [deletingEntryId, setDeletingEntryId] = useState(null);
+
+//   const [projectDocs, setProjectDocs] = useState([]);
+//   const [projectDocsLoading, setProjectDocsLoading] = useState(false);
+
+//   const loadQaEntries = async (projectId) => {
+//     setQaLoading(true);
+//     setQaError("");
+//     try {
+//       const res = await getSmeQaEntries(projectId);
+//       setQaEntries(Array.isArray(res?.data) ? res.data : []);
+//     } catch (err) {
+//       console.error("Failed to load SME Q&A entries:", err);
+//       setQaError("Failed to load captured questions.");
+//     } finally {
+//       setQaLoading(false);
+//     }
+//   };
+
+//   const loadProjectDocs = async (projectId) => {
+//     setProjectDocsLoading(true);
+//     try {
+//       const res = await getBookForgeDocuments(projectId, 0, 100);
+//       const rows = Array.isArray(res?.data) ? res.data : [];
+//       setProjectDocs(rows.filter((d) => !d.is_deleted));
+//     } catch (err) {
+//       console.error("Failed to load project documents:", err);
+//       setProjectDocs([]);
+//     } finally {
+//       setProjectDocsLoading(false);
+//     }
+//   };
+
+//   const selectProject = (project) => {
+//     setSelectedProject(project);
+//     setEntryForm(EMPTY_ENTRY_FORM);
+//     setEditingEntryId(null);
+//     setEntryFormError("");
+//     loadQaEntries(project.id);
+//     loadProjectDocs(project.id);
+//   };
+
+//   const backToProjects = () => {
+//     setSelectedProject(null);
+//     setQaEntries([]);
+//     setProjectDocs([]);
+//   };
+
+//   const startNewEntry = () => {
+//     setEditingEntryId(null);
+//     setEntryForm(EMPTY_ENTRY_FORM);
+//     setEntryFormError("");
+//   };
+
+//   const startEditEntry = (entry) => {
+//     setEditingEntryId(entry.id);
+//     setEntryForm({ question: entry.question, answer: entry.answer });
+//     setEntryFormError("");
+//   };
+
+//   const handleSaveEntry = async () => {
+//     if (!entryForm.question.trim()) {
+//       setEntryFormError("Please enter a question.");
+//       return;
+//     }
+//     if (!entryForm.answer.trim()) {
+//       setEntryFormError("Please enter an answer.");
+//       return;
+//     }
+//     setSavingEntry(true);
+//     setEntryFormError("");
+//     try {
+//       if (editingEntryId) {
+//         await updateSmeQaEntry(selectedProject.id, editingEntryId, entryForm);
+//       } else {
+//         await createSmeQaEntry(selectedProject.id, entryForm, createdBy);
+//       }
+//       await loadQaEntries(selectedProject.id);
+//       setEntryForm(EMPTY_ENTRY_FORM);
+//       setEditingEntryId(null);
+//     } catch (err) {
+//       console.error("Failed to save Q&A entry:", err);
+//       setEntryFormError("Failed to save. Please try again.");
+//     } finally {
+//       setSavingEntry(false);
+//     }
+//   };
+
+//   const handleDeleteEntry = async (entry) => {
+//     const confirmed = window.confirm("Delete this question and answer? This cannot be undone.");
+//     if (!confirmed) return;
+//     setDeletingEntryId(entry.id);
+//     try {
+//       await deleteSmeQaEntry(selectedProject.id, entry.id);
+//       await loadQaEntries(selectedProject.id);
+//       if (editingEntryId === entry.id) {
+//         setEditingEntryId(null);
+//         setEntryForm(EMPTY_ENTRY_FORM);
+//       }
+//     } catch (err) {
+//       console.error("Failed to delete Q&A entry:", err);
+//       setQaError("Failed to delete the entry. Please try again.");
+//     } finally {
+//       setDeletingEntryId(null);
+//     }
+//   };
+
+//   const answeredCount = qaEntries.length;
+
+//   /* ── Screen: pick a project first ──────────────────────────── */
+//   if (!selectedProject) {
+//     return (
+//       <div className="sme-page">
+//         <div className="sme-header">
+//           <div>
+//             <h1 className="bf-title">{admin ? "SME Capture — Admin View" : "SME Interview Capture"}</h1>
+//             <p className="bf-subtitle">
+//               {admin
+//                 ? "Review or manage SME interview Q&A for any project."
+//                 : "Select one of your assigned projects to begin capturing SME knowledge."}
+//             </p>
+//           </div>
+//         </div>
+
+//         {projectsError && <div className="bf-error-banner">{projectsError}</div>}
+
+//         {projectsLoading ? (
+//           <p className="bf-doc-empty">Loading projects…</p>
+//         ) : projects.length === 0 ? (
+//           <p className="bf-doc-empty">
+//             {admin ? "No projects found yet." : "No projects are assigned to you yet."}
+//           </p>
+//         ) : (
+//           <div className="sme-project-grid">
+//             {projects.map((p) => (
+//               <button
+//                 key={p.id}
+//                 type="button"
+//                 className="sme-project-card"
+//                 onClick={() => selectProject({ id: p.id, title: p.book_title || "Untitled" })}
+//               >
+//                 <div className="sme-project-card-icon">📘</div>
+//                 <div className="sme-project-card-title">{p.book_title || "Untitled"}</div>
+//                 <div className="sme-project-card-meta">{p.book_status || "Draft"}</div>
+//               </button>
+//             ))}
+//           </div>
+//         )}
+
+//         {!admin && (
+//           <p className="sme-assign-note">
+//             Showing all active projects for now — assignment-based filtering will narrow this
+//             down once it's available from the backend.
+//           </p>
+//         )}
+//       </div>
+//     );
+//   }
+
+//   /* ── Screen: capture Q&A for selectedProject ───────────────── */
+//   return (
+//     <div className="sme-page">
+//       <div className="sme-header">
+//         <div>
+//           <button type="button" className="sme-back-link" onClick={backToProjects}>
+//             ← All Projects
+//           </button>
+//           <h1 className="bf-title">{admin ? "SME Capture — Admin View" : "SME Interview Capture"}</h1>
+//           <p className="bf-subtitle">
+//             Project: <strong>{selectedProject.title}</strong> · Captured by {smeLabel || "you"}
+//           </p>
+//         </div>
+//         <div className="sme-mode-toggle">
+//           <button
+//             type="button"
+//             className={`sme-mode-btn${mode === "live" ? " active" : ""}`}
+//             onClick={() => setMode("live")}
+//           >
+//             🎙️ Live Mode
+//           </button>
+//           <button
+//             type="button"
+//             className={`sme-mode-btn${mode === "async" ? " active" : ""}`}
+//             onClick={() => setMode("async")}
+//           >
+//             📝 Async Q&A Mode
+//           </button>
+//         </div>
+//       </div>
+
+//       <div className="sme-columns">
+//         {/* ── Left: captured questions ──────────────────────── */}
+//         <div className="bf-card sme-col">
+//           <div className="bf-card-title sme-col-title">
+//             <span>Interview Questions</span>
+//             <span className="sme-count-chip">{answeredCount}</span>
+//           </div>
+
+//           {qaError && <div className="bf-error-banner">{qaError}</div>}
+
+//           {qaLoading ? (
+//             <p className="bf-doc-empty">Loading…</p>
+//           ) : qaEntries.length === 0 ? (
+//             <p className="bf-doc-empty">No questions captured yet. Add the first one on the right.</p>
+//           ) : (
+//             <div className="sme-qa-list">
+//               {qaEntries.map((qa, i) => (
+//                 <div className={`sme-qa-item${editingEntryId === qa.id ? " editing" : ""}`} key={qa.id}>
+//                   <div className="sme-qa-item-head">
+//                     <span className="sme-qa-index">Q{i + 1}</span>
+//                     <div className="sme-qa-item-actions">
+//                       <button type="button" className="sme-qa-action" title="Edit" onClick={() => startEditEntry(qa)}>✏️</button>
+//                       <button
+//                         type="button"
+//                         className="sme-qa-action sme-qa-action-danger"
+//                         title="Delete"
+//                         disabled={deletingEntryId === qa.id}
+//                         onClick={() => handleDeleteEntry(qa)}
+//                       >
+//                         {deletingEntryId === qa.id ? "…" : "🗑️"}
+//                       </button>
+//                     </div>
+//                   </div>
+//                   <div className="sme-qa-question">{qa.question}</div>
+//                   <div className="sme-qa-answer">{qa.answer}</div>
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+
+//           <button
+//             type="button"
+//             className="bf-btn bf-btn-primary"
+//             style={{ width: "100%", justifyContent: "center", marginTop: "16px" }}
+//             disabled
+//             title="Coming soon — waiting on the backend API for this"
+//           >
+//             Submit Interview (Coming soon)
+//           </button>
+//         </div>
+
+//         {/* ── Right: add / edit form + submitted docs ───────── */}
+//         <div className="sme-col">
+//           <div className="bf-card sme-form-card">
+//             <div className="bf-card-title">{editingEntryId ? "Edit Question" : "Add Question"}</div>
+
+//             <div className="bf-form-group bf-form-group-full" style={{ marginBottom: "14px" }}>
+//               <label className="bf-form-label">Question</label>
+//               <textarea
+//                 className="bf-form-input bf-textarea"
+//                 rows={2}
+//                 placeholder={mode === "live" ? "Ask the SME a question…" : "Type the question here…"}
+//                 value={entryForm.question}
+//                 onChange={(e) => setEntryForm((f) => ({ ...f, question: e.target.value }))}
+//               />
+//             </div>
+//             <div className="bf-form-group bf-form-group-full" style={{ marginBottom: "10px" }}>
+//               <label className="bf-form-label">Answer / Notes</label>
+//               <textarea
+//                 className="bf-form-input bf-textarea"
+//                 rows={5}
+//                 placeholder="Capture the SME's answer or transcript notes…"
+//                 value={entryForm.answer}
+//                 onChange={(e) => setEntryForm((f) => ({ ...f, answer: e.target.value }))}
+//               />
+//             </div>
+
+//             {entryFormError && <p className="bf-step-error">{entryFormError}</p>}
+
+//             <div className="bf-step-actions" style={{ marginTop: "6px" }}>
+//               {editingEntryId && (
+//                 <button type="button" className="bf-btn bf-btn-secondary" onClick={startNewEntry} disabled={savingEntry}>
+//                   Cancel Edit
+//                 </button>
+//               )}
+//               <button type="button" className="bf-btn bf-btn-primary" onClick={handleSaveEntry} disabled={savingEntry}>
+//                 {savingEntry ? "Saving…" : editingEntryId ? "Update Question" : "+ Add Question"}
+//               </button>
+//             </div>
+//           </div>
+
+//           <div className="bf-card" style={{ marginTop: "18px" }}>
+//             <div className="bf-card-title">📄 Submitted Documents</div>
+//             {projectDocsLoading ? (
+//               <p className="bf-doc-empty">Loading…</p>
+//             ) : projectDocs.length === 0 ? (
+//               <p className="bf-doc-empty">No documents uploaded for this project yet.</p>
+//             ) : (
+//               <div className="bf-doc-list">
+//                 {projectDocs.map((doc) => (
+//                   <div className="bf-doc-item" key={doc.id}>
+//                     <span className="bf-doc-icon">📕</span>
+//                     <div className="bf-doc-main">
+//                       <div className="bf-doc-name">{doc.original_filename}</div>
+//                       <div className="bf-doc-meta">{doc.document_type || "Document"}</div>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+import { useEffect, useRef, useState } from "react";
 import {
   getAssignedBookForgeProjectsForSme,
   getBookForgeProjects,
@@ -11,20 +382,20 @@ import {
 } from "../../../services/apiServices";
 import { isAdmin } from "../../../utils/auth";
 import "./SmeCapture.css";
-
+ 
 const EMPTY_ENTRY_FORM = { question: "", answer: "" };
-
+ 
 export default function SmeCapture() {
   const admin = isAdmin();
   const smeLabel = sessionStorage.getItem("userEmail") || "";
   const createdBy = Number(sessionStorage.getItem("token")) || 0;
-
+ 
   /* ── Step 1: project selection ─────────────────────────────── */
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [projectsError, setProjectsError] = useState("");
   const [selectedProject, setSelectedProject] = useState(null);
-
+ 
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -48,26 +419,28 @@ export default function SmeCapture() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+ 
   /* ── Step 2: Q&A capture for the selected project ──────────── */
   const [qaEntries, setQaEntries] = useState([]);
   const [qaLoading, setQaLoading] = useState(false);
   const [qaError, setQaError] = useState("");
   const [mode, setMode] = useState("live"); // "live" | "async" — cosmetic toggle, same data underneath
-
+ 
   const [entryForm, setEntryForm] = useState(EMPTY_ENTRY_FORM);
   const [editingEntryId, setEditingEntryId] = useState(null);
   const [savingEntry, setSavingEntry] = useState(false);
   const [entryFormError, setEntryFormError] = useState("");
   const [deletingEntryId, setDeletingEntryId] = useState(null);
-
+ 
   const [projectDocs, setProjectDocs] = useState([]);
   const [projectDocsLoading, setProjectDocsLoading] = useState(false);
-
+ 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
-
+  const [interviewFile, setInterviewFile] = useState(null);
+  const interviewFileInputRef = useRef(null);
+ 
   const loadQaEntries = async (projectId) => {
     setQaLoading(true);
     setQaError("");
@@ -81,7 +454,7 @@ export default function SmeCapture() {
       setQaLoading(false);
     }
   };
-
+ 
   const loadProjectDocs = async (projectId) => {
     setProjectDocsLoading(true);
     try {
@@ -95,7 +468,7 @@ export default function SmeCapture() {
       setProjectDocsLoading(false);
     }
   };
-
+ 
   const selectProject = (project) => {
     setSelectedProject(project);
     setEntryForm(EMPTY_ENTRY_FORM);
@@ -103,28 +476,29 @@ export default function SmeCapture() {
     setEntryFormError("");
     setSubmitError("");
     setSubmitSuccess("");
+    setInterviewFile(null);
     loadQaEntries(project.id);
     loadProjectDocs(project.id);
   };
-
+ 
   const backToProjects = () => {
     setSelectedProject(null);
     setQaEntries([]);
     setProjectDocs([]);
   };
-
+ 
   const startNewEntry = () => {
     setEditingEntryId(null);
     setEntryForm(EMPTY_ENTRY_FORM);
     setEntryFormError("");
   };
-
+ 
   const startEditEntry = (entry) => {
     setEditingEntryId(entry.id);
     setEntryForm({ question: entry.question, answer: entry.answer });
     setEntryFormError("");
   };
-
+ 
   const handleSaveEntry = async () => {
     if (!entryForm.question.trim()) {
       setEntryFormError("Please enter a question.");
@@ -152,7 +526,7 @@ export default function SmeCapture() {
       setSavingEntry(false);
     }
   };
-
+ 
   const handleDeleteEntry = async (entry) => {
     const confirmed = window.confirm("Delete this question and answer? This cannot be undone.");
     if (!confirmed) return;
@@ -171,22 +545,34 @@ export default function SmeCapture() {
       setDeletingEntryId(null);
     }
   };
-
+ 
+  const handleInterviewFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    setInterviewFile(file || null);
+    setSubmitError("");
+  };
+ 
+  const handleClearInterviewFile = () => {
+    setInterviewFile(null);
+  };
+ 
   const handleSubmitSession = async () => {
     setSubmitError("");
     setSubmitSuccess("");
     setSubmitting(true);
     try {
       const res = await submitSmeQaSession(
-        { id: selectedProject.id, book_title: selectedProject.title },
+        { id: selectedProject.id, title: selectedProject.title },
         qaEntries,
         createdBy,
-        smeLabel
+        smeLabel,
+        interviewFile
       );
       if (res?.errors && res.errors.length > 0) {
         throw new Error(res.errors[0]?.message || "Failed to submit interview.");
       }
       setSubmitSuccess("Interview submitted — the PDF now appears in this project's Documents.");
+      setInterviewFile(null);
       loadProjectDocs(selectedProject.id);
       window.setTimeout(() => setSubmitSuccess(""), 5000);
     } catch (err) {
@@ -196,9 +582,9 @@ export default function SmeCapture() {
       setSubmitting(false);
     }
   };
-
+ 
   const answeredCount = qaEntries.length;
-
+ 
   /* ── Screen: pick a project first ──────────────────────────── */
   if (!selectedProject) {
     return (
@@ -213,9 +599,9 @@ export default function SmeCapture() {
             </p>
           </div>
         </div>
-
+ 
         {projectsError && <div className="bf-error-banner">{projectsError}</div>}
-
+ 
         {projectsLoading ? (
           <p className="bf-doc-empty">Loading projects…</p>
         ) : projects.length === 0 ? (
@@ -238,7 +624,7 @@ export default function SmeCapture() {
             ))}
           </div>
         )}
-
+ 
         {!admin && (
           <p className="sme-assign-note">
             Showing all active projects for now — assignment-based filtering will narrow this
@@ -248,7 +634,7 @@ export default function SmeCapture() {
       </div>
     );
   }
-
+ 
   /* ── Screen: capture Q&A for selectedProject ───────────────── */
   return (
     <div className="sme-page">
@@ -279,10 +665,10 @@ export default function SmeCapture() {
           </button>
         </div>
       </div>
-
+ 
       {submitSuccess && <div className="bf-success-banner"><span>✓</span> {submitSuccess}</div>}
       {submitError && <div className="bf-error-banner">{submitError}</div>}
-
+ 
       <div className="sme-columns">
         {/* ── Left: captured questions ──────────────────────── */}
         <div className="bf-card sme-col">
@@ -290,9 +676,9 @@ export default function SmeCapture() {
             <span>Interview Questions</span>
             <span className="sme-count-chip">{answeredCount}</span>
           </div>
-
+ 
           {qaError && <div className="bf-error-banner">{qaError}</div>}
-
+ 
           {qaLoading ? (
             <p className="bf-doc-empty">Loading…</p>
           ) : qaEntries.length === 0 ? (
@@ -322,23 +708,54 @@ export default function SmeCapture() {
               ))}
             </div>
           )}
-
+ 
+          <input
+            ref={interviewFileInputRef}
+            type="file"
+            accept=".pdf"
+            style={{ display: "none" }}
+            onChange={handleInterviewFileChange}
+          />
+ 
+          <div className="sme-file-row">
+            <span className="sme-file-divider">— or —</span>
+            {interviewFile ? (
+              <div className="sme-file-chip">
+                <span className="sme-file-chip-name" title={interviewFile.name}>
+                  📎 {interviewFile.name}
+                </span>
+                <button type="button" className="sme-file-chip-remove" title="Remove file" onClick={handleClearInterviewFile}>
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="bf-btn bf-btn-secondary"
+                style={{ width: "100%", justifyContent: "center" }}
+                onClick={() => interviewFileInputRef.current?.click()}
+              >
+                📎 Attach a PDF Interview Instead
+              </button>
+            )}
+          </div>
+ 
           <button
             type="button"
             className="bf-btn bf-btn-primary"
-            style={{ width: "100%", justifyContent: "center", marginTop: "16px" }}
-            disabled={submitting || qaEntries.length === 0}
+            style={{ width: "100%", justifyContent: "center", marginTop: "10px" }}
+            disabled={submitting || (!interviewFile && qaEntries.length === 0)}
             onClick={handleSubmitSession}
           >
-            {submitting ? "Submitting…" : "Submit Interview → PDF"}
+            {submitting ? "Submitting…" : interviewFile ? "Submit PDF Interview" : "Submit Interview → PDF"}
           </button>
         </div>
-
+ 
         {/* ── Right: add / edit form + submitted docs ───────── */}
         <div className="sme-col">
           <div className="bf-card sme-form-card">
             <div className="bf-card-title">{editingEntryId ? "Edit Question" : "Add Question"}</div>
-
+ 
             <div className="bf-form-group bf-form-group-full" style={{ marginBottom: "14px" }}>
               <label className="bf-form-label">Question</label>
               <textarea
@@ -359,9 +776,9 @@ export default function SmeCapture() {
                 onChange={(e) => setEntryForm((f) => ({ ...f, answer: e.target.value }))}
               />
             </div>
-
+ 
             {entryFormError && <p className="bf-step-error">{entryFormError}</p>}
-
+ 
             <div className="bf-step-actions" style={{ marginTop: "6px" }}>
               {editingEntryId && (
                 <button type="button" className="bf-btn bf-btn-secondary" onClick={startNewEntry} disabled={savingEntry}>
@@ -373,7 +790,7 @@ export default function SmeCapture() {
               </button>
             </div>
           </div>
-
+ 
           <div className="bf-card" style={{ marginTop: "18px" }}>
             <div className="bf-card-title">📄 Submitted Documents</div>
             {projectDocsLoading ? (

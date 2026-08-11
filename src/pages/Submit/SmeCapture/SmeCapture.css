@@ -230,6 +230,62 @@
   resize: vertical;
 }
 
+/* ── Attach-a-PDF-instead option (submit panel) ─────────────── */
+.sme-file-row {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.sme-file-divider {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--slate-400);
+}
+
+.sme-file-chip {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--blue-400);
+  border-radius: var(--radius-sm);
+  background: var(--blue-50);
+}
+
+.sme-file-chip-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sme-file-chip-remove {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--slate-500);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: var(--radius-xs);
+  transition: var(--transition);
+}
+
+.sme-file-chip-remove:hover {
+  color: var(--slate-900);
+  background: var(--slate-200);
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .sme-columns {
