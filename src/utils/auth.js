@@ -1,65 +1,31 @@
-// // // ─────────────────────────────────────────────────────────────
-// // // Role helpers
-// // //
-// // // role_name comes back from POST /auth/login (e.g. "USER", "ADMIN")
-// // // and is stored in sessionStorage at login time. These helpers are
-// // // used across pages to gate admin-only UI (MIS sections, Editor+
-// // // management tabs, etc.) without repeating the same checks everywhere.
-// // // ─────────────────────────────────────────────────────────────
 
-// // export const getUserRole = () => sessionStorage.getItem("userRole") || "";
-
-// // export const isAdmin = () => getUserRole().toUpperCase() === "ADMIN";
-
-
-
-// // ─────────────────────────────────────────────────────────────
-// // Role helpers
-// //
-// // role_name comes back from POST /auth/login (e.g. "USER", "ADMIN")
-// // and is stored in sessionStorage at login time. These helpers are
-// // used across pages to gate admin-only UI (MIS sections, Editor+
-// // management tabs, etc.) without repeating the same checks everywhere.
-// //
-// // BookForge roles (per Gopal, 7/8/2026): USER and ADMIN stay as-is;
-// // two new roles were added — SME and EDITOR:
-// //   - USER   -> creates BookForge projects and uploads the brief doc
-// //   - SME    -> views documents uploaded for a project, and uploads/
-// //               pastes the Q&A (SME Interview Capture screen)
-// //   - EDITOR -> reviews the SME's document/Q&A submissions and
-// //               approves them
-// //   - ADMIN  -> allocates roles and projects to users
-// // role_name may come back with or without the "BookForge_" prefix
-// // (e.g. "ADMIN" or "BookForge_SME"), so it's normalized before
-// // comparison.
-// // ─────────────────────────────────────────────────────────────
 
 // export const getUserRole = () => sessionStorage.getItem("userRole") || "";
 
-// const normalizeRole = (role) => (role || "").toUpperCase().replace(/^BOOKFORGE_/, "");
+// export const isAdmin = () => getUserRole().toUpperCase() === "ADMIN";
 
-// export const isAdmin = () => normalizeRole(getUserRole()) === "ADMIN";
-// export const isUser = () => normalizeRole(getUserRole()) === "USER";
-// export const isSME = () => normalizeRole(getUserRole()) === "SME";
-// export const isEditor = () => normalizeRole(getUserRole()) === "EDITOR";
+// // SME (Subject Matter Expert) role — used to gate the BookForge
+// // "Dashboard" pipeline view and the "SME Capture" (interview Q&A)
+// // screen, same as isAdmin() gates MIS/admin-only sections.
+// export const isSme = () => getUserRole().toUpperCase() === "SME";
 
-// ─────────────────────────────────────────────────────────────
-// Role helpers
-//
-// role_name comes back from POST /auth/login (e.g. "USER", "ADMIN")
-// and is stored in sessionStorage at login time. These helpers are
-// used across pages to gate admin-only UI (MIS sections, Editor+
-// management tabs, etc.) without repeating the same checks everywhere.
-// ─────────────────────────────────────────────────────────────
+// // Convenience helper: anyone allowed to see the BookForge management
+// // Dashboard tab and the SME Capture nav item — Admins and SMEs only.
+// // Plain USER accounts should never see either.
+// export const canAccessBookForgeDashboard = () => isAdmin() || isSme();
+
+
 
 export const getUserRole = () => sessionStorage.getItem("userRole") || "";
 
 export const isAdmin = () => getUserRole().toUpperCase() === "ADMIN";
 
 // SME (Subject Matter Expert) role — used to gate the BookForge
-// "Dashboard" pipeline view and the "SME Capture" (interview Q&A)
+// "Dashboard" pipeline view and the "SME Upload" (interview Q&A)
 // screen, same as isAdmin() gates MIS/admin-only sections.
-export const isSme = () => getUserRole().toUpperCase() === "SME";
+// role_name comes back from the backend as "BookForge_SME" (with the
+// module prefix), so it's normalized before comparison.
+export const isSme = () => getUserRole().toUpperCase().replace(/^BOOKFORGE_/, "") === "SME";
 
 // Convenience helper: anyone allowed to see the BookForge management
 // Dashboard tab and the SME Capture nav item — Admins and SMEs only.

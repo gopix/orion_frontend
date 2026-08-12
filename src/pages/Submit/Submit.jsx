@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,7 +12,7 @@ import {
   deleteBookForgeDocument,
   downloadBookForgeDocument,
 } from "../../services/apiServices";
-import { canAccessBookForgeDashboard } from "../../utils/auth";
+import { canAccessBookForgeDashboard, isSme } from "../../utils/auth";
 import SmeCapture from "./SmeCapture/SmeCapture";
 import "./Submit.css";
 
@@ -86,24 +85,33 @@ const UPLOAD_ACCEPT = ".doc,.docx,.pdf,.txt";
 export default function Submit() {
   const navigate = useNavigate();
 
-  // The BookForge "Dashboard" pipeline view (and the SME Capture nav
-  // item) are Admin + SME only — plain USER accounts create projects
-  // and upload briefs, but aren't authorized to see the management
-  // dashboard, so they never land there and never see it in the nav.
+  // The BookForge "Dashboard" pipeline view is Admin + SME only —
+  // plain USER accounts create projects and upload briefs, but
+  // aren't authorized to see the management dashboard, so they
+  // never land there and never see it in the nav.
   const canSeeDashboard = canAccessBookForgeDashboard();
+
+  // SME accounts only work the Dashboard + SME Upload screens — New
+  // Project / Brief Upload stay Admin + USER only. Admins keep the
+  // full original nav (Dashboard, New Project, Brief Upload) and do
+  // not get the SME Upload item.
+  const isSmeUser = isSme();
 
   const [activeTab, setActiveTab] = useState(canSeeDashboard ? "dashboard" : "new-project");
 
-  // Defensive guard: if activeTab is ever "dashboard" or "sme" for a
-  // user who isn't authorized (e.g. role changes mid-session), bounce
-  // them back to a screen they're allowed to see instead of rendering
-  // a blank/forbidden tab.
+  // Defensive guard: if activeTab is ever on a screen a role isn't
+  // authorized for (e.g. role changes mid-session), bounce them back
+  // to a screen they're allowed to see instead of rendering a
+  // blank/forbidden tab.
   useEffect(() => {
     if (!canSeeDashboard && (activeTab === "dashboard" || activeTab === "sme")) {
       setActiveTab("new-project");
     }
+    if (isSmeUser && (activeTab === "new-project" || activeTab === "upload-brief")) {
+      setActiveTab("dashboard");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canSeeDashboard, activeTab]);
+  }, [canSeeDashboard, isSmeUser, activeTab]);
 
   // Continue / Cancel / Back-to-Dashboard buttons inside the wizard:
   // Admins and SMEs go back to the BookForge Dashboard tab; everyone
@@ -568,29 +576,33 @@ export default function Submit() {
               {activeTab === "dashboard" && <span className="submit-nav-dot"></span>}
             </div>
           )}
-          <div
-            className={`submit-nav-item${activeTab === "new-project" ? " active" : ""}`}
-            onClick={goToNewProject}
-          >
-            <span className="submit-nav-icon">➕</span>
-            <span>New Project</span>
-            {activeTab === "new-project" && <span className="submit-nav-dot"></span>}
-          </div>
-          <div
-            className={`submit-nav-item${activeTab === "upload-brief" ? " active" : ""}`}
-            onClick={() => setActiveTab("upload-brief")}
-          >
-            <span className="submit-nav-icon">📎</span>
-            <span>Brief Upload</span>
-            {activeTab === "upload-brief" && <span className="submit-nav-dot"></span>}
-          </div>
-          {canSeeDashboard && (
+          {!isSmeUser && (
+            <div
+              className={`submit-nav-item${activeTab === "new-project" ? " active" : ""}`}
+              onClick={goToNewProject}
+            >
+              <span className="submit-nav-icon">➕</span>
+              <span>New Project</span>
+              {activeTab === "new-project" && <span className="submit-nav-dot"></span>}
+            </div>
+          )}
+          {!isSmeUser && (
+            <div
+              className={`submit-nav-item${activeTab === "upload-brief" ? " active" : ""}`}
+              onClick={() => setActiveTab("upload-brief")}
+            >
+              <span className="submit-nav-icon">📎</span>
+              <span>Brief Upload</span>
+              {activeTab === "upload-brief" && <span className="submit-nav-dot"></span>}
+            </div>
+          )}
+          {isSmeUser && (
             <div
               className={`submit-nav-item${activeTab === "sme" ? " active" : ""}`}
               onClick={() => setActiveTab("sme")}
             >
               <span className="submit-nav-icon">🎤</span>
-              <span>SME Capture</span>
+              <span>SME Upload</span>
               {activeTab === "sme" && <span className="submit-nav-dot"></span>}
             </div>
           )}
@@ -620,9 +632,11 @@ export default function Submit() {
               <h1 className="bf-title">BookForge</h1>
               <p className="bf-subtitle">Plan, brief, and track manuscripts through the publishing pipeline.</p>
             </div>
-            <button className="bf-btn bf-btn-primary" onClick={goToNewProject}>
-              <span>+</span> New Project
-            </button>
+            {!isSmeUser && (
+              <button className="bf-btn bf-btn-primary" onClick={goToNewProject}>
+                <span>+</span> New Project
+              </button>
+            )}
           </div>
 
           {successBanner && (
@@ -1077,7 +1091,7 @@ export default function Submit() {
             </div>
           )}
 
-          {activeTab === "sme" && canSeeDashboard && <SmeCapture />}
+          {activeTab === "sme" && isSmeUser && <SmeCapture />}
         </div>
       </main>
 
