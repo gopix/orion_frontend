@@ -825,7 +825,7 @@ export default function SmeCapture() {
             disabled={submitting || (!interviewFile && qaEntries.length === 0)}
             onClick={handleSubmitSession}
           >
-            {submitting ? "Submitting…" : interviewFile ? "Submit PDF Interview" : "Convert Draft → PDF"}
+            {submitting ? "Submitting…" : interviewFile ? "Submit PDF Interview" : "Submit"}
           </button>
         </div>
  
