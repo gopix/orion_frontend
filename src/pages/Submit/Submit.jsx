@@ -1,4 +1,7 @@
 
+
+
+
 // import { useState, useEffect, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
@@ -11,8 +14,11 @@
 //   getBookForgeDocuments,
 //   deleteBookForgeDocument,
 //   downloadBookForgeDocument,
+//   getUsers,
+//   getRoles,
+//   createRole,
 // } from "../../services/apiServices";
-// import { canAccessBookForgeDashboard, isSme } from "../../utils/auth";
+// import { canAccessBookForgeDashboard, isSme, isAdmin } from "../../utils/auth";
 // import SmeCapture from "./SmeCapture/SmeCapture";
 // import "./Submit.css";
 
@@ -40,6 +46,16 @@
 //   if (s.includes("overdue")) return "bf-chip-overdue";
 //   if (s.includes("progress") || s.includes("draft")) return "bf-chip-progress";
 //   return "bf-chip-draft";
+// };
+
+// // Colour-codes role chips on the Manage Users & Roles screen —
+// // Admin stands out (overdue/red-amber), SME distinct from plain USER.
+// const roleChipClass = (roleName) => {
+//   const r = (roleName || "").toUpperCase().replace(/^BOOKFORGE_/, "");
+//   if (r === "ADMIN") return "bf-chip-overdue";
+//   if (r === "SME") return "bf-chip-review";
+//   if (r === "EDITOR") return "bf-chip-progress";
+//   return "bf-chip-complete";
 // };
 
 // /* ── Document helpers (used by Brief Upload list + Dashboard) ──── */
@@ -97,6 +113,10 @@
 //   // not get the SME Upload item.
 //   const isSmeUser = isSme();
 
+//   // Manage Users & Roles is Admin-only — SMEs and plain USER accounts
+//   // never see this nav item or the screen behind it.
+//   const isAdminUser = isAdmin();
+
 //   const [activeTab, setActiveTab] = useState(canSeeDashboard ? "dashboard" : "new-project");
 
 //   // Defensive guard: if activeTab is ever on a screen a role isn't
@@ -110,8 +130,11 @@
 //     if (isSmeUser && (activeTab === "new-project" || activeTab === "upload-brief")) {
 //       setActiveTab("dashboard");
 //     }
+//     if (!isAdminUser && activeTab === "manage-users") {
+//       setActiveTab(canSeeDashboard ? "dashboard" : "new-project");
+//     }
 //     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [canSeeDashboard, isSmeUser, activeTab]);
+//   }, [canSeeDashboard, isSmeUser, isAdminUser, activeTab]);
 
 //   // Continue / Cancel / Back-to-Dashboard buttons inside the wizard:
 //   // Admins and SMEs go back to the BookForge Dashboard tab; everyone
@@ -552,6 +575,87 @@
 //   const chaptersTotal = projects.reduce((sum, p) => sum + (Number(p.chapter_count) || 0), 0);
 //   const pagesTotal = projects.reduce((sum, p) => sum + (Number(p.expected_pages) || 0), 0);
 
+//   /* ── Manage Users & Roles (Admin-only screen) ────────────────
+//      Lives just below "Brief Upload" in the BookForge nav. Lists
+//      users (GET /auth/users), lists roles (GET /auth/roles), and
+//      lets an Admin create a new role (POST /auth/roles). */
+//   const [users, setUsers] = useState([]);
+//   const [usersLoading, setUsersLoading] = useState(false);
+//   const [usersError, setUsersError] = useState("");
+
+//   const [roles, setRoles] = useState([]);
+//   const [rolesLoading, setRolesLoading] = useState(false);
+//   const [rolesError, setRolesError] = useState("");
+
+//   const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
+//   const [creatingRole, setCreatingRole] = useState(false);
+//   const [createRoleError, setCreateRoleError] = useState("");
+
+//   const fetchUsers = async () => {
+//     setUsersLoading(true);
+//     setUsersError("");
+//     try {
+//       const res = await getUsers();
+//       setUsers(Array.isArray(res?.data) ? res.data : []);
+//     } catch (err) {
+//       console.error("Failed to load users:", err);
+//       setUsersError("Failed to load users from the server. Please try again.");
+//       setUsers([]);
+//     } finally {
+//       setUsersLoading(false);
+//     }
+//   };
+
+//   const fetchRoles = async () => {
+//     setRolesLoading(true);
+//     setRolesError("");
+//     try {
+//       const res = await getRoles();
+//       setRoles(Array.isArray(res?.data) ? res.data : []);
+//     } catch (err) {
+//       console.error("Failed to load roles:", err);
+//       setRolesError("Failed to load roles from the server. Please try again.");
+//       setRoles([]);
+//     } finally {
+//       setRolesLoading(false);
+//     }
+//   };
+
+//   // Load users + roles the first time an Admin opens the tab.
+//   useEffect(() => {
+//     if (activeTab === "manage-users" && isAdminUser) {
+//       fetchUsers();
+//       fetchRoles();
+//     }
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [activeTab, isAdminUser]);
+
+//   const handleCreateRole = async ({ role_name, role_description, is_active }) => {
+//     setCreatingRole(true);
+//     setCreateRoleError("");
+//     try {
+//       const res = await createRole(role_name, role_description, is_active);
+//       if (res?.response_code && res.response_code >= 400) {
+//         setCreateRoleError(res?.message || "Failed to create role. Please try again.");
+//         return;
+//       }
+//       if (Array.isArray(res?.detail)) {
+//         const messages = res.detail.map((d) => d.msg).filter(Boolean);
+//         setCreateRoleError(messages.join(" ") || "Please check the role details and try again.");
+//         return;
+//       }
+//       setShowCreateRoleModal(false);
+//       fetchRoles();
+//       setSuccessBanner(`Role "${role_name}" created successfully.`);
+//       setTimeout(() => setSuccessBanner(""), 4000);
+//     } catch (err) {
+//       console.error("Failed to create role:", err);
+//       setCreateRoleError("Failed to create role. Please try again.");
+//     } finally {
+//       setCreatingRole(false);
+//     }
+//   };
+
 //   return (
 //     <div className="submit-page">
 //       {/* ── Sidebar ──────────────────────────────────────────── */}
@@ -594,6 +698,16 @@
 //               <span className="submit-nav-icon">📎</span>
 //               <span>Brief Upload</span>
 //               {activeTab === "upload-brief" && <span className="submit-nav-dot"></span>}
+//             </div>
+//           )}
+//           {isAdminUser && (
+//             <div
+//               className={`submit-nav-item${activeTab === "manage-users" ? " active" : ""}`}
+//               onClick={() => setActiveTab("manage-users")}
+//             >
+//               <span className="submit-nav-icon">👥</span>
+//               <span>Manage Users</span>
+//               {activeTab === "manage-users" && <span className="submit-nav-dot"></span>}
 //             </div>
 //           )}
 //           {isSmeUser && (
@@ -1091,6 +1205,113 @@
 //             </div>
 //           )}
 
+//           {activeTab === "manage-users" && isAdminUser && (
+//             <div className="bf-dashboard">
+//               <div className="bf-card">
+//                 <div className="bf-card-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+//                   <span>👥 All Users</span>
+//                   <button
+//                     type="button"
+//                     onClick={fetchUsers}
+//                     title="Refresh from server"
+//                     style={{ background: "none", border: "none", cursor: "pointer", fontSize: "14px", opacity: 0.7 }}
+//                   >
+//                     🔄
+//                   </button>
+//                 </div>
+//                 {usersError && <div className="bf-error-banner">{usersError}</div>}
+//                 <div className="bf-table-wrap">
+//                   {usersLoading ? (
+//                     <p style={{ padding: "16px", opacity: 0.7 }}>Loading users…</p>
+//                   ) : users.length === 0 ? (
+//                     <p style={{ padding: "16px", opacity: 0.7 }}>No users found yet.</p>
+//                   ) : (
+//                     <table className="bf-table">
+//                       <thead>
+//                         <tr>
+//                           <th>Username</th>
+//                           <th>Email</th>
+//                           <th>Role</th>
+//                           <th>Organization</th>
+//                           <th>Created</th>
+//                         </tr>
+//                       </thead>
+//                       <tbody>
+//                         {users.map((u) => (
+//                           <tr key={u.id}>
+//                             <td><strong>{u.user_name}</strong></td>
+//                             <td>{u.email}</td>
+//                             <td><span className={`bf-chip ${roleChipClass(u.role_name)}`}>{u.role_name}</span></td>
+//                             <td>{u.organization_name || "—"}</td>
+//                             <td>{formatDocDate(u.created_at)}</td>
+//                           </tr>
+//                         ))}
+//                       </tbody>
+//                     </table>
+//                   )}
+//                 </div>
+//               </div>
+
+//               <div className="bf-card">
+//                 <div className="bf-card-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+//                   <span>🛡️ All Roles</span>
+//                   <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+//                     <button
+//                       type="button"
+//                       onClick={fetchRoles}
+//                       title="Refresh from server"
+//                       style={{ background: "none", border: "none", cursor: "pointer", fontSize: "14px", opacity: 0.7 }}
+//                     >
+//                       🔄
+//                     </button>
+//                     <button
+//                       type="button"
+//                       className="bf-btn bf-btn-primary"
+//                       onClick={() => { setCreateRoleError(""); setShowCreateRoleModal(true); }}
+//                     >
+//                       <span>+</span> Create Role
+//                     </button>
+//                   </div>
+//                 </div>
+//                 {rolesError && <div className="bf-error-banner">{rolesError}</div>}
+//                 <div className="bf-table-wrap">
+//                   {rolesLoading ? (
+//                     <p style={{ padding: "16px", opacity: 0.7 }}>Loading roles…</p>
+//                   ) : roles.length === 0 ? (
+//                     <p style={{ padding: "16px", opacity: 0.7 }}>No roles found yet.</p>
+//                   ) : (
+//                     <table className="bf-table">
+//                       <thead>
+//                         <tr>
+//                           <th>Role Name</th>
+//                           <th>Description</th>
+//                           <th>Status</th>
+//                           <th>Created</th>
+//                         </tr>
+//                       </thead>
+//                       <tbody>
+//                         {roles.map((r) => (
+//                           <tr key={r.id}>
+//                             <td><span className={`bf-chip ${roleChipClass(r.role_name)}`}>{r.role_name}</span></td>
+//                             <td>{r.role_description || "—"}</td>
+//                             <td>
+//                               {(r.is_Active ?? r.is_active) ? (
+//                                 <span className="bf-chip bf-chip-complete">Active</span>
+//                               ) : (
+//                                 <span className="bf-chip bf-chip-overdue">Inactive</span>
+//                               )}
+//                             </td>
+//                             <td>{formatDocDate(r.created_at)}</td>
+//                           </tr>
+//                         ))}
+//                       </tbody>
+//                     </table>
+//                   )}
+//                 </div>
+//               </div>
+//             </div>
+//           )}
+
 //           {activeTab === "sme" && isSmeUser && <SmeCapture />}
 //         </div>
 //       </main>
@@ -1101,6 +1322,15 @@
 //           onClose={() => setEditingProject(null)}
 //           onSave={handleEditSave}
 //           saving={savingEdit}
+//         />
+//       )}
+
+//       {showCreateRoleModal && (
+//         <CreateRoleModal
+//           onClose={() => setShowCreateRoleModal(false)}
+//           onSave={handleCreateRole}
+//           saving={creatingRole}
+//           error={createRoleError}
 //         />
 //       )}
 
@@ -1376,9 +1606,79 @@
 //     </div>
 //   );
 // }
+ 
+// function CreateRoleModal({ onClose, onSave, saving, error }) {
+//   const [roleName, setRoleName] = useState("");
+//   const [roleDescription, setRoleDescription] = useState("");
+//   const [isActive, setIsActive] = useState(true);
+ 
+//   const isValid = roleName.trim().length > 0;
+ 
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     if (!isValid) return;
+//     onSave({
+//       role_name: roleName.trim(),
+//       role_description: roleDescription.trim(),
+//       is_active: isActive ? 1 : 0,
+//     });
+//   };
+ 
+//   return (
+//     <div className="bf-modal-overlay" onClick={onClose}>
+//       <div className="bf-modal" onClick={(e) => e.stopPropagation()}>
+//         <div className="bf-modal-header">
+//           <h3>Create Role</h3>
+//           <button className="bf-modal-close" onClick={onClose}>✕</button>
+//         </div>
+//         <form onSubmit={handleSubmit}>
+//           {error && <div className="bf-error-banner" style={{ marginBottom: "14px" }}>{error}</div>}
+//           <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "20px" }}>
+//             <label style={{ fontSize: "13px", fontWeight: 600 }}>
+//               Role Name *
+//               <input
+//                 type="text"
+//                 value={roleName}
+//                 onChange={(e) => setRoleName(e.target.value)}
+//                 placeholder="e.g. BookForge_Editor"
+//                 required
+//                 autoFocus
+//                 style={{ width: "100%", marginTop: "6px", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--slate-200)", fontSize: "13.5px" }}
+//               />
+//             </label>
+//             <label style={{ fontSize: "13px", fontWeight: 600 }}>
+//               Description
+//               <input
+//                 type="text"
+//                 value={roleDescription}
+//                 onChange={(e) => setRoleDescription(e.target.value)}
+//                 placeholder="e.g. Reviews and edits SME drafts"
+//                 style={{ width: "100%", marginTop: "6px", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--slate-200)", fontSize: "13.5px" }}
+//               />
+//             </label>
+//             <label style={{ fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+//               <input
+//                 type="checkbox"
+//                 checked={isActive}
+//                 onChange={(e) => setIsActive(e.target.checked)}
+//                 style={{ width: "16px", height: "16px" }}
+//               />
+//               Active
+//             </label>
+//           </div>
+//           <div className="bf-modal-actions">
+//             <button type="button" className="bf-btn bf-btn-secondary" onClick={onClose} disabled={saving}>Cancel</button>
+//             <button type="submit" className="bf-btn bf-btn-primary" disabled={saving || !isValid}>{saving ? "Creating…" : "Create Role"}</button>
+//           </div>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// }
 
 
 
+ 
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -1494,6 +1794,10 @@ export default function Submit() {
   // Manage Users & Roles is Admin-only — SMEs and plain USER accounts
   // never see this nav item or the screen behind it.
   const isAdminUser = isAdmin();
+
+  // Plain Users can now see the Dashboard (Project Pipeline) same as
+  // Admin/SME, but it's view-only for them — no Edit/Delete on rows.
+  const canManageProjects = isAdminUser || isSmeUser;
 
   const [activeTab, setActiveTab] = useState(canSeeDashboard ? "dashboard" : "new-project");
 
@@ -2190,7 +2494,7 @@ export default function Submit() {
                           <th>Publisher</th>
                           <th>Deadline</th>
                           <th>Progress</th>
-                          <th>Actions</th>
+                          {canManageProjects && <th>Actions</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -2237,31 +2541,33 @@ export default function Submit() {
                                 </>
                               )}
                             </td>
-                            <td>
-                              <div style={{ display: "flex", gap: "8px" }}>
-                                <button
-                                  type="button"
-                                  className="bf-icon-btn"
-                                  title="Edit project"
-                                  aria-label="Edit project"
-                                  onClick={() => setEditingProject(p)}
-                                  style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
-                                >
-                                  ✏️
-                                </button>
-                                <button
-                                  type="button"
-                                  className="bf-icon-btn"
-                                  title="Delete project"
-                                  aria-label="Delete project"
-                                  disabled={deletingId === p.id}
-                                  onClick={() => handleDeleteProject(p)}
-                                  style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
-                                >
-                                  {deletingId === p.id ? "…" : "🗑️"}
-                                </button>
-                              </div>
-                            </td>
+                            {canManageProjects && (
+                              <td>
+                                <div style={{ display: "flex", gap: "8px" }}>
+                                  <button
+                                    type="button"
+                                    className="bf-icon-btn"
+                                    title="Edit project"
+                                    aria-label="Edit project"
+                                    onClick={() => setEditingProject(p)}
+                                    style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="bf-icon-btn"
+                                    title="Delete project"
+                                    aria-label="Delete project"
+                                    disabled={deletingId === p.id}
+                                    onClick={() => handleDeleteProject(p)}
+                                    style={{ background: "none", border: "1px solid var(--slate-200)", borderRadius: "8px", width: "30px", height: "30px", cursor: "pointer" }}
+                                  >
+                                    {deletingId === p.id ? "…" : "🗑️"}
+                                  </button>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
