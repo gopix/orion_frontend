@@ -1,6 +1,5 @@
 
 
-
 // import { useState, useEffect, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
@@ -2367,20 +2366,20 @@
 //   const exec = (command, arg = null) => {
 //     if (disabled || !editorRef.current) return;
 //     editorRef.current.focus();
-
-//     // "removeFormat" only affects the current selection, so if nothing is
-//     // selected (the common case when clicking Clear right after opening
-//     // the dialog) it silently does nothing. Select the full guidance text
-//     // first so Clear always removes formatting from the whole editor.
-//     if (command === "removeFormat") {
-//       const range = document.createRange();
-//       range.selectNodeContents(editorRef.current);
-//       const selection = window.getSelection();
-//       selection.removeAllRanges();
-//       selection.addRange(range);
-//     }
-
 //     document.execCommand(command, false, arg);
+//     onChange(editorRef.current.innerHTML);
+//   };
+
+//   const handleClear = () => {
+//     if (disabled || !editorRef.current) return;
+//     const selection = window.getSelection();
+//     // Only clear when the user has actually selected some text inside
+//     // this editor — otherwise leave the content untouched.
+//     if (!selection || selection.isCollapsed || !editorRef.current.contains(selection.anchorNode)) {
+//       return;
+//     }
+//     editorRef.current.focus();
+//     document.execCommand("delete", false);
 //     onChange(editorRef.current.innerHTML);
 //   };
 
@@ -2433,7 +2432,7 @@
 //           />
 //         </label>
 //         <span className="bf-rte-divider" />
-//         <button type="button" className="bf-rte-btn" title="Clear formatting" onMouseDown={preventBlur} onClick={() => exec("removeFormat")}>
+//         <button type="button" className="bf-rte-btn" title="Clear selected text" onMouseDown={preventBlur} onClick={handleClear}>
 //           Clear
 //         </button>
 //       </div>
@@ -2699,6 +2698,8 @@
 // }
 
 
+
+
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -2728,7 +2729,7 @@ import "./Submit.css";
 /* ── Form matches POST /api/v1/book-forge/projects exactly ─────── */
 const EMPTY_FORM = {
   book_title: "",
-  category: "Exam Preparation",
+  category: "",
   book_subject: "",
   target_audience: "",
   language_code: "en",
@@ -3281,6 +3282,45 @@ export default function Submit() {
 
   const hasUploadedBrief = briefFiles.some((f) => f.status === "uploaded");
 
+  /* ── Submit to SME (end of the User's Brief Upload work) ──────
+     Marks the project's book_status as "SME Review" so it: (1)
+     shows up in the SME's SME Upload list, (2) drops out of this
+     User's own Brief Upload project picker (they can't act on it
+     while it's with the SME), and (3) still shows on the Dashboard
+     pipeline table (view-only) either way. */
+  const [submittingToSme, setSubmittingToSme] = useState(false);
+  const [submitToSmeError, setSubmitToSmeError] = useState("");
+
+  const handleSubmitToSme = async () => {
+    if (!createdProject?.id) return;
+    setSubmittingToSme(true);
+    setSubmitToSmeError("");
+    try {
+      const res = await updateBookForgeProject(createdProject.id, { book_status: "SME Review" });
+      if (res?.errors && res.errors.length > 0) {
+        throw new Error(res.errors[0]?.message || "Failed to submit to SME.");
+      }
+      setSuccessBanner(`"${createdProject.book_title || "Project"}" was sent to the SME for review.`);
+      setCreatedProject(null);
+      setBriefFiles([]);
+      refreshProjects();
+      goBackFromWizard();
+      window.setTimeout(() => setSuccessBanner(""), 4500);
+    } catch (err) {
+      console.error("Failed to submit project to SME:", err);
+      setSubmitToSmeError(err.message || "Failed to submit to SME. Please try again.");
+    } finally {
+      setSubmittingToSme(false);
+    }
+  };
+
+  // Projects the User can still act on in Brief Upload — once a
+  // project has been sent to the SME (or has come back and is
+  // waiting in Guidelines), it's no longer selectable here.
+  const briefUploadProjects = projects.filter(
+    (p) => p.stage !== "SME Review" && p.stage !== "Guidelines"
+  );
+
   const [editingProject, setEditingProject] = useState(null);
   const [savingEdit, setSavingEdit] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -3370,9 +3410,16 @@ export default function Submit() {
   };
 
   // Load categories the first time a User opens the Category tab
-  // (Guidelines also needs this list for its Category dropdown).
+  // (Guidelines and New Project also need this list — Guidelines for
+  // its Category dropdown, New Project for the real Category picker
+  // when creating a project).
   useEffect(() => {
-    if ((activeTab === "category" || activeTab === "guidelines") && isUserRole && categoryList.length === 0 && !categoryListLoading) {
+    if (
+      ["category", "guidelines", "new-project"].includes(activeTab) &&
+      isUserRole &&
+      categoryList.length === 0 &&
+      !categoryListLoading
+    ) {
       fetchCategories();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -3484,6 +3531,28 @@ export default function Submit() {
   };
 
   const closeGuidanceDetail = () => setGuidanceDetailCategory(null);
+
+  /* ── Guidelines: "Returned from SME" ───────────────────────────
+     Projects the SME has finished and sent back (book_status ===
+     "Guidelines") land here. Since guidance is written per Category
+     rather than per Project, clicking a returned project matches it
+     to its Category by name and opens that Category's guidance
+     detail — same modal "List Guidelines" already uses. */
+  const [returnedSmeError, setReturnedSmeError] = useState("");
+  const returnedFromSmeProjects = projects.filter((p) => p.stage === "Guidelines");
+
+  const openGuidanceForProject = (project) => {
+    setReturnedSmeError("");
+    const match = categoryList.find(
+      (c) => (c.category_name || "").trim().toLowerCase() === (project.category || "").trim().toLowerCase()
+    );
+    if (!match) {
+      setReturnedSmeError(`Couldn't find a matching category for "${project.title}" — check its Category under Category first.`);
+      return;
+    }
+    setGuidelineSubTab("list-guideline");
+    openGuidanceDetail(match);
+  };
 
   const handlePreviewGuidance = async () => {
     if (!guidanceDetailCategory || !stripHtml(guidanceDetailForm.guidance)) return;
@@ -3665,6 +3734,25 @@ export default function Submit() {
     }
   };
 
+  /* ── Screen heading (top of main panel) ───────────────────────
+     Swaps the generic "BookForge" title/subtitle for copy that
+     matches whichever screen is actually open, for every screen a
+     User or SME can reach here (Admin-only screens keep their own
+     heading further down, unchanged). */
+  const BF_HEADER_CONTENT = {
+    dashboard: { title: "Dashboard", subtitle: "Track every manuscript's progress across the publishing pipeline." },
+    category: { title: "Category", subtitle: "Create and manage the book categories projects are organized under." },
+    "new-project": { title: "Create Project", subtitle: "Start a new manuscript and set its basic publishing details." },
+    "upload-brief": { title: "Brief Upload", subtitle: "Upload the syllabus, brief, or sample TOC for your project." },
+    guidelines: { title: "Guidelines", subtitle: "Write and manage plain-English guidance for each book category." },
+    blueprint: { title: "Blueprint Generation", subtitle: "Process a project's documents into a structured content blueprint." },
+    "manage-users": { title: "Manage Users", subtitle: "View users and manage roles for this organization." },
+    sme: { title: "SME Upload", subtitle: "Capture subject-matter interviews for your assigned projects." },
+    "kb-ready": { title: "Knowledge Base Ready", subtitle: "Review projects whose knowledge base has finished processing." },
+    "sme-sample": { title: "Sample Screen", subtitle: "A preview screen for SME-role sample content." },
+  };
+  const bfHeader = BF_HEADER_CONTENT[activeTab] || { title: "BookForge", subtitle: "Plan, brief, and track manuscripts through the publishing pipeline." };
+
   return (
     <div className="submit-page">
       {/* ── Sidebar ──────────────────────────────────────────── */}
@@ -3689,6 +3777,16 @@ export default function Submit() {
               {activeTab === "dashboard" && <span className="submit-nav-dot"></span>}
             </div>
           )}
+          {isUserRole && (
+            <div
+              className={`submit-nav-item${activeTab === "category" ? " active" : ""}`}
+              onClick={() => setActiveTab("category")}
+            >
+              <span className="submit-nav-icon">🏷️</span>
+              <span>Category</span>
+              {activeTab === "category" && <span className="submit-nav-dot"></span>}
+            </div>
+          )}
           {!isSmeUser && (
             <div
               className={`submit-nav-item${activeTab === "new-project" ? " active" : ""}`}
@@ -3707,16 +3805,6 @@ export default function Submit() {
               <span className="submit-nav-icon">📎</span>
               <span>Brief Upload</span>
               {activeTab === "upload-brief" && <span className="submit-nav-dot"></span>}
-            </div>
-          )}
-          {isUserRole && (
-            <div
-              className={`submit-nav-item${activeTab === "category" ? " active" : ""}`}
-              onClick={() => setActiveTab("category")}
-            >
-              <span className="submit-nav-icon">🏷️</span>
-              <span>Category</span>
-              {activeTab === "category" && <span className="submit-nav-dot"></span>}
             </div>
           )}
           {isUserRole && (
@@ -3802,8 +3890,8 @@ export default function Submit() {
 
           <div className="bf-header">
             <div>
-              <h1 className="bf-title">BookForge</h1>
-              <p className="bf-subtitle">Plan, brief, and track manuscripts through the publishing pipeline.</p>
+              <h1 className="bf-title">{bfHeader.title}</h1>
+              <p className="bf-subtitle">{bfHeader.subtitle}</p>
             </div>
           </div>
 
@@ -3983,10 +4071,18 @@ export default function Submit() {
                       <div className="bf-form-group">
                         <label className="bf-form-label">Category</label>
                         <select className="bf-form-input" value={form.category} onChange={(e) => updateField("category", e.target.value)}>
-                          <option>Exam Preparation</option>
-                          <option>Academic / School</option>
-                          <option>Professional / Technical</option>
+                          <option value="">
+                            {categoryListLoading ? "Loading categories…" : "Select a category…"}
+                          </option>
+                          {categoryList.map((c) => (
+                            <option key={c.category_id} value={c.category_name}>{c.category_name}</option>
+                          ))}
                         </select>
+                        {!categoryListLoading && categoryList.length === 0 && (
+                          <p className="bf-doc-empty" style={{ marginTop: "4px" }}>
+                            No categories yet — add one under Category first.
+                          </p>
+                        )}
                       </div>
                       <div className="bf-form-group">
                         <label className="bf-form-label">Book Subject</label>
@@ -4123,7 +4219,7 @@ export default function Submit() {
                       className="bf-form-input"
                       value={createdProject?.id || ""}
                       onChange={(e) => {
-                        const selected = projects.find((p) => String(p.id) === e.target.value);
+                        const selected = briefUploadProjects.find((p) => String(p.id) === e.target.value);
                         setCreatedProject(selected ? { id: selected.id, book_title: selected.title } : null);
                         setBriefFiles([]);
                       }}
@@ -4131,7 +4227,7 @@ export default function Submit() {
                       <option value="">
                         {projectsLoading ? "Loading projects…" : "Select a project…"}
                       </option>
-                      {projects.map((p) => (
+                      {briefUploadProjects.map((p) => (
                         <option key={p.id} value={p.id}>{p.title}</option>
                       ))}
                     </select>
@@ -4258,9 +4354,20 @@ export default function Submit() {
                   )}
                 </div>
 
+                {submitToSmeError && <p className="bf-step-error">{submitToSmeError}</p>}
+
                 <div className="bf-step-actions">
                   <button className="bf-btn bf-btn-secondary" onClick={goBackFromWizard}>
                     {canSeeDashboard ? "Back to Dashboard" : "Back to Home"}
+                  </button>
+                  <button
+                    type="button"
+                    className="bf-btn bf-btn-primary"
+                    disabled={!createdProject?.id || !hasUploadedBrief || submittingToSme}
+                    title={!hasUploadedBrief ? "Upload at least one brief document first" : ""}
+                    onClick={handleSubmitToSme}
+                  >
+                    {submittingToSme ? "Submitting…" : "Submit to SME →"}
                   </button>
                 </div>
               </div>
@@ -4392,6 +4499,16 @@ export default function Submit() {
                   >
                     List Guidelines
                   </button>
+                  <button
+                    type="button"
+                    className={`bf-tab${guidelineSubTab === "returned-sme" ? " active" : ""}`}
+                    onClick={() => setGuidelineSubTab("returned-sme")}
+                  >
+                    Returned from SME
+                    {returnedFromSmeProjects.length > 0 && (
+                      <span className="sme-count-chip" style={{ marginLeft: "6px" }}>{returnedFromSmeProjects.length}</span>
+                    )}
+                  </button>
                 </div>
 
                 {guidanceSuccess && (
@@ -4493,6 +4610,46 @@ export default function Submit() {
                                   onClick={() => openGuidanceDetail(c)}
                                 >
                                   View / Edit Guidance
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )}
+
+                {guidelineSubTab === "returned-sme" && (
+                  <div className="bf-table-wrap">
+                    {returnedSmeError && <div className="bf-error-banner">{returnedSmeError}</div>}
+                    {returnedFromSmeProjects.length === 0 ? (
+                      <p className="bf-doc-empty">
+                        No projects have come back from the SME yet — they'll show up here once submitted.
+                      </p>
+                    ) : (
+                      <table className="bf-table">
+                        <thead>
+                          <tr>
+                            <th>Book Title</th>
+                            <th>Category</th>
+                            <th>Deadline</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {returnedFromSmeProjects.map((p) => (
+                            <tr key={p.id}>
+                              <td><strong>{p.title}</strong></td>
+                              <td>{p.category || "—"}</td>
+                              <td>{p.deadline}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="bf-btn bf-btn-primary bf-btn-sm"
+                                  onClick={() => openGuidanceForProject(p)}
+                                >
+                                  Write Guidance
                                 </button>
                               </td>
                             </tr>

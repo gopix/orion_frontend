@@ -1,6 +1,7 @@
 
 
 
+
 // import { useEffect, useRef, useState } from "react";
 // import {
 //   getAssignedBookForgeProjectsForSme,
@@ -9,6 +10,7 @@
 //   createSmeQaEntry,
 //   updateSmeQaEntry,
 //   deleteSmeQaEntry,
+//   clearSmeQaEntries,
 //   submitSmeQaSession,
 //   getBookForgeDocuments,
 // } from "../../../services/apiServices";
@@ -56,7 +58,6 @@
 //   const [qaEntries, setQaEntries] = useState([]);
 //   const [qaLoading, setQaLoading] = useState(false);
 //   const [qaError, setQaError] = useState("");
-//   const [mode, setMode] = useState("live"); // "live" | "async" — cosmetic toggle, same data underneath
  
 //   const [entryForm, setEntryForm] = useState(EMPTY_ENTRY_FORM);
 //   const [editingEntryId, setEditingEntryId] = useState(null);
@@ -204,7 +205,12 @@
 //         throw new Error(res.errors[0]?.message || "Failed to submit interview.");
 //       }
 //       setSubmitSuccess("Interview submitted — the PDF now appears in this project's Documents.");
+//       const usedTypedEntries = !interviewFile;
 //       setInterviewFile(null);
+//       if (usedTypedEntries) {
+//         await clearSmeQaEntries(selectedProject.id);
+//         await loadQaEntries(selectedProject.id);
+//       }
 //       loadProjectDocs(selectedProject.id);
 //       window.setTimeout(() => setSubmitSuccess(""), 5000);
 //     } catch (err) {
@@ -223,11 +229,11 @@
 //       <div className="sme-page">
 //         <div className="sme-header">
 //           <div>
-//             <h1 className="bf-title">{admin ? "SME Capture — Admin View" : "SME Interview Capture"}</h1>
+//             <h1 className="bf-title">{admin ? "SME Upload — Admin View" : "SME Interview Upload"}</h1>
 //             <p className="bf-subtitle">
 //               {admin
 //                 ? "Review or manage SME interview Q&A for any project."
-//                 : "Select one of your assigned projects to begin capturing SME knowledge."}
+//                 : "Select one of your assigned projects to begin uploading SME knowledge."}
 //             </p>
 //           </div>
 //         </div>
@@ -275,26 +281,10 @@
 //           <button type="button" className="sme-back-link" onClick={backToProjects}>
 //             ← All Projects
 //           </button>
-//           <h1 className="bf-title">{admin ? "SME Capture — Admin View" : "SME Interview Capture"}</h1>
+//           <h1 className="bf-title">{admin ? "SME Upload — Admin View" : "SME Interview Upload"}</h1>
 //           <p className="bf-subtitle">
 //             Project: <strong>{selectedProject.title}</strong> · Captured by {smeLabel || "you"}
 //           </p>
-//         </div>
-//         <div className="sme-mode-toggle">
-//           <button
-//             type="button"
-//             className={`sme-mode-btn${mode === "live" ? " active" : ""}`}
-//             onClick={() => setMode("live")}
-//           >
-//             🎙️ Live Mode
-//           </button>
-//           <button
-//             type="button"
-//             className={`sme-mode-btn${mode === "async" ? " active" : ""}`}
-//             onClick={() => setMode("async")}
-//           >
-//             📝 Async Q&A Mode
-//           </button>
 //         </div>
 //       </div>
  
@@ -307,7 +297,13 @@
 //           <div className="bf-card-title sme-col-title">
 //             <span>Interview Questions</span>
 //             <span className="sme-count-chip">{answeredCount}</span>
+//             {answeredCount > 0 && <span className="bf-chip-draft" style={{ marginLeft: "6px" }}>Draft</span>}
 //           </div>
+//           {answeredCount > 0 && (
+//             <p className="bf-doc-empty" style={{ marginTop: "-4px" }}>
+//               Saved as a draft — come back anytime, then convert it to a PDF when ready.
+//             </p>
+//           )}
  
 //           {qaError && <div className="bf-error-banner">{qaError}</div>}
  
@@ -379,7 +375,7 @@
 //             disabled={submitting || (!interviewFile && qaEntries.length === 0)}
 //             onClick={handleSubmitSession}
 //           >
-//             {submitting ? "Submitting…" : interviewFile ? "Submit PDF Interview" : "Submit Interview → PDF"}
+//             {submitting ? "Submitting…" : interviewFile ? "Submit PDF Interview" : "Submit"}
 //           </button>
 //         </div>
  
@@ -393,7 +389,7 @@
 //               <textarea
 //                 className="bf-form-input bf-textarea"
 //                 rows={2}
-//                 placeholder={mode === "live" ? "Ask the SME a question…" : "Type the question here…"}
+//                 placeholder="Type the question here…"
 //                 value={entryForm.question}
 //                 onChange={(e) => setEntryForm((f) => ({ ...f, question: e.target.value }))}
 //               />
@@ -418,7 +414,7 @@
 //                 </button>
 //               )}
 //               <button type="button" className="bf-btn bf-btn-primary" onClick={handleSaveEntry} disabled={savingEntry}>
-//                 {savingEntry ? "Saving…" : editingEntryId ? "Update Question" : "+ Add Question"}
+//                 {savingEntry ? "Saving…" : editingEntryId ? "💾 Update Draft" : "💾 Save as Draft"}
 //               </button>
 //             </div>
 //           </div>
@@ -451,7 +447,6 @@
 
 
 
-
 import { useEffect, useRef, useState } from "react";
 import {
   getAssignedBookForgeProjectsForSme,
@@ -463,6 +458,7 @@ import {
   clearSmeQaEntries,
   submitSmeQaSession,
   getBookForgeDocuments,
+  updateBookForgeProject,
 } from "../../../services/apiServices";
 import { isAdmin } from "../../../utils/auth";
 import "./SmeCapture.css";
@@ -491,7 +487,12 @@ export default function SmeCapture() {
         // yet real on the backend, so today this still returns every
         // active project for SMEs too).
         const res = admin ? await getBookForgeProjects(0, 100) : await getAssignedBookForgeProjectsForSme();
-        const rows = Array.isArray(res?.data) ? res.data.filter((p) => !p.is_deleted) : [];
+        let rows = Array.isArray(res?.data) ? res.data.filter((p) => !p.is_deleted) : [];
+        // A plain SME only has work to do on projects the User has
+        // actually submitted for review — everything else (still
+        // being drafted, or already sent back) isn't actionable for
+        // them. Admins keep seeing every project, as before.
+        if (!admin) rows = rows.filter((p) => p.book_status === "SME Review");
         if (!cancelled) setProjects(rows);
       } catch (err) {
         console.error("Failed to load projects for SME Capture:", err);
@@ -670,7 +671,38 @@ export default function SmeCapture() {
       setSubmitting(false);
     }
   };
- 
+
+  /* ── Send Back to User ───────────────────────────────────────
+     Once the SME's work is done, this hands the project back:
+     book_status moves to "Guidelines", which pulls it out of this
+     SME's actionable list and surfaces it under the User's
+     Guidelines → "Returned from SME" tab. */
+  const [sendingBack, setSendingBack] = useState(false);
+  const [sendBackError, setSendBackError] = useState("");
+
+  const handleSendBackToUser = async () => {
+    if (!selectedProject) return;
+    const confirmed = window.confirm(
+      `Send "${selectedProject.title}" back to the User? It will move to their Guidelines screen.`
+    );
+    if (!confirmed) return;
+    setSendingBack(true);
+    setSendBackError("");
+    try {
+      const res = await updateBookForgeProject(selectedProject.id, { book_status: "Guidelines" });
+      if (res?.errors && res.errors.length > 0) {
+        throw new Error(res.errors[0]?.message || "Failed to send this project back.");
+      }
+      setProjects((prev) => prev.filter((p) => p.id !== selectedProject.id));
+      backToProjects();
+    } catch (err) {
+      console.error("Failed to send project back to user:", err);
+      setSendBackError(err.message || "Failed to send this project back. Please try again.");
+    } finally {
+      setSendingBack(false);
+    }
+  };
+
   const answeredCount = qaEntries.length;
  
   /* ── Screen: pick a project first ──────────────────────────── */
@@ -736,10 +768,19 @@ export default function SmeCapture() {
             Project: <strong>{selectedProject.title}</strong> · Captured by {smeLabel || "you"}
           </p>
         </div>
+        <button
+          type="button"
+          className="bf-btn bf-btn-primary"
+          disabled={sendingBack}
+          onClick={handleSendBackToUser}
+        >
+          {sendingBack ? "Sending…" : "Send Back to User ✓"}
+        </button>
       </div>
  
       {submitSuccess && <div className="bf-success-banner"><span>✓</span> {submitSuccess}</div>}
       {submitError && <div className="bf-error-banner">{submitError}</div>}
+      {sendBackError && <div className="bf-error-banner">{sendBackError}</div>}
  
       <div className="sme-columns">
         {/* ── Left: captured questions ──────────────────────── */}
