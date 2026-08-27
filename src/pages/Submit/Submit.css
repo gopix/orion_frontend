@@ -337,6 +337,24 @@
   margin-bottom: 18px;
 }
 
+/* Was referenced across the app (kbError, usersError, submitToSmeError,
+   etc.) but never actually defined, so these errors rendered as plain
+   unstyled text and were easy to miss. Styled to match
+   .bf-success-banner so failures are as visible as successes. */
+.bf-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: var(--red-600);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 18px;
+}
+
 /* ── Buttons ──────────────────────────────────────────────── */
 .bf-btn {
   display: inline-flex;
