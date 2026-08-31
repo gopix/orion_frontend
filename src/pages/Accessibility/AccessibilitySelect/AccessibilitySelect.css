@@ -208,6 +208,11 @@
   grid-template-columns: repeat(2, 1fr);
 }
 
+.as-option-grid-1 {
+  grid-template-columns: minmax(0, 260px);
+  justify-content: center;
+}
+
 /* ─── Option Card (radio) ──────────────────────────────────── */
 .as-option-card {
   position: relative;
@@ -343,7 +348,8 @@
   .as-option-grid-3,
   .as-option-grid-4,
   .as-option-grid-5,
-  .as-option-grid-2 {
+  .as-option-grid-2,
+  .as-option-grid-1 {
     grid-template-columns: 1fr;
   }
 }

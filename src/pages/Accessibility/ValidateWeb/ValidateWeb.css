@@ -1,0 +1,504 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ─── Design Tokens ────────────────────────────────────────── */
+:root {
+  --navy-900: #0c1629;
+  --blue-600: #1d4ed8;
+  --blue-500: #2563eb;
+  --blue-400: #3b82f6;
+  --blue-200: #bfdbfe;
+  --blue-100: #dbeafe;
+  --blue-50:  #eff6ff;
+  --slate-50:  #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-900: #0f172a;
+  --white: #ffffff;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05);
+  --transition: all 0.2s ease;
+}
+
+* { box-sizing: border-box; }
+
+/* ─── Page ─────────────────────────────────────────────────── */
+.ww-page {
+  display: flex;
+  min-height: 100vh;
+  background: #f0f4fc;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ww-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ─── Topbar ───────────────────────────────────────────────── */
+.ww-topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--slate-200);
+  padding: 11px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: var(--shadow-sm);
+}
+
+.ww-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ww-back-fab {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border: none;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.45);
+  transition: var(--transition);
+}
+
+.ww-back-fab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(59,130,246,0.55);
+}
+
+.ww-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.ww-bc-root { color: var(--slate-400); }
+.ww-bc-sep  { color: var(--slate-300); }
+.ww-bc-current { color: var(--slate-900); font-weight: 600; }
+
+.ww-status-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: var(--blue-50);
+  color: var(--blue-600);
+  border: 1px solid var(--blue-200);
+}
+
+.ww-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.dot-blue { background: #3b82f6; box-shadow: 0 0 5px #3b82f6; }
+
+/* ─── Content ──────────────────────────────────────────────── */
+.ww-content {
+  flex: 1;
+  padding: 24px 28px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ─── Step Cards ───────────────────────────────────────────── */
+.ww-step-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--slate-200);
+  display: flex;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.ww-step-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+}
+
+.ww-step-badge {
+  width: 56px;
+  min-width: 56px;
+  background: linear-gradient(180deg, #eff6ff, #dbeafe);
+  border-right: 1px solid var(--blue-100);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 24px;
+}
+
+.ww-step-badge span {
+  font-size: 24px;
+  font-weight: 800;
+  color: #93c5fd;
+}
+
+.ww-step-body {
+  flex: 1;
+  padding: 22px 26px 26px;
+  min-width: 0;
+}
+
+.ww-step-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.ww-step-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin-bottom: 4px;
+}
+
+.ww-step-desc {
+  font-size: 13px;
+  color: var(--slate-500);
+  line-height: 1.6;
+}
+
+/* ─── Forms ────────────────────────────────────────────────── */
+.ww-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ww-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ww-field-wide {
+  grid-column: 1 / -1;
+}
+
+.ww-field-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--slate-500);
+}
+
+.ww-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--slate-900);
+  background: var(--white);
+  transition: var(--transition);
+}
+
+.ww-input:focus {
+  outline: none;
+  border-color: var(--blue-400);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.ww-textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.ww-checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--slate-900);
+  cursor: pointer;
+}
+
+.ww-checkbox-field input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue-500);
+  cursor: pointer;
+}
+
+.ww-form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ─── Buttons ──────────────────────────────────────────────── */
+.ww-btn-primary {
+  padding: 11px 20px;
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+}
+
+.ww-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37,99,235,0.38);
+}
+
+.ww-btn-primary:disabled {
+  background: var(--slate-300);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ww-btn-secondary {
+  padding: 10px 16px;
+  background: var(--blue-50);
+  color: var(--blue-600);
+  border: 1.5px solid var(--blue-200);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.ww-btn-secondary:hover:not(:disabled) {
+  background: var(--blue-100);
+}
+
+.ww-btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ww-btn-ghost {
+  padding: 11px 18px;
+  background: transparent;
+  color: var(--slate-500);
+  border: 1.5px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.ww-btn-ghost:hover:not(:disabled) {
+  background: var(--slate-100);
+}
+
+/* ─── Alerts ───────────────────────────────────────────────── */
+.ww-alert {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.ww-alert-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.ww-alert-success {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+/* ─── Lookup ───────────────────────────────────────────────── */
+.ww-lookup-form {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ww-lookup-input {
+  width: 140px;
+}
+
+/* ─── Website Grid / Cards ─────────────────────────────────── */
+.ww-empty-state {
+  padding: 28px;
+  text-align: center;
+  color: var(--slate-400);
+  font-size: 13.5px;
+  background: var(--slate-50);
+  border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--slate-200);
+}
+
+.ww-website-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.ww-website-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  padding: 16px;
+  background: var(--white);
+  border: 1.5px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.ww-website-card:hover {
+  border-color: var(--blue-400);
+  background: var(--blue-50);
+}
+
+.ww-website-card-active {
+  border-color: var(--blue-500);
+  background: var(--blue-50);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.ww-wc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.ww-wc-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--slate-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ww-wc-url {
+  font-size: 12px;
+  color: var(--slate-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.ww-wc-meta {
+  font-size: 11px;
+  color: var(--slate-400);
+}
+
+/* ─── Status Badge ─────────────────────────────────────────── */
+.ww-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.ww-status-pass     { background: #dcfce7; color: #15803d; }
+.ww-status-fail     { background: #fee2e2; color: #dc2626; }
+.ww-status-progress { background: #dbeafe; color: #1d4ed8; }
+.ww-status-unknown  { background: var(--slate-100); color: var(--slate-500); }
+
+/* ─── Detail Grid ──────────────────────────────────────────── */
+.ww-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ww-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--slate-50);
+  border-radius: var(--radius-sm);
+}
+
+.ww-detail-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--slate-400);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ww-detail-value {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--slate-900);
+  word-break: break-word;
+}
+
+/* ─── Responsive ───────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .ww-content {
+    padding: 18px 16px 40px;
+  }
+  .ww-form-grid,
+  .ww-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .ww-step-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ww-lookup-form {
+    width: 100%;
+  }
+  .ww-lookup-input {
+    flex: 1;
+    width: auto;
+  }
+}
