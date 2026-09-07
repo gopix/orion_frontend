@@ -1,9 +1,6 @@
 
 
 
-
-
-
 // import {
 //   BrowserRouter,
 //   Routes,
@@ -22,6 +19,8 @@
 // import RemediatePpt   from "../pages/Accessibility/RemediatePpt/RemediatePpt";
 // import RemediateEpub  from "../pages/Accessibility/RemediateEpub/RemediateEpub";
 // import ValidateEpub   from "../pages/Accessibility/ValidateEpub/ValidateEpub";
+// import ValidateWeb    from "../pages/Accessibility/ValidateWeb/ValidateWeb";
+// import ScanWebsite    from "../pages/Accessibility/ScanWebsite/ScanWebsite";
 // import MisPdf         from "../pages/Accessibility/MisPdf/MisPdf";
 // import Submit         from "../pages/Submit/Submit";
 // import Editor         from "../pages/Editor/Editor";
@@ -182,6 +181,30 @@
 //           }
 //         />
 //         <Route
+//           path="/validate-web"
+//           element={
+//             SHOW_ACCESSIBILITY_PLUS ? (
+//               <ProtectedRoute>
+//                 <ValidateWeb />
+//               </ProtectedRoute>
+//             ) : (
+//               <Navigate to="/" replace />
+//             )
+//           }
+//         />
+//         <Route
+//           path="/scan-website"
+//           element={
+//             SHOW_ACCESSIBILITY_PLUS ? (
+//               <ProtectedRoute>
+//                 <ScanWebsite />
+//               </ProtectedRoute>
+//             ) : (
+//               <Navigate to="/" replace />
+//             )
+//           }
+//         />
+//         <Route
 //           path="/mis-pdf"
 //           element={
 //             SHOW_ACCESSIBILITY_PLUS ? (
@@ -237,7 +260,6 @@
 // export default AppRoutes;
 
 
-
 import {
   BrowserRouter,
   Routes,
@@ -257,6 +279,8 @@ import RemediatePpt   from "../pages/Accessibility/RemediatePpt/RemediatePpt";
 import RemediateEpub  from "../pages/Accessibility/RemediateEpub/RemediateEpub";
 import ValidateEpub   from "../pages/Accessibility/ValidateEpub/ValidateEpub";
 import ValidateWeb    from "../pages/Accessibility/ValidateWeb/ValidateWeb";
+import ScanWebsite    from "../pages/Accessibility/ScanWebsite/ScanWebsite";
+import Crawls         from "../pages/Accessibility/Crawls/Crawls";
 import MisPdf         from "../pages/Accessibility/MisPdf/MisPdf";
 import Submit         from "../pages/Submit/Submit";
 import Editor         from "../pages/Editor/Editor";
@@ -422,6 +446,30 @@ function AppRoutes() {
             SHOW_ACCESSIBILITY_PLUS ? (
               <ProtectedRoute>
                 <ValidateWeb />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/scan-website"
+          element={
+            SHOW_ACCESSIBILITY_PLUS ? (
+              <ProtectedRoute>
+                <ScanWebsite />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/crawls"
+          element={
+            SHOW_ACCESSIBILITY_PLUS ? (
+              <ProtectedRoute>
+                <Crawls />
               </ProtectedRoute>
             ) : (
               <Navigate to="/" replace />
