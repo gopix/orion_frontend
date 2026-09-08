@@ -422,6 +422,9 @@
 }
 
 .ww-status-progress { background: #dbeafe; color: #1d4ed8; }
+.ww-status-pass     { background: #dcfce7; color: #15803d; }
+.ww-status-fail     { background: #fee2e2; color: #dc2626; }
+.ww-status-unknown  { background: var(--slate-100); color: var(--slate-500); }
 
 /* ════════════════════════════════════════════════════════════
    SCAN WEBSITE — screen-specific styles
@@ -547,9 +550,153 @@
   color: var(--slate-900);
 }
 
+/* ─── Clickable Scan ID ────────────────────────────────────── */
+.sw-scan-hint {
+  font-size: 12px;
+  color: var(--slate-400);
+  font-weight: 500;
+  margin: -6px 0 12px;
+}
+
+.sw-scan-id-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-600);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sw-scan-id-link:hover {
+  color: var(--blue-500);
+}
+
+/* ─── Scan Detail Modal ────────────────────────────────────── */
+.ww-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.ww-modal {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.ww-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.ww-modal-header h3 {
+  font-size: 15.5px;
+  color: var(--slate-900);
+}
+
+.ww-modal-close {
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: var(--slate-400);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.ww-modal-close:hover {
+  color: var(--slate-700);
+}
+
+.ww-empty-state {
+  padding: 24px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--slate-400);
+}
+
+.sw-scan-modal {
+  max-width: 760px;
+}
+
+.sw-modal-summary {
+  margin-bottom: 12px;
+}
+
+.sw-modal-url {
+  font-size: 12.5px;
+  color: var(--slate-500);
+  background: var(--slate-50);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  word-break: break-all;
+}
+
+/* ─── Issue filters ────────────────────────────────────────── */
+.sw-issue-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 18px;
+  padding: 14px;
+  background: var(--slate-50);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+}
+
+.sw-issue-filters-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sw-issue-filters-actions .ww-btn-primary,
+.sw-issue-filters-actions .ww-btn-ghost {
+  padding: 10px 16px;
+  font-size: 12.5px;
+}
+
+.sw-issues-title-row {
+  margin-bottom: 10px;
+}
+
+/* ─── Severity badges ──────────────────────────────────────── */
+.sw-severity-critical { background: #fee2e2; color: #dc2626; }
+.sw-severity-serious  { background: #ffedd5; color: #c2410c; }
+.sw-severity-moderate { background: #dbeafe; color: #1d4ed8; }
+.sw-severity-minor    { background: var(--slate-100); color: var(--slate-500); }
+.sw-severity-unknown  { background: var(--slate-100); color: var(--slate-500); }
+
 /* ─── Responsive ───────────────────────────────────────────── */
 @media (max-width: 900px) {
   .sw-option-grid {
+    grid-template-columns: 1fr;
+  }
+  .sw-issue-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .sw-issue-filters {
     grid-template-columns: 1fr;
   }
 }
