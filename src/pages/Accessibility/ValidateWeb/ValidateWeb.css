@@ -552,6 +552,7 @@
 .ww-status-pass     { background: #dcfce7; color: #15803d; }
 .ww-status-fail     { background: #fee2e2; color: #dc2626; }
 .ww-status-progress { background: #dbeafe; color: #1d4ed8; }
+.ww-status-partial  { background: #fef3c7; color: #b45309; }
 .ww-status-unknown  { background: var(--slate-100); color: var(--slate-500); }
 
 /* ─── Edit Modal ───────────────────────────────────────────── */
@@ -614,6 +615,51 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* ─── Website Crawls Modal ─────────────────────────────────── */
+.wc-modal {
+  max-width: 820px;
+}
+
+.wc-select-field {
+  margin-bottom: 18px;
+}
+
+.wc-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.wc-summary-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 14px;
+  background: var(--slate-50);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  min-width: 120px;
+}
+
+.wc-summary-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--slate-400);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.wc-summary-value {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.wc-pages-title-row {
+  margin-bottom: 10px;
 }
 
 /* ─── Responsive ───────────────────────────────────────────── */
