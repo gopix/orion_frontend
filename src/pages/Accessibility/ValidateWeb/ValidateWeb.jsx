@@ -1,5 +1,7 @@
 
 
+
+
 // import { useEffect, useState } from "react";
 // import { useNavigate, useSearchParams } from "react-router-dom";
 // import {
@@ -7,6 +9,8 @@
 //   getAllWebsites,
 //   updateWebsite,
 //   deleteWebsite,
+//   getWebsiteCrawls,
+//   getWebsiteCrawlDetail,
 // } from "../../../services/apiServices";
 // import "./ValidateWeb.css";
 
@@ -37,6 +41,182 @@
 //   if (Number.isNaN(d.getTime())) return value;
 //   return d.toLocaleString();
 // };
+
+// const crawlStatusClass = (status) => {
+//   const s = (status || "").toUpperCase();
+//   if (s === "COMPLETED" || s === "DONE") return "ww-status-pass";
+//   if (s === "FAILED" || s === "BLOCKED") return "ww-status-fail";
+//   if (s === "PARTIAL") return "ww-status-partial";
+//   if (s === "RUNNING" || s === "QUEUED") return "ww-status-progress";
+//   return "ww-status-unknown";
+// };
+
+// /* ════════════════════════════════════════════════════════════
+//    WEBSITE CRAWLS MODAL
+//    Step 1: GET /websites/{website_id}/crawls        → crawl list
+//    Step 2: GET /websites/{website_id}/crawls/{id}    → crawl detail
+//    ════════════════════════════════════════════════════════════ */
+// function WebsiteCrawlsModal({ website, onClose }) {
+//   const [crawls, setCrawls] = useState([]);
+//   const [crawlsLoading, setCrawlsLoading] = useState(true);
+//   const [crawlsError, setCrawlsError] = useState("");
+
+//   const [selectedCrawlId, setSelectedCrawlId] = useState("");
+//   const [crawlDetail, setCrawlDetail] = useState(null);
+//   const [detailLoading, setDetailLoading] = useState(false);
+//   const [detailError, setDetailError] = useState("");
+
+//   useEffect(() => {
+//     const fetchCrawls = async () => {
+//       setCrawlsLoading(true);
+//       setCrawlsError("");
+//       try {
+//         const res = await getWebsiteCrawls(website.id);
+//         if (res?.response_code >= 400) {
+//           throw new Error(res?.errors?.[0]?.message || res?.message || "Failed to load crawls.");
+//         }
+//         const items = Array.isArray(res?.data?.items) ? res.data.items : [];
+//         setCrawls(items);
+//         if (items.length > 0) {
+//           setSelectedCrawlId(String(items[0].crawl_id));
+//         }
+//       } catch (err) {
+//         setCrawlsError(err.message || "Unable to connect. Please try again later.");
+//       } finally {
+//         setCrawlsLoading(false);
+//       }
+//     };
+//     fetchCrawls();
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [website.id]);
+
+//   useEffect(() => {
+//     if (!selectedCrawlId) {
+//       setCrawlDetail(null);
+//       return;
+//     }
+//     const fetchDetail = async () => {
+//       setDetailLoading(true);
+//       setDetailError("");
+//       try {
+//         const res = await getWebsiteCrawlDetail(website.id, selectedCrawlId);
+//         if (res?.response_code >= 400) {
+//           throw new Error(res?.errors?.[0]?.message || res?.message || "Failed to load crawl detail.");
+//         }
+//         setCrawlDetail(res?.data || null);
+//       } catch (err) {
+//         setDetailError(err.message || "Unable to connect. Please try again later.");
+//         setCrawlDetail(null);
+//       } finally {
+//         setDetailLoading(false);
+//       }
+//     };
+//     fetchDetail();
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [selectedCrawlId, website.id]);
+
+//   const pages = Array.isArray(crawlDetail?.pages) ? crawlDetail.pages : [];
+
+//   return (
+//     <div className="ww-modal-overlay" onClick={onClose}>
+//       <div className="ww-modal wc-modal" onClick={(e) => e.stopPropagation()}>
+//         <div className="ww-modal-header">
+//           <h3>Crawls · {website.name}</h3>
+//           <button type="button" className="ww-modal-close" onClick={onClose}>✕</button>
+//         </div>
+
+//         {crawlsLoading ? (
+//           <div className="ww-empty-state">Loading crawls…</div>
+//         ) : crawlsError ? (
+//           <div className="ww-alert ww-alert-error">{crawlsError}</div>
+//         ) : crawls.length === 0 ? (
+//           <div className="ww-empty-state">
+//             No crawls yet for this website. Run a full-site scan to see history here.
+//           </div>
+//         ) : (
+//           <>
+//             <label className="ww-field wc-select-field">
+//               <span className="ww-field-label">Select Crawl *</span>
+//               <select
+//                 className="ww-input"
+//                 value={selectedCrawlId}
+//                 onChange={(e) => setSelectedCrawlId(e.target.value)}
+//               >
+//                 {crawls.map((crawl) => (
+//                   <option key={crawl.crawl_id} value={crawl.crawl_id}>
+//                     #{crawl.crawl_id} · {crawl.status} · {crawl.pages_discovered ?? 0} pages · {formatDate(crawl.created_at)}
+//                   </option>
+//                 ))}
+//               </select>
+//             </label>
+
+//             {detailLoading ? (
+//               <div className="ww-empty-state">Loading crawl detail…</div>
+//             ) : detailError ? (
+//               <div className="ww-alert ww-alert-error">{detailError}</div>
+//             ) : crawlDetail ? (
+//               <>
+//                 <div className="wc-summary-row">
+//                   <div className="wc-summary-chip">
+//                     <span className="wc-summary-label">Status</span>
+//                     <span className={`ww-status-badge ${crawlStatusClass(crawlDetail.status)}`}>
+//                       {crawlDetail.status || "UNKNOWN"}
+//                     </span>
+//                   </div>
+//                   <div className="wc-summary-chip">
+//                     <span className="wc-summary-label">Discovery Source</span>
+//                     <span className="wc-summary-value">{crawlDetail.discovery_source || "—"}</span>
+//                   </div>
+//                   <div className="wc-summary-chip">
+//                     <span className="wc-summary-label">Pages Discovered</span>
+//                     <span className="wc-summary-value">{crawlDetail.pages_discovered ?? pages.length}</span>
+//                   </div>
+//                 </div>
+
+//                 <div className="ww-card-title-row wc-pages-title-row">
+//                   <span className="ww-card-title">Pages ({pages.length})</span>
+//                 </div>
+
+//                 {pages.length === 0 ? (
+//                   <div className="ww-empty-state">No pages found for this crawl.</div>
+//                 ) : (
+//                   <div className="ww-table-wrap">
+//                     <table className="ww-table">
+//                       <thead>
+//                         <tr>
+//                           <th>URL</th>
+//                           <th>Status</th>
+//                           <th>HTTP Status</th>
+//                           <th>Total Issues</th>
+//                           <th>Completed At</th>
+//                         </tr>
+//                       </thead>
+//                       <tbody>
+//                         {pages.map((page) => (
+//                           <tr key={page.id}>
+//                             <td className="ww-td-url" title={page.url}>{page.url}</td>
+//                             <td>
+//                               <span className={`ww-status-badge ${crawlStatusClass(page.status)}`}>
+//                                 {page.status || "—"}
+//                               </span>
+//                             </td>
+//                             <td>{page.http_status ?? "—"}</td>
+//                             <td>{page.total_issues ?? (Array.isArray(page.issues) ? page.issues.length : 0)}</td>
+//                             <td>{formatDate(page.completed_at)}</td>
+//                           </tr>
+//                         ))}
+//                       </tbody>
+//                     </table>
+//                   </div>
+//                 )}
+//               </>
+//             ) : null}
+//           </>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
 
 // /* ════════════════════════════════════════════════════════════
 //    EDIT WEBSITE MODAL
@@ -218,6 +398,9 @@
 //   const [savingEdit, setSavingEdit] = useState(false);
 //   const [editError, setEditError] = useState("");
 //   const [deletingId, setDeletingId] = useState(null);
+
+//   // ── Crawls modal ─────────────────────────────────────────────
+//   const [crawlsWebsite, setCrawlsWebsite] = useState(null);
 
 //   const fetchWebsites = async () => {
 //     setListLoading(true);
@@ -472,7 +655,7 @@
 //                           <th>Environment</th>
 //                           <th>Crawl</th>
 //                           <th>Status</th>
-//                           <th>Last Scan</th>
+//                           {/* <th>Last Scan</th> */}
 //                           <th>Actions</th>
 //                         </tr>
 //                       </thead>
@@ -492,10 +675,10 @@
 //                                 {site.accessibility_status || "UNKNOWN"}
 //                               </span>
 //                             </td>
-//                             <td>{formatDate(site.last_scan_at)}</td>
+//                             {/* <td>{formatDate(site.last_scan_at)}</td> */}
 //                             <td>
 //                               <div className="ww-row-actions">
-//                                 <button
+//                                 {/* <button
 //                                   type="button"
 //                                   className="ww-icon-btn"
 //                                   title="Scan website"
@@ -503,13 +686,22 @@
 //                                   onClick={() => navigate(`/scan-website?website_id=${site.id}`)}
 //                                 >
 //                                   🔍
-//                                 </button>
-//                                 <button
+//                                 </button> */}
+//                                 {/* <button
 //                                   type="button"
 //                                   className="ww-icon-btn"
 //                                   title="View crawl history"
 //                                   aria-label="View crawl history"
 //                                   onClick={() => navigate(`/crawls?website_id=${site.id}`)}
+//                                 >
+//                                   🕓
+//                                 </button> */}
+//                                 <button
+//                                   type="button"
+//                                   className="ww-icon-btn"
+//                                   title="View crawls"
+//                                   aria-label="View crawls"
+//                                   onClick={() => setCrawlsWebsite(site)}
 //                                 >
 //                                   🕓
 //                                 </button>
@@ -679,14 +871,18 @@
 //           error={editError}
 //         />
 //       )}
+
+//       {crawlsWebsite && (
+//         <WebsiteCrawlsModal
+//           website={crawlsWebsite}
+//           onClose={() => setCrawlsWebsite(null)}
+//         />
+//       )}
 //     </div>
 //   );
 // }
 
-
-
-
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   createWebsite,
@@ -699,6 +895,10 @@ import {
 import "./ValidateWeb.css";
 
 const ENVIRONMENTS = ["PRODUCTION", "STAGING", "DEVELOPMENT", "TESTING"];
+
+// Number of columns in the websites table — used for the inline crawls
+// panel's colSpan so it stretches the full width of the row below it.
+const TABLE_COLUMN_COUNT = 6;
 
 const EMPTY_CREATE_FORM = {
   name: "",
@@ -736,11 +936,13 @@ const crawlStatusClass = (status) => {
 };
 
 /* ════════════════════════════════════════════════════════════
-   WEBSITE CRAWLS MODAL
+   INLINE WEBSITE CRAWLS PANEL
+   Renders directly inside the dashboard table (as an extra row
+   under the website it belongs to) instead of a modal.
    Step 1: GET /websites/{website_id}/crawls        → crawl list
    Step 2: GET /websites/{website_id}/crawls/{id}    → crawl detail
    ════════════════════════════════════════════════════════════ */
-function WebsiteCrawlsModal({ website, onClose }) {
+function WebsiteCrawlsPanel({ website, onClose }) {
   const [crawls, setCrawls] = useState([]);
   const [crawlsLoading, setCrawlsLoading] = useState(true);
   const [crawlsError, setCrawlsError] = useState("");
@@ -761,9 +963,7 @@ function WebsiteCrawlsModal({ website, onClose }) {
         }
         const items = Array.isArray(res?.data?.items) ? res.data.items : [];
         setCrawls(items);
-        if (items.length > 0) {
-          setSelectedCrawlId(String(items[0].crawl_id));
-        }
+        setSelectedCrawlId("");
       } catch (err) {
         setCrawlsError(err.message || "Unable to connect. Please try again later.");
       } finally {
@@ -802,102 +1002,105 @@ function WebsiteCrawlsModal({ website, onClose }) {
   const pages = Array.isArray(crawlDetail?.pages) ? crawlDetail.pages : [];
 
   return (
-    <div className="ww-modal-overlay" onClick={onClose}>
-      <div className="ww-modal wc-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="ww-modal-header">
-          <h3>Crawls · {website.name}</h3>
-          <button type="button" className="ww-modal-close" onClick={onClose}>✕</button>
-        </div>
-
-        {crawlsLoading ? (
-          <div className="ww-empty-state">Loading crawls…</div>
-        ) : crawlsError ? (
-          <div className="ww-alert ww-alert-error">{crawlsError}</div>
-        ) : crawls.length === 0 ? (
-          <div className="ww-empty-state">
-            No crawls yet for this website. Run a full-site scan to see history here.
-          </div>
-        ) : (
-          <>
-            <label className="ww-field wc-select-field">
-              <span className="ww-field-label">Select Crawl *</span>
-              <select
-                className="ww-input"
-                value={selectedCrawlId}
-                onChange={(e) => setSelectedCrawlId(e.target.value)}
-              >
-                {crawls.map((crawl) => (
-                  <option key={crawl.crawl_id} value={crawl.crawl_id}>
-                    #{crawl.crawl_id} · {crawl.status} · {crawl.pages_discovered ?? 0} pages · {formatDate(crawl.created_at)}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {detailLoading ? (
-              <div className="ww-empty-state">Loading crawl detail…</div>
-            ) : detailError ? (
-              <div className="ww-alert ww-alert-error">{detailError}</div>
-            ) : crawlDetail ? (
-              <>
-                <div className="wc-summary-row">
-                  <div className="wc-summary-chip">
-                    <span className="wc-summary-label">Status</span>
-                    <span className={`ww-status-badge ${crawlStatusClass(crawlDetail.status)}`}>
-                      {crawlDetail.status || "UNKNOWN"}
-                    </span>
-                  </div>
-                  <div className="wc-summary-chip">
-                    <span className="wc-summary-label">Discovery Source</span>
-                    <span className="wc-summary-value">{crawlDetail.discovery_source || "—"}</span>
-                  </div>
-                  <div className="wc-summary-chip">
-                    <span className="wc-summary-label">Pages Discovered</span>
-                    <span className="wc-summary-value">{crawlDetail.pages_discovered ?? pages.length}</span>
-                  </div>
-                </div>
-
-                <div className="ww-card-title-row wc-pages-title-row">
-                  <span className="ww-card-title">Pages ({pages.length})</span>
-                </div>
-
-                {pages.length === 0 ? (
-                  <div className="ww-empty-state">No pages found for this crawl.</div>
-                ) : (
-                  <div className="ww-table-wrap">
-                    <table className="ww-table">
-                      <thead>
-                        <tr>
-                          <th>URL</th>
-                          <th>Status</th>
-                          <th>HTTP Status</th>
-                          <th>Total Issues</th>
-                          <th>Completed At</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pages.map((page) => (
-                          <tr key={page.id}>
-                            <td className="ww-td-url" title={page.url}>{page.url}</td>
-                            <td>
-                              <span className={`ww-status-badge ${crawlStatusClass(page.status)}`}>
-                                {page.status || "—"}
-                              </span>
-                            </td>
-                            <td>{page.http_status ?? "—"}</td>
-                            <td>{page.total_issues ?? (Array.isArray(page.issues) ? page.issues.length : 0)}</td>
-                            <td>{formatDate(page.completed_at)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </>
-            ) : null}
-          </>
-        )}
+    <div className="wc-panel">
+      <div className="wc-panel-header">
+        <span className="wc-panel-title">Crawls · {website.name}</span>
+        <button type="button" className="wc-panel-close" onClick={onClose} title="Hide">
+          ✕
+        </button>
       </div>
+
+      {crawlsLoading ? (
+        <div className="ww-empty-state">Loading crawls…</div>
+      ) : crawlsError ? (
+        <div className="ww-alert ww-alert-error">{crawlsError}</div>
+      ) : crawls.length === 0 ? (
+        <div className="ww-empty-state">
+          No crawls yet for this website. Run a full-site scan to see history here.
+        </div>
+      ) : (
+        <>
+          <label className="ww-field wc-select-field">
+            <span className="ww-field-label">Select Crawl *</span>
+            <select
+              className="ww-input"
+              value={selectedCrawlId}
+              onChange={(e) => setSelectedCrawlId(e.target.value)}
+            >
+              <option value="">— Choose a crawl —</option>
+              {crawls.map((crawl) => (
+                <option key={crawl.crawl_id} value={crawl.crawl_id}>
+                  #{crawl.crawl_id} · {crawl.status} · {crawl.pages_discovered ?? 0} pages · {formatDate(crawl.created_at)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {!selectedCrawlId ? (
+            <div className="ww-empty-state">Select a crawl above to see its results.</div>
+          ) : detailLoading ? (
+            <div className="ww-empty-state">Loading crawl detail…</div>
+          ) : detailError ? (
+            <div className="ww-alert ww-alert-error">{detailError}</div>
+          ) : crawlDetail ? (
+            <>
+              <div className="wc-summary-row">
+                <div className="wc-summary-chip">
+                  <span className="wc-summary-label">Status</span>
+                  <span className={`ww-status-badge ${crawlStatusClass(crawlDetail.status)}`}>
+                    {crawlDetail.status || "UNKNOWN"}
+                  </span>
+                </div>
+                <div className="wc-summary-chip">
+                  <span className="wc-summary-label">Discovery Source</span>
+                  <span className="wc-summary-value">{crawlDetail.discovery_source || "—"}</span>
+                </div>
+                <div className="wc-summary-chip">
+                  <span className="wc-summary-label">Pages Discovered</span>
+                  <span className="wc-summary-value">{crawlDetail.pages_discovered ?? pages.length}</span>
+                </div>
+              </div>
+
+              <div className="ww-card-title-row wc-pages-title-row">
+                <span className="ww-card-title">Pages ({pages.length})</span>
+              </div>
+
+              {pages.length === 0 ? (
+                <div className="ww-empty-state">No pages found for this crawl.</div>
+              ) : (
+                <div className="ww-table-wrap">
+                  <table className="ww-table">
+                    <thead>
+                      <tr>
+                        <th>URL</th>
+                        <th>Status</th>
+                        <th>HTTP Status</th>
+                        <th>Total Issues</th>
+                        <th>Completed At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pages.map((page) => (
+                        <tr key={page.id}>
+                          <td className="ww-td-url" title={page.url}>{page.url}</td>
+                          <td>
+                            <span className={`ww-status-badge ${crawlStatusClass(page.status)}`}>
+                              {page.status || "—"}
+                            </span>
+                          </td>
+                          <td>{page.http_status ?? "—"}</td>
+                          <td>{page.total_issues ?? (Array.isArray(page.issues) ? page.issues.length : 0)}</td>
+                          <td>{formatDate(page.completed_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }
@@ -1083,8 +1286,11 @@ export default function ValidateWeb() {
   const [editError, setEditError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
 
-  // ── Crawls modal ─────────────────────────────────────────────
-  const [crawlsWebsite, setCrawlsWebsite] = useState(null);
+  // ── Inline crawls panel ───────────────────────────────────
+  // Holds the id of the website whose crawls row is currently expanded.
+  // Only one row can be expanded at a time; the panel renders directly
+  // under that website's row, in-line, before the next website's row.
+  const [expandedCrawlsId, setExpandedCrawlsId] = useState(null);
 
   const fetchWebsites = async () => {
     setListLoading(true);
@@ -1178,11 +1384,16 @@ export default function ValidateWeb() {
         throw new Error(res?.errors?.[0]?.message || res?.message || "Failed to delete website.");
       }
       setWebsites((prev) => prev.filter((w) => w.id !== website.id));
+      if (expandedCrawlsId === website.id) setExpandedCrawlsId(null);
     } catch (err) {
       setListError(err.message || "Failed to delete the website. Please try again.");
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const toggleCrawlsRow = (websiteId) => {
+    setExpandedCrawlsId((prev) => (prev === websiteId ? null : websiteId));
   };
 
   // ── Dashboard stats ───────────────────────────────────────
@@ -1339,81 +1550,73 @@ export default function ValidateWeb() {
                           <th>Environment</th>
                           <th>Crawl</th>
                           <th>Status</th>
-                          {/* <th>Last Scan</th> */}
                           <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {websites.map((site) => (
-                          <tr key={site.id}>
-                            <td className="ww-td-name">{site.name}</td>
-                            <td className="ww-td-url">{site.base_url}</td>
-                            <td>{site.environment}</td>
-                            <td>
-                              <span className={`ww-crawl-chip ${site.crawl_enabled ? "on" : "off"}`}>
-                                {site.crawl_enabled ? "Enabled" : "Disabled"}
-                              </span>
-                            </td>
-                            <td>
-                              <span className={`ww-status-badge ${statusClass(site.accessibility_status)}`}>
-                                {site.accessibility_status || "UNKNOWN"}
-                              </span>
-                            </td>
-                            {/* <td>{formatDate(site.last_scan_at)}</td> */}
-                            <td>
-                              <div className="ww-row-actions">
-                                {/* <button
-                                  type="button"
-                                  className="ww-icon-btn"
-                                  title="Scan website"
-                                  aria-label="Scan website"
-                                  onClick={() => navigate(`/scan-website?website_id=${site.id}`)}
-                                >
-                                  🔍
-                                </button> */}
-                                {/* <button
-                                  type="button"
-                                  className="ww-icon-btn"
-                                  title="View crawl history"
-                                  aria-label="View crawl history"
-                                  onClick={() => navigate(`/crawls?website_id=${site.id}`)}
-                                >
-                                  🕓
-                                </button> */}
-                                <button
-                                  type="button"
-                                  className="ww-icon-btn"
-                                  title="View crawls"
-                                  aria-label="View crawls"
-                                  onClick={() => setCrawlsWebsite(site)}
-                                >
-                                  🕓
-                                </button>
-                                <button
-                                  type="button"
-                                  className="ww-icon-btn"
-                                  title="Edit website"
-                                  aria-label="Edit website"
-                                  onClick={() => {
-                                    setEditError("");
-                                    setEditingWebsite(site);
-                                  }}
-                                >
-                                  ✏️
-                                </button>
-                                <button
-                                  type="button"
-                                  className="ww-icon-btn"
-                                  title="Delete website"
-                                  aria-label="Delete website"
-                                  disabled={deletingId === site.id}
-                                  onClick={() => handleDeleteWebsite(site)}
-                                >
-                                  {deletingId === site.id ? "…" : "🗑️"}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
+                          <Fragment key={site.id}>
+                            <tr>
+                              <td className="ww-td-name">{site.name}</td>
+                              <td className="ww-td-url">{site.base_url}</td>
+                              <td>{site.environment}</td>
+                              <td>
+                                <span className={`ww-crawl-chip ${site.crawl_enabled ? "on" : "off"}`}>
+                                  {site.crawl_enabled ? "Enabled" : "Disabled"}
+                                </span>
+                              </td>
+                              <td>
+                                <span className={`ww-status-badge ${statusClass(site.accessibility_status)}`}>
+                                  {site.accessibility_status || "UNKNOWN"}
+                                </span>
+                              </td>
+                              <td>
+                                <div className="ww-row-actions">
+                                  <button
+                                    type="button"
+                                    className={`ww-icon-btn${expandedCrawlsId === site.id ? " active" : ""}`}
+                                    title="View crawls"
+                                    aria-label="View crawls"
+                                    onClick={() => toggleCrawlsRow(site.id)}
+                                  >
+                                    🕓
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="ww-icon-btn"
+                                    title="Edit website"
+                                    aria-label="Edit website"
+                                    onClick={() => {
+                                      setEditError("");
+                                      setEditingWebsite(site);
+                                    }}
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="ww-icon-btn"
+                                    title="Delete website"
+                                    aria-label="Delete website"
+                                    disabled={deletingId === site.id}
+                                    onClick={() => handleDeleteWebsite(site)}
+                                  >
+                                    {deletingId === site.id ? "…" : "🗑️"}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            {expandedCrawlsId === site.id && (
+                              <tr className="wc-inline-row">
+                                <td colSpan={TABLE_COLUMN_COUNT}>
+                                  <WebsiteCrawlsPanel
+                                    website={site}
+                                    onClose={() => setExpandedCrawlsId(null)}
+                                  />
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
                         ))}
                       </tbody>
                     </table>
@@ -1553,13 +1756,6 @@ export default function ValidateWeb() {
           onSave={handleEditSave}
           saving={savingEdit}
           error={editError}
-        />
-      )}
-
-      {crawlsWebsite && (
-        <WebsiteCrawlsModal
-          website={crawlsWebsite}
-          onClose={() => setCrawlsWebsite(null)}
         />
       )}
     </div>

@@ -662,6 +662,54 @@
   margin-bottom: 10px;
 }
 
+/* ─── Inline Crawls Row (dashboard table) ─────────────────────
+   Renders in place of the old modal: an extra table row directly
+   under the website it belongs to, before the next website's row. */
+.wc-inline-row td {
+  padding: 0;
+  border-bottom: 1px solid var(--slate-100);
+  background: var(--slate-50);
+}
+
+.wc-panel {
+  padding: 20px 22px;
+  border-top: 3px solid var(--blue-500);
+}
+
+.wc-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.wc-panel-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.wc-panel-close {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: var(--slate-400);
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px;
+}
+
+.wc-panel-close:hover {
+  color: var(--slate-700);
+}
+
+.ww-icon-btn.active {
+  background: var(--blue-50);
+  border-color: var(--blue-300);
+  color: var(--blue-600);
+}
+
 /* ─── Responsive ───────────────────────────────────────────── */
 @media (max-width: 900px) {
   .ww-kpi-row {

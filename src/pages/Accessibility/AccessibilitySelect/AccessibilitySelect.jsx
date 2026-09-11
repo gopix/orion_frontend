@@ -1,6 +1,5 @@
 
 
-
 // import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { isAdmin } from "../../../utils/auth";
@@ -21,7 +20,9 @@
 // ];
 
 // // Where each (fileType, action) combination should go.
-// // "web" has no dashboard yet, so it's intentionally left out — see handleActionSelect.
+// // "web" only supports Validate (its website management dashboard) —
+// // it has no Remediate flow, so that action is filtered out in
+// // handleActionSelect below before ACTIONS is rendered.
 // const ROUTES = {
 //   "pdf-remediate": "/remediate-pdf",
 //   "pdf-validate": "/validate-pdf",
@@ -29,6 +30,7 @@
 //   "epub-validate": "/validate-epub",
 //   "ppt-validate": "/validate-ppt",
 //   "ppt-remediate": "/remediate-ppt",
+//   "web-validate": "/validate-web",
 // };
 
 // export default function AccessibilitySelect() {
@@ -39,6 +41,9 @@
 //   const [action, setAction]     = useState(null);   // "remediate" | "validate"
 
 //   const fileTypes = userIsAdmin ? [...FILE_TYPES, MIS_TYPE] : FILE_TYPES;
+
+//   // The Web card only ever offers Validate — it has no Remediate flow.
+//   const actions = fileType === "web" ? ACTIONS.filter((act) => act.id === "validate") : ACTIONS;
 
 //   const handleFileTypeSelect = (id) => {
 //     setFileType(id);
@@ -52,12 +57,6 @@
 
 //   const handleActionSelect = (id) => {
 //     setAction(id);
-
-//     // Web has no dashboard yet — surface a heads-up instead of navigating.
-//     if (fileType === "web") {
-//       alert("Dashboard Coming Soon");
-//       return;
-//     }
 
 //     const route = ROUTES[`${fileType}-${id}`];
 //     if (route) navigate(route);
@@ -126,8 +125,8 @@
 //           {fileType && fileType !== "mis" && (
 //             <section className="as-step">
 //               <p className="as-step-label">Step 2 · Action</p>
-//               <div className="as-option-grid as-option-grid-2">
-//                 {ACTIONS.map((act) => (
+//               <div className={`as-option-grid ${actions.length === 1 ? "as-option-grid-1" : "as-option-grid-2"}`}>
+//                 {actions.map((act) => (
 //                   <label
 //                     key={act.id}
 //                     className={`as-option-card${action === act.id ? " as-option-selected" : ""}`}
@@ -175,9 +174,8 @@ const ACTIONS = [
 ];
 
 // Where each (fileType, action) combination should go.
-// "web" only supports Validate (its website management dashboard) —
-// it has no Remediate flow, so that action is filtered out in
-// handleActionSelect below before ACTIONS is rendered.
+// "web" is handled separately in handleFileTypeSelect — it has no
+// Remediate/Validate step of its own, it jumps straight to its dashboard.
 const ROUTES = {
   "pdf-remediate": "/remediate-pdf",
   "pdf-validate": "/validate-pdf",
@@ -185,7 +183,6 @@ const ROUTES = {
   "epub-validate": "/validate-epub",
   "ppt-validate": "/validate-ppt",
   "ppt-remediate": "/remediate-ppt",
-  "web-validate": "/validate-web",
 };
 
 export default function AccessibilitySelect() {
@@ -197,17 +194,26 @@ export default function AccessibilitySelect() {
 
   const fileTypes = userIsAdmin ? [...FILE_TYPES, MIS_TYPE] : FILE_TYPES;
 
-  // The Web card only ever offers Validate — it has no Remediate flow.
-  const actions = fileType === "web" ? ACTIONS.filter((act) => act.id === "validate") : ACTIONS;
-
   const handleFileTypeSelect = (id) => {
-    setFileType(id);
-    setAction(null);
-
     // MIS has no Remediate/Validate step — it goes straight to the report.
     if (id === "mis") {
+      setFileType(id);
+      setAction(null);
       navigate("/mis-pdf");
+      return;
     }
+
+    // Web has no Remediate/Validate step either — it goes straight to its
+    // accessibility dashboard, skipping the unnecessary "Validate" card.
+    if (id === "web") {
+      setFileType(id);
+      setAction(null);
+      navigate("/validate-web");
+      return;
+    }
+
+    setFileType(id);
+    setAction(null);
   };
 
   const handleActionSelect = (id) => {
@@ -277,11 +283,11 @@ export default function AccessibilitySelect() {
             </div>
           </section>
 
-          {fileType && fileType !== "mis" && (
+          {fileType && fileType !== "mis" && fileType !== "web" && (
             <section className="as-step">
               <p className="as-step-label">Step 2 · Action</p>
-              <div className={`as-option-grid ${actions.length === 1 ? "as-option-grid-1" : "as-option-grid-2"}`}>
-                {actions.map((act) => (
+              <div className="as-option-grid as-option-grid-2">
+                {ACTIONS.map((act) => (
                   <label
                     key={act.id}
                     className={`as-option-card${action === act.id ? " as-option-selected" : ""}`}
