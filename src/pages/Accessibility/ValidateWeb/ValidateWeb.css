@@ -662,6 +662,216 @@
   margin-bottom: 10px;
 }
 
+/* ─── Crawl Select — Custom Dropdown ──────────────────────────
+   Replaces the native <select> so each crawl can be rendered as
+   a rich row: highlighted Crawl ID badge + status + meta. */
+.wc-crawl-dropdown {
+  position: relative;
+}
+
+.wc-crawl-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--white);
+  border: 1.5px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.wc-crawl-trigger:hover {
+  border-color: var(--blue-300);
+}
+
+.wc-crawl-trigger.open {
+  border-color: var(--blue-400);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.wc-crawl-trigger-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.wc-crawl-trigger-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--slate-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wc-crawl-trigger-placeholder {
+  font-size: 13.5px;
+  color: var(--slate-400);
+  font-weight: 500;
+}
+
+.wc-crawl-caret {
+  color: var(--slate-400);
+  font-size: 11px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.wc-crawl-trigger.open .wc-crawl-caret {
+  transform: rotate(180deg);
+  color: var(--blue-500);
+}
+
+.wc-crawl-id-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--blue-600), var(--navy-700));
+  box-shadow: 0 2px 5px rgba(29,78,216,0.28);
+}
+
+.wc-crawl-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--white);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  list-style: none;
+  margin: 0;
+}
+
+.wc-crawl-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.wc-crawl-option + .wc-crawl-option {
+  margin-top: 2px;
+}
+
+.wc-crawl-option:hover {
+  background: var(--blue-50);
+}
+
+.wc-crawl-option.selected {
+  background: var(--blue-50);
+  outline: 1.5px solid var(--blue-200);
+}
+
+.wc-crawl-option-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.wc-crawl-option-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wc-crawl-option-source {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--slate-500);
+  text-transform: capitalize;
+}
+
+.wc-crawl-option-meta {
+  font-size: 11.5px;
+  color: var(--slate-400);
+  font-weight: 500;
+}
+
+.wc-crawl-check {
+  flex-shrink: 0;
+  color: var(--blue-600);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* ─── Page Issues Cell ─────────────────────────────────────── */
+.wc-pages-table td {
+  vertical-align: top;
+}
+
+.wc-issue-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: 260px;
+}
+
+.wc-issue-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.wc-issue-chip-more {
+  background: var(--slate-100);
+  color: var(--slate-500);
+}
+
+.wc-sev-critical { background: #fee2e2; color: #dc2626; }
+.wc-sev-serious  { background: #ffedd5; color: #c2410c; }
+.wc-sev-moderate { background: #dbeafe; color: #1d4ed8; }
+.wc-sev-minor    { background: var(--slate-100); color: var(--slate-500); }
+.wc-sev-unknown  { background: var(--slate-100); color: var(--slate-500); }
+
+.wc-no-issue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.wc-no-issue-dot {
+  font-size: 10px;
+  line-height: 1;
+}
+
 /* ─── Inline Crawls Row (dashboard table) ─────────────────────
    Renders in place of the old modal: an extra table row directly
    under the website it belongs to, before the next website's row. */
