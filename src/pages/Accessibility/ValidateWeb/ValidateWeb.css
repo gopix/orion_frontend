@@ -234,7 +234,7 @@
 .ww-kpi-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
@@ -242,7 +242,7 @@
   background: #fff;
   border: 1px solid var(--slate-200);
   border-radius: var(--radius);
-  padding: 18px 20px;
+  padding: 13px 16px;
   box-shadow: var(--shadow-sm);
   border-top: 3px solid var(--blue-500);
 }
@@ -253,23 +253,16 @@
 .ww-kpi-card.ww-kpi-navy  { border-top-color: var(--navy-700); }
 
 .ww-kpi-label {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--slate-500);
-  margin-bottom: 8px;
-}
-
-.ww-kpi-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--slate-900);
   margin-bottom: 6px;
 }
 
-.ww-kpi-sub {
-  font-size: 11.5px;
-  color: var(--slate-400);
-  font-weight: 500;
+.ww-kpi-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--slate-900);
 }
 
 /* ─── Card ─────────────────────────────────────────────────── */
@@ -665,10 +658,6 @@
   background: var(--slate-50);
 }
 
-.wc-crawl-row-active {
-  background: var(--blue-50);
-}
-
 .wc-crawl-id-badge {
   display: inline-flex;
   align-items: center;
@@ -704,19 +693,12 @@
   border-color: var(--blue-400);
 }
 
-.wc-review-btn.active {
-  background: var(--blue-600);
-  border-color: var(--blue-600);
-  color: var(--white);
-}
-
 /* ─── Crawl Detail Section ─────────────────────────────────────
-   Renders directly beneath the crawls table once "Review" is
-   clicked on a row — summary chips + the pages/issues table. */
+   Replaces the crawls table in the panel body once "Review" is
+   clicked — summary chips + the pages/issues table. The back
+   arrow in the panel header returns to the crawls table. */
 .wc-detail-section {
-  margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px dashed var(--slate-200);
+  padding-top: 2px;
 }
 
 /* ─── Page Issues Cell ─────────────────────────────────────── */
@@ -796,6 +778,9 @@
 }
 
 .wc-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 14.5px;
   font-weight: 700;
   color: var(--slate-900);
@@ -813,6 +798,91 @@
 
 .wc-panel-close:hover {
   color: var(--slate-700);
+}
+
+/* ─── Panel body ────────────────────────────────────────────
+   Keeps the crawl list / crawl detail contained to a fixed max
+   height with its own scrollbar, so opening "View crawls" (and
+   reviewing a crawl) never forces the whole page to scroll. */
+.wc-panel-body {
+  max-height: 460px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* ─── Back arrow (detail view → crawl list) ────────────────── */
+.wc-back-arrow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: var(--blue-50);
+  border: 1.5px solid var(--blue-200);
+  border-radius: 7px;
+  color: var(--blue-600);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.wc-back-arrow-btn:hover {
+  background: var(--blue-100);
+  border-color: var(--blue-300);
+}
+
+/* ─── Run New Crawl ─────────────────────────────────────────
+   Icon + button that kicks off a fresh full-site crawl from the
+   crawl-list view of the panel. */
+.wc-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.wc-run-crawl-alert {
+  flex: 1 1 220px;
+  margin: 0;
+}
+
+.wc-run-crawl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--blue-600);
+  border: 1.5px solid var(--blue-600);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(29,78,216,0.25);
+}
+
+.wc-run-crawl-btn:hover:not(:disabled) {
+  background: var(--blue-500);
+  border-color: var(--blue-500);
+}
+
+.wc-run-crawl-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.wc-run-crawl-icon {
+  display: inline-flex;
+  font-size: 14px;
+  line-height: 1;
 }
 
 .ww-icon-btn.active {
