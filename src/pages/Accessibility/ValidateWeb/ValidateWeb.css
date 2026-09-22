@@ -853,24 +853,61 @@
   box-shadow: var(--shadow-sm);
 }
 
-.wc-issue-detail-head {
+/* ─── Issue detail card — 6-field layout ───────────────────────
+   Left column: Issue (title, description, element selector).
+   Right column: Code Snippet (HTML) with Category / WCAG tags.
+   Footer row: Issue Level + Issue Status. */
+.wc-issue-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.4fr);
+  gap: 18px;
+}
+
+.wc-issue-col-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--slate-400);
+  margin-bottom: 6px;
+}
+
+.wc-issue-col-right-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 8px;
   margin-bottom: 8px;
 }
 
-.wc-issue-index {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--slate-400);
+.wc-issue-tag-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.wc-issue-rule {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11.5px;
+.wc-issue-tag {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 10px;
+  background: var(--blue-50);
+  border: 1px solid var(--blue-200);
+  border-radius: var(--radius-xs);
+}
+
+.wc-issue-tag-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--blue-500);
+}
+
+.wc-issue-tag-value {
+  font-size: 11px;
   font-weight: 700;
   color: var(--navy-700);
 }
@@ -918,37 +955,34 @@
   word-break: break-word;
 }
 
-.wc-issue-meta-row {
+.wc-issue-footer-row {
   display: flex;
+  gap: 28px;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--slate-100);
 }
 
-.wc-issue-meta {
-  display: inline-flex;
+.wc-issue-footer-item {
+  display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 5px 10px;
-  background: var(--slate-50);
-  border: 1px solid var(--slate-200);
-  border-radius: var(--radius-xs);
+  gap: 6px;
 }
 
-.wc-issue-meta-label {
-  font-size: 9.5px;
+.wc-issue-footer-label {
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--slate-400);
 }
 
-.wc-issue-meta-value {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--slate-700);
+@media (max-width: 640px) {
+  .wc-issue-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
-
 
 .wc-sev-critical { background: #fee2e2; color: #dc2626; }
 .wc-sev-serious  { background: #ffedd5; color: #c2410c; }
@@ -973,6 +1007,13 @@
 .wc-no-issue-dot {
   font-size: 10px;
   line-height: 1;
+}
+
+/* ─── Crawls list · Issue column ─────────────────────────────── */
+.wc-crawl-issue-loading {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--slate-400);
 }
 
 /* ─── Inline Crawls Row (dashboard table) ─────────────────────
