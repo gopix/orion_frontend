@@ -35,6 +35,24 @@
 
 * { box-sizing: border-box; }
 
+/* ─── Cursor reset ─────────────────────────────────────────────
+   The global stylesheet sets `cursor: pointer` on every element,
+   which made plain text, cards and table cells on this dashboard
+   look clickable. Reset to the normal cursor here, then restore
+   `pointer` only on the elements that are actually clickable
+   (nav items, icon buttons, action buttons, checkboxes, chips
+   used as buttons). Placed early in the cascade so the existing
+   pointer rules further down this file still win. ─────────────── */
+.ww-page * {
+  cursor: default;
+}
+
+.ww-page input,
+.ww-page textarea,
+.ww-page select {
+  cursor: text;
+}
+
 /* ─── Page ─────────────────────────────────────────────────── */
 .ww-page {
   display: flex;
@@ -853,14 +871,20 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* ─── Issue detail card — 6-field layout ───────────────────────
-   Left column: Issue (title, description, element selector).
-   Right column: Code Snippet (HTML) with Category / WCAG tags.
-   Footer row: Issue Level + Issue Status. */
+/* ─── Issue detail card — single-row layout ─────────────────────
+   Issue, Code Snippet, Issue Level and Issue Status all sit on the
+   same line. Flex-wrap lets it fold onto new lines on narrow
+   screens instead of forcing Level/Status into a separate row. */
 .wc-issue-detail-grid {
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.4fr);
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 18px;
+}
+
+.wc-issue-detail-grid .wc-issue-col {
+  flex: 1 1 300px;
+  min-width: 220px;
 }
 
 .wc-issue-col-label {
@@ -955,19 +979,12 @@
   word-break: break-word;
 }
 
-.wc-issue-footer-row {
-  display: flex;
-  gap: 28px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--slate-100);
-}
-
 .wc-issue-footer-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex: 0 0 auto;
+  min-width: 110px;
 }
 
 .wc-issue-footer-label {
@@ -979,8 +996,9 @@
 }
 
 @media (max-width: 640px) {
-  .wc-issue-detail-grid {
-    grid-template-columns: 1fr;
+  .wc-issue-detail-grid .wc-issue-col,
+  .wc-issue-footer-item {
+    flex-basis: 100%;
   }
 }
 
