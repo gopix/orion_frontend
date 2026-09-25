@@ -121,9 +121,7 @@
 //             </div>
 //           )}
 //         </div>
-//       </div>
 
-//       <div className="wc-issue-footer-row">
 //         <div className="wc-issue-footer-item">
 //           <span className="wc-issue-footer-label">Issue Level</span>
 //           <span className={`wc-issue-chip ${issueSeverityClass(issue.severity)}`}>
@@ -1186,10 +1184,6 @@ import "./ValidateWeb.css";
 
 const ENVIRONMENTS = ["PRODUCTION", "STAGING", "DEVELOPMENT", "TESTING"];
 
-// Number of columns in the websites table — used for the inline crawls
-// panel's colSpan so it stretches the full width of the row below it.
-const TABLE_COLUMN_COUNT = 5;
-
 // Number of columns in the crawl-detail pages table — used as the colSpan of
 // the expanded issue-details row so it stretches the full table width.
 const PAGES_TABLE_COLUMN_COUNT = 5;
@@ -1310,9 +1304,9 @@ function IssueDetailCard({ issue }) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   INLINE WEBSITE CRAWLS PANEL
-   Renders directly inside the dashboard table (as an extra row
-   under the website it belongs to) instead of a modal.
+   WEBSITE CRAWLS PANEL
+   Renders on the dashboard in place of the Registered Websites
+   table, directly below the KPI cards.
    Step 1: GET /websites/{website_id}/crawls        → crawl list
    Step 2: GET /websites/{website_id}/crawls/{id}    → crawl detail
    ════════════════════════════════════════════════════════════ */
@@ -1853,10 +1847,10 @@ export default function ValidateWeb() {
   const [editError, setEditError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
 
-  // ── Inline crawls panel ───────────────────────────────────
-  // Holds the id of the website whose crawls row is currently expanded.
-  // Only one row can be expanded at a time; the panel renders directly
-  // under that website's row, in-line, before the next website's row.
+  // ── Crawls panel ──────────────────────────────────────────
+  // Holds the id of the website whose crawls / issues are being viewed.
+  // While set, the Registered Websites table is hidden and the panel is
+  // shown directly below the KPI cards.
   const [expandedCrawlsId, setExpandedCrawlsId] = useState(null);
 
   const fetchWebsites = async () => {
@@ -1967,10 +1961,6 @@ export default function ValidateWeb() {
     }
   };
 
-  const toggleCrawlsRow = (websiteId) => {
-    setExpandedCrawlsId((prev) => (prev === websiteId ? null : websiteId));
-  };
-
   // ── Dashboard stats ───────────────────────────────────────
   const totalWebsites = websites.length;
   const runningWebsites = websites.filter((w) => w.crawl_enabled).length;
@@ -1978,6 +1968,8 @@ export default function ValidateWeb() {
     ["done", "pass", "passed"].includes((w.accessibility_status || "").toLowerCase())
   ).length;
   const productionSites = websites.filter((w) => w.environment === "PRODUCTION").length;
+
+  const expandedWebsite = websites.find((w) => w.id === expandedCrawlsId) || null;
 
   return (
     <div className="ww-page">
@@ -2085,43 +2077,60 @@ export default function ValidateWeb() {
                 </div>
               </div>
 
-              <div className="ww-card">
-                <div className="ww-card-title-row">
-                  <span className="ww-card-title">🌐 Registered Websites</span>
+              {expandedWebsite ? (
+                <>
                   <button
                     type="button"
-                    className="ww-refresh-btn"
-                    onClick={fetchWebsites}
-                    title="Refresh from server"
+                    className="ww-btn-ghost wc-back-to-sites-btn"
+                    onClick={() => setExpandedCrawlsId(null)}
                   >
-                    🔄
+                    ← Back to Registered Websites
                   </button>
-                </div>
 
-                {listError && <div className="ww-alert ww-alert-error">{listError}</div>}
+                  <div className="ww-card wc-panel-card">
+                    <WebsiteCrawlsPanel
+                      website={expandedWebsite}
+                      onClose={() => setExpandedCrawlsId(null)}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="ww-card">
+                  <div className="ww-card-title-row">
+                    <span className="ww-card-title">🌐 Registered Websites</span>
+                    <button
+                      type="button"
+                      className="ww-refresh-btn"
+                      onClick={fetchWebsites}
+                      title="Refresh from server"
+                    >
+                      🔄
+                    </button>
+                  </div>
 
-                <div className="ww-table-wrap">
-                  {listLoading ? (
-                    <div className="ww-empty-state">Loading websites…</div>
-                  ) : websites.length === 0 ? (
-                    <div className="ww-empty-state">
-                      No websites registered yet. Click “New Website” to add one.
-                    </div>
-                  ) : (
-                    <table className="ww-table">
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th>Base URL</th>
-                          <th>Environment</th>
-                          <th>Crawl</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {websites.map((site) => (
-                          <Fragment key={site.id}>
-                            <tr>
+                  {listError && <div className="ww-alert ww-alert-error">{listError}</div>}
+
+                  <div className="ww-table-wrap">
+                    {listLoading ? (
+                      <div className="ww-empty-state">Loading websites…</div>
+                    ) : websites.length === 0 ? (
+                      <div className="ww-empty-state">
+                        No websites registered yet. Click “New Website” to add one.
+                      </div>
+                    ) : (
+                      <table className="ww-table">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Base URL</th>
+                            <th>Environment</th>
+                            <th>Crawl</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {websites.map((site) => (
+                            <tr key={site.id}>
                               <td className="ww-td-name">{site.name}</td>
                               <td className="ww-td-url">{site.base_url}</td>
                               <td>{site.environment}</td>
@@ -2134,10 +2143,10 @@ export default function ValidateWeb() {
                                 <div className="ww-row-actions">
                                   <button
                                     type="button"
-                                    className={`ww-icon-btn${expandedCrawlsId === site.id ? " active" : ""}`}
+                                    className="ww-icon-btn"
                                     title="View crawls"
                                     aria-label="View crawls"
-                                    onClick={() => toggleCrawlsRow(site.id)}
+                                    onClick={() => setExpandedCrawlsId(site.id)}
                                   >
                                     🕓
                                   </button>
@@ -2166,23 +2175,13 @@ export default function ValidateWeb() {
                                 </div>
                               </td>
                             </tr>
-                            {expandedCrawlsId === site.id && (
-                              <tr className="wc-inline-row">
-                                <td colSpan={TABLE_COLUMN_COUNT}>
-                                  <WebsiteCrawlsPanel
-                                    website={site}
-                                    onClose={() => setExpandedCrawlsId(null)}
-                                  />
-                                </td>
-                              </tr>
-                            )}
-                          </Fragment>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           ) : (
             <>

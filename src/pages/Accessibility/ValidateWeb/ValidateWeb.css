@@ -1034,12 +1034,28 @@
   color: var(--slate-400);
 }
 
-/* ─── Inline Crawls Row (dashboard table) ─────────────────────
-   Renders in place of the old modal: an extra table row directly
-   under the website it belongs to, before the next website's row. */
-.wc-inline-row td {
+/* ─── Crawls Panel (dashboard) ────────────────────────────────
+   Shown directly below the KPI cards in place of the Registered
+   Websites table, with a back button to return to that table. */
+.wc-back-to-sites-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 14px;
+  background: #fff;
+  color: var(--blue-600);
+  border-color: var(--blue-200);
+}
+
+.wc-back-to-sites-btn:hover:not(:disabled) {
+  background: var(--blue-50);
+  border-color: var(--blue-300);
+}
+
+.wc-panel-card {
   padding: 0;
-  border-bottom: 1px solid var(--slate-100);
+  overflow: hidden;
   background: var(--slate-50);
 }
 
