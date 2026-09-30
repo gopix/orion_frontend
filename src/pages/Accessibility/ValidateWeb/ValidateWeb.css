@@ -859,7 +859,8 @@
 .wc-issue-detail-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
+  padding-bottom: 6px;
 }
 
 .wc-issue-detail {
@@ -867,7 +868,7 @@
   border: 1px solid var(--slate-200);
   border-left: 3px solid var(--blue-500);
   border-radius: var(--radius-sm);
-  padding: 10px 14px;
+  padding: 16px 18px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -879,7 +880,7 @@
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 18px;
 }
 
 .wc-issue-detail-grid .wc-issue-col {
