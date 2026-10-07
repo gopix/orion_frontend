@@ -2,6 +2,11 @@
 
 
 
+
+
+
+
+
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 // // ── Auth ─────────────────────────────────────────────────────
@@ -791,6 +796,26 @@
 //   return response.json();
 // };
 
+// // GET /api/v1/web-accessibility/websites/{website_id}/crawls/{crawl_id}  (Get Website Crawl)
+// // Get one crawl run's page-wise detail, scoped to this website — every page that
+// // crawl discovered, each with its own embedded "issues" list. status/severity/rule_code
+// // optionally filter those embedded issues the same way GET /scans/{scan_id} does.
+// export const getWebsiteCrawlDetail = async (websiteId, crawlId, filters = {}) => {
+//   const params = new URLSearchParams();
+//   if (filters.status) params.append("status", filters.status);
+//   if (filters.severity) params.append("severity", filters.severity);
+//   if (filters.rule_code) params.append("rule_code", filters.rule_code);
+//   const query = params.toString();
+//   const response = await fetch(
+//     `${BASE_URL}/web-accessibility/websites/${websiteId}/crawls/${crawlId}${query ? `?${query}` : ""}`,
+//     {
+//       method: "GET",
+//       headers: { "Accept": "application/json" }
+//     }
+//   );
+//   return response.json();
+// };
+
 // // GET /api/v1/web-accessibility/scans/{scan_id}  (Get Scan)
 // // Returns one page's own scan — status/results, with its issues embedded
 // // inline (there is no separate .../issues endpoint). status/severity/rule_code
@@ -812,20 +837,40 @@
 //   return response.json();
 // };
 
+// // ── Editor+: Customers ──────────────────────────────────────────
+
+// // POST /api/v1/editor/customers  (Create Customer)
+// // Body: { customer_name, customer_address, phone_no, email_id }
+// // Returns: response_code 201, message, data { id, customer_name, customer_address,
+// //          phone_no, email_id, created_at, updated_at }, errors
+// export const createCustomer = async (payload) => {
+//   const response = await fetch(`${BASE_URL}/editor/customers`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify(payload)
+//   });
+//   return response.json();
+// };
+
+// // GET /api/v1/editor/customers  (Get All Customers)
+// // Query params: search (name, email or phone), skip (min 0), limit (1-500)
+// // Returns: response_code 200, message, data { total, skip, limit, items: [...] }, errors
+// export const getCustomers = async (skip = 0, limit = 100, search = "") => {
+//   const params = new URLSearchParams({ skip, limit });
+//   if (search) params.append("search", search);
+//   const response = await fetch(`${BASE_URL}/editor/customers?${params.toString()}`, {
+//     method: "GET",
+//     headers: { "Accept": "application/json" }
+//   });
+//   return response.json();
+// };
+ 
 
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 // ── Auth ─────────────────────────────────────────────────────
 
-// export const registerUser = async (email, password) => {
-//   const response = await fetch(`${BASE_URL}/auth/register`, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({ email, password })
-//   });
-//   return response.json();
-// };
 export const registerUser = async (userName, email, password, organizationId) => {
   const response = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
@@ -850,16 +895,6 @@ export const loginUser = async (email, password) => {
 };
 
 
-// // ── Master Setup ─────────────────────────────────────────────
-
-// // GET all organizations  (GET /api/v1/master-setup/organizations)
-// export const getOrganizations = async () => {
-//   const response = await fetch(`${BASE_URL}/master-setup/organizations`, {
-//     method: "GET",
-//     headers: { "Content-Type": "application/json" }
-//   });
-//   return response.json();
-// };
 
 // ── Template ─────────────────────────────────────────────────
 
@@ -1642,4 +1677,60 @@ export const getScan = async (scanId, filters = {}) => {
     }
   );
   return response.json();
+};
+
+// ── Editor+: Customers ──────────────────────────────────────────
+
+// POST /api/v1/editor/customers  (Create Customer)
+// Body: { customer_name, customer_address, phone_no, email_id }
+// Returns: response_code 201, message, data { id, customer_name, customer_address,
+//          phone_no, email_id, created_at, updated_at }, errors
+export const createCustomer = async (payload) => {
+  const response = await fetch(`${BASE_URL}/editor/customers`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  return response.json();
+};
+
+// GET /api/v1/editor/customers  (Get All Customers)
+// Query params: search (name, email or phone), skip (min 0), limit (1-500)
+// Returns: response_code 200, message, data { total, skip, limit, items: [...] }, errors
+export const getCustomers = async (skip = 0, limit = 100, search = "") => {
+  const params = new URLSearchParams({ skip, limit });
+  if (search) params.append("search", search);
+  const response = await fetch(`${BASE_URL}/editor/customers?${params.toString()}`, {
+    method: "GET",
+    headers: { "Accept": "application/json" }
+  });
+  return response.json();
+};
+ 
+
+// PUT /api/v1/editor/customers/{customer_id}  (Update Customer)
+// Body: any of { customer_name, customer_address, phone_no, email_id } — only fields sent are changed
+// Returns: response_code 200, message, data { id, customer_name, ... , updated_at }, errors
+export const updateCustomer = async (customerId, payload) => {
+  const response = await fetch(`${BASE_URL}/editor/customers/${customerId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  return response.json();
+};
+
+// DELETE /api/v1/editor/customers/{customer_id}  (Delete Customer)
+// Returns: response_code, message, data, errors
+export const deleteCustomer = async (customerId) => {
+  const response = await fetch(`${BASE_URL}/editor/customers/${customerId}`, {
+    method: "DELETE",
+    headers: { "Accept": "application/json" }
+  });
+  const text = await response.text();
+  try {
+    return text ? JSON.parse(text) : { response_code: response.status };
+  } catch {
+    return { response_code: response.status, message: text };
+  }
 };
