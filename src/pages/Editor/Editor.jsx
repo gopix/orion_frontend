@@ -5,7 +5,14 @@
 // import { useNavigate } from "react-router-dom";
 // import "./Editor.css";
 // import { isAdmin } from "../../utils/auth";
-// import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from "../../services/apiServices";
+// import {
+//   getCustomers,
+//   createCustomer,
+//   updateCustomer,
+//   deleteCustomer,
+//   getProjects,
+//   createProject,
+// } from "../../services/apiServices";
 
 // /* ────────────────────────────────────────────────────────────
 //    Small shared helpers
@@ -433,7 +440,6 @@
 //                   <th>Email</th>
 //                   <th>Address</th>
 //                   <th>Created At</th>
-//                   <th>Updated At</th>
 //                   <th className="pt-col-actions">Actions</th>
 //                 </tr>
 //               </thead>
@@ -446,7 +452,6 @@
 //                     <td>{c.email_id || "—"}</td>
 //                     <td className="pt-cell-truncate" title={c.customer_address || ""}>{c.customer_address || "—"}</td>
 //                     <td>{formatDateTime(c.created_at)}</td>
-//                     <td>{formatDateTime(c.updated_at)}</td>
 //                     <td className="pt-col-actions">
 //                       <button type="button" className="pt-icon-btn" title="Edit" onClick={() => handleEdit(c)}>✏️</button>
 //                       <button type="button" className="pt-icon-btn" title="Delete" onClick={() => openDelete(c)}>🗑️</button>
@@ -455,12 +460,12 @@
 //                 ))}
 //                 {loading && customers.length === 0 && (
 //                   <tr>
-//                     <td colSpan={8} className="pt-empty-row">Loading customers…</td>
+//                     <td colSpan={7} className="pt-empty-row">Loading customers…</td>
 //                   </tr>
 //                 )}
 //                 {!loading && customers.length === 0 && (
 //                   <tr>
-//                     <td colSpan={8} className="pt-empty-row">No customers found.</td>
+//                     <td colSpan={7} className="pt-empty-row">No customers found.</td>
 //                   </tr>
 //                 )}
 //               </tbody>
@@ -536,14 +541,23 @@
 // /* ════════════════════════════════════════════════════════════
 //    PROJECTS SECTION
 //    ════════════════════════════════════════════════════════════ */
-// function ProjectsSection({ projects, setProjects }) {
-//   const emptyForm = { id: null, name: "", customerId: "", projectManager: "", description: "" };
+// function ProjectsSection({ setProjects }) {
+//   const emptyForm = { name: "", customerId: "", projectManager: "", description: "" };
 //   const [subTab, setSubTab] = useState("list");
 //   const [form, setForm] = useState(emptyForm);
 //   const [search, setSearch] = useState("");
+//   const [debouncedSearch, setDebouncedSearch] = useState("");
 //   const [page, setPage] = useState(1);
 //   const [rowsPerPage, setRowsPerPage] = useState(10);
 //   const [sortAsc, setSortAsc] = useState(true);
+//   const [projectRows, setProjectRows] = useState([]);
+//   const [total, setTotal] = useState(0);
+//   const [loading, setLoading] = useState(false);
+//   const [listError, setListError] = useState("");
+//   const [saving, setSaving] = useState(false);
+//   const [formError, setFormError] = useState("");
+//   const [notice, setNotice] = useState("");
+//   const [reloadKey, setReloadKey] = useState(0);
 //   const [customers, setCustomers] = useState([]);
 
 //   useEffect(() => {
@@ -558,79 +572,156 @@
 //     };
 //   }, []);
 
-//   const customerName = (id) => customers.find((c) => c.id === Number(id))?.customer_name || "—";
+//   useEffect(() => {
+//     const timer = setTimeout(() => {
+//       setDebouncedSearch(search.trim());
+//       setPage(1);
+//     }, 400);
+//     return () => clearTimeout(timer);
+//   }, [search]);
 
-//   const filtered = useMemo(() => {
-//     const term = search.trim().toLowerCase();
-//     let rows = projects;
-//     if (term) {
-//       rows = rows.filter(
-//         (p) =>
-//           p.name.toLowerCase().includes(term) ||
-//           customerName(p.customerId).toLowerCase().includes(term) ||
-//           (p.projectManager || "").toLowerCase().includes(term)
-//       );
-//     }
-//     rows = [...rows].sort((a, b) => (sortAsc ? a.id - b.id : b.id - a.id));
-//     return rows;
+//   useEffect(() => {
+//     let cancelled = false;
+
+//     const loadProjects = async () => {
+//       setLoading(true);
+//       setListError("");
+//       try {
+//         const res = await getProjects((page - 1) * rowsPerPage, rowsPerPage, debouncedSearch);
+//         if (cancelled) return;
+//         if (res?.response_code === 200 && res.data) {
+//           const items = res.data.items || [];
+//           setProjectRows(items);
+//           setTotal(res.data.total || 0);
+
+//           // Keep the shared project list (used by Templates and Copy Edit) in sync with the API.
+//           setProjects((prev) => {
+//             const next = [...prev];
+//             items.forEach((p) => {
+//               const mapped = {
+//                 id: p.project_id,
+//                 name: p.project_name,
+//                 customerId: p.customer_id,
+//                 projectManager: p.project_manager || "",
+//                 description: p.project_description || "",
+//                 createdAt: formatDateTime(p.created_at),
+//                 createdBy: p.created_by,
+//               };
+//               const idx = next.findIndex((x) => x.id === mapped.id);
+//               if (idx === -1) next.push(mapped);
+//               else next[idx] = { ...next[idx], ...mapped };
+//             });
+//             return next;
+//           });
+//         } else {
+//           setListError(extractError(res, "Failed to load projects."));
+//         }
+//       } catch {
+//         if (!cancelled) setListError("Unable to reach the server. Please try again.");
+//       } finally {
+//         if (!cancelled) setLoading(false);
+//       }
+//     };
+
+//     loadProjects();
+//     return () => {
+//       cancelled = true;
+//     };
 //     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [projects, search, sortAsc, customers]);
+//   }, [page, rowsPerPage, debouncedSearch, reloadKey]);
 
-//   const { pageRows, total, totalPages, safePage, start, end } = paginateData(filtered, page, rowsPerPage);
+//   useEffect(() => {
+//     if (!notice) return undefined;
+//     const timer = setTimeout(() => setNotice(""), 4000);
+//     return () => clearTimeout(timer);
+//   }, [notice]);
 
-//   const resetForm = () => setForm(emptyForm);
+//   const sortedRows = useMemo(
+//     () => [...projectRows].sort((a, b) => (sortAsc ? a.project_id - b.project_id : b.project_id - a.project_id)),
+//     [projectRows, sortAsc]
+//   );
 
-//   const handleSave = () => {
-//     if (!form.name.trim() || !form.customerId) return;
-//     if (form.id == null) {
-//       const newProject = {
-//         id: nextId(),
-//         name: form.name.trim(),
-//         customerId: Number(form.customerId),
-//         projectManager: form.projectManager.trim(),
-//         description: form.description.trim(),
-//         createdAt: todayStr(),
-//         createdBy: currentUser(),
-//       };
-//       setProjects((prev) => [newProject, ...prev]);
-//     } else {
-//       setProjects((prev) => prev.map((p) => (p.id === form.id ? { ...p, ...form, customerId: Number(form.customerId) } : p)));
+//   const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+//   const start = total === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+//   const end = Math.min((page - 1) * rowsPerPage + projectRows.length, total);
+
+//   const resetForm = () => {
+//     setForm(emptyForm);
+//     setFormError("");
+//   };
+
+//   const handleSave = async () => {
+//     const name = form.name.trim();
+//     if (!name) {
+//       setFormError("Project name is required.");
+//       return;
 //     }
-//     resetForm();
-//     setSubTab("list");
-//   };
+//     if (!form.customerId) {
+//       setFormError("Please select a customer.");
+//       return;
+//     }
 
-//   const handleEdit = (p) => {
-//     setForm({ id: p.id, name: p.name, customerId: String(p.customerId), projectManager: p.projectManager, description: p.description });
-//     setSubTab("form");
-//   };
+//     const payload = {
+//       project_name: name,
+//       customer_id: Number(form.customerId),
+//       created_by: Number(sessionStorage.getItem("token")) || 0,
+//     };
+//     if (form.description.trim()) payload.project_description = form.description.trim();
+//     if (form.projectManager.trim()) payload.project_manager = form.projectManager.trim();
 
-//   const handleDelete = (id) => setProjects((prev) => prev.filter((p) => p.id !== id));
+//     setSaving(true);
+//     setFormError("");
+//     try {
+//       const res = await createProject(payload);
+//       if (res?.response_code === 201 || res?.response_code === 200) {
+//         setNotice(`Project "${res.data?.project_name || name}" created successfully.`);
+//         resetForm();
+//         setSearch("");
+//         setDebouncedSearch("");
+//         setPage(1);
+//         setReloadKey((k) => k + 1);
+//         setSubTab("list");
+//       } else {
+//         setFormError(extractError(res, "Failed to create project."));
+//       }
+//     } catch {
+//       setFormError("Unable to reach the server. Please try again.");
+//     } finally {
+//       setSaving(false);
+//     }
+//   };
 
 //   return (
 //     <div className="pt-card">
 //       <SubTabs
 //         tabs={[
 //           { key: "list", label: "Projects List" },
-//           { key: "form", label: "Add Or Update Project" },
+//           { key: "form", label: "Add New Project" },
 //         ]}
 //         active={subTab}
 //         onChange={(k) => {
-//           if (k === "form" && form.id == null) resetForm();
+//           if (k === "form") resetForm();
 //           setSubTab(k);
 //         }}
 //       />
 
 //       {subTab === "list" && (
 //         <div className="pt-panel">
+//           {notice && <div className="pt-alert pt-alert-success">{notice}</div>}
+//           {listError && (
+//             <div className="pt-alert pt-alert-error">
+//               <span>{listError}</span>
+//               <button type="button" className="pt-alert-action" onClick={() => setReloadKey((k) => k + 1)}>
+//                 Retry
+//               </button>
+//             </div>
+//           )}
+
 //           <SearchBox
 //             label="Search for projects"
-//             placeholder="Search"
+//             placeholder="Filter by project name or manager"
 //             value={search}
-//             onChange={(v) => {
-//               setSearch(v);
-//               setPage(1);
-//             }}
+//             onChange={setSearch}
 //           />
 
 //           <div className="pt-table-wrap">
@@ -644,76 +735,76 @@
 //                   <th>Project Manager</th>
 //                   <th>Created At</th>
 //                   <th>Created By</th>
-//                   <th className="pt-col-actions">Actions</th>
 //                 </tr>
 //               </thead>
 //               <tbody>
-//                 {pageRows.map((p) => (
-//                   <tr key={p.id}>
-//                     <td>{p.id}</td>
-//                     <td className="pt-cell-strong">{p.name}</td>
-//                     <td>{customerName(p.customerId)}</td>
-//                     <td className="pt-cell-truncate">{p.description || "—"}</td>
-//                     <td>{p.projectManager || "—"}</td>
-//                     <td>{p.createdAt}</td>
-//                     <td>{p.createdBy}</td>
-//                     <td className="pt-col-actions">
-//                       <button className="pt-icon-btn" title="Edit" onClick={() => handleEdit(p)}>✏️</button>
-//                       <button className="pt-icon-btn" title="Delete" onClick={() => handleDelete(p.id)}>🗑️</button>
-//                     </td>
+//                 {sortedRows.map((p) => (
+//                   <tr key={p.project_id}>
+//                     <td>{p.project_id}</td>
+//                     <td className="pt-cell-strong">{p.project_name}</td>
+//                     <td>{p.customer_name || "—"}</td>
+//                     <td className="pt-cell-truncate" title={p.project_description || ""}>{p.project_description || "—"}</td>
+//                     <td>{p.project_manager || "—"}</td>
+//                     <td>{formatDateTime(p.created_at)}</td>
+//                     <td>{p.created_by ?? "—"}</td>
 //                   </tr>
 //                 ))}
-//                 {pageRows.length === 0 && (
+//                 {loading && projectRows.length === 0 && (
 //                   <tr>
-//                     <td colSpan={8} className="pt-empty-row">No projects found.</td>
+//                     <td colSpan={7} className="pt-empty-row">Loading projects…</td>
+//                   </tr>
+//                 )}
+//                 {!loading && projectRows.length === 0 && (
+//                   <tr>
+//                     <td colSpan={7} className="pt-empty-row">No projects found.</td>
 //                   </tr>
 //                 )}
 //               </tbody>
 //             </table>
 //           </div>
 
-//           <PaginationBar page={safePage} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} total={total} totalPages={totalPages} start={start} end={end} />
+//           <PaginationBar page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} total={total} totalPages={totalPages} start={start} end={end} />
 //         </div>
 //       )}
 
 //       {subTab === "form" && (
 //         <div className="pt-panel">
 //           <div className="pt-form-card">
-//             <div className="pt-form-idbar">
-//               Project ID: <span>{form.id ?? 0}</span>
-//             </div>
+//             <div className="pt-form-idbar">New Project</div>
 
 //             <div className="pt-form-body">
+//               {formError && <div className="pt-alert pt-alert-error">{formError}</div>}
+
 //               <div className="pt-field">
-//                 <label>Name</label>
-//                 <input type="text" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+//                 <label>Name <span className="pt-required">*</span></label>
+//                 <input type="text" placeholder="e.g. Biology Textbook 3e" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
 //               </div>
 
 //               <div className="pt-field-row">
 //                 <div className="pt-field">
-//                   <label>Customer</label>
+//                   <label>Customer <span className="pt-required">*</span></label>
 //                   <select value={form.customerId} onChange={(e) => setForm({ ...form, customerId: e.target.value })}>
 //                     <option value="">Select Customer</option>
 //                     {customers.map((c) => (
-//                       <option key={c.id} value={c.id}>{c.customer_name}</option>
+//                       <option key={c.id} value={c.id}>{c.id} - {c.customer_name}</option>
 //                     ))}
 //                   </select>
 //                 </div>
 //                 <div className="pt-field">
 //                   <label>Project Manager</label>
-//                   <input type="text" placeholder="Project Manager" value={form.projectManager} onChange={(e) => setForm({ ...form, projectManager: e.target.value })} />
+//                   <input type="text" placeholder="e.g. Suresh K" value={form.projectManager} onChange={(e) => setForm({ ...form, projectManager: e.target.value })} />
 //                 </div>
 //               </div>
 
 //               <div className="pt-field">
 //                 <label>Description</label>
-//                 <input type="text" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+//                 <input type="text" placeholder="e.g. Copy editing of 24 chapters" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
 //               </div>
 //             </div>
 
 //             <div className="pt-form-footer">
-//               <button type="button" className="pt-btn pt-btn-outline" onClick={() => { resetForm(); setSubTab("list"); }}>Cancel</button>
-//               <button type="button" className="pt-btn pt-btn-primary" onClick={handleSave}>Save</button>
+//               <button type="button" className="pt-btn pt-btn-outline" disabled={saving} onClick={() => { resetForm(); setSubTab("list"); }}>Cancel</button>
+//               <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : "Save"}</button>
 //             </div>
 //           </div>
 //         </div>
@@ -1868,7 +1959,7 @@
 //           <div className="pt-section-content" key={activeTab}>
 //             {activeTab === "customers" && <CustomersSection />}
 
-//             {activeTab === "projects" && <ProjectsSection projects={projects} setProjects={setProjects} />}
+//             {activeTab === "projects" && <ProjectsSection setProjects={setProjects} />}
 
 //             {activeTab === "templates" && (
 //               <TemplatesSection
@@ -1908,6 +1999,8 @@ import {
   deleteCustomer,
   getProjects,
   createProject,
+  updateProject,
+  deleteProject,
 } from "../../services/apiServices";
 
 /* ────────────────────────────────────────────────────────────
@@ -2346,7 +2439,7 @@ function CustomersSection() {
                     <td className="pt-cell-strong">{c.customer_name}</td>
                     <td>{c.phone_no || "—"}</td>
                     <td>{c.email_id || "—"}</td>
-                    <td className="pt-cell-truncate" title={c.customer_address || ""}>{c.customer_address || "—"}</td>
+                    <td className="pt-cell-wrap">{c.customer_address || "—"}</td>
                     <td>{formatDateTime(c.created_at)}</td>
                     <td className="pt-col-actions">
                       <button type="button" className="pt-icon-btn" title="Edit" onClick={() => handleEdit(c)}>✏️</button>
@@ -2455,6 +2548,11 @@ function ProjectsSection({ setProjects }) {
   const [notice, setNotice] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [customers, setCustomers] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [originalForm, setOriginalForm] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -2544,6 +2642,23 @@ function ProjectsSection({ setProjects }) {
   const resetForm = () => {
     setForm(emptyForm);
     setFormError("");
+    setEditingId(null);
+    setOriginalForm(null);
+  };
+
+  const handleEdit = (p) => {
+    const values = {
+      name: p.project_name || "",
+      customerId: p.customer_id ? String(p.customer_id) : "",
+      projectManager: p.project_manager || "",
+      description: p.project_description || "",
+    };
+    setForm(values);
+    setOriginalForm(values);
+    setEditingId(p.project_id);
+    setFormError("");
+    setNotice("");
+    setSubTab("form");
   };
 
   const handleSave = async () => {
@@ -2557,17 +2672,45 @@ function ProjectsSection({ setProjects }) {
       return;
     }
 
-    const payload = {
-      project_name: name,
-      customer_id: Number(form.customerId),
-      created_by: Number(sessionStorage.getItem("token")) || 0,
-    };
-    if (form.description.trim()) payload.project_description = form.description.trim();
-    if (form.projectManager.trim()) payload.project_manager = form.projectManager.trim();
-
     setSaving(true);
     setFormError("");
     try {
+      if (editingId !== null) {
+        const updatePayload = {};
+        if (name !== (originalForm?.name || "").trim()) updatePayload.project_name = name;
+        if (form.customerId !== originalForm?.customerId) updatePayload.customer_id = Number(form.customerId);
+        if (form.projectManager.trim() !== (originalForm?.projectManager || "").trim()) {
+          updatePayload.project_manager = form.projectManager.trim() || null;
+        }
+        if (form.description.trim() !== (originalForm?.description || "").trim()) {
+          updatePayload.project_description = form.description.trim() || null;
+        }
+
+        if (Object.keys(updatePayload).length === 0) {
+          setFormError("No changes to save.");
+          return;
+        }
+
+        const updateRes = await updateProject(editingId, updatePayload);
+        if (updateRes?.response_code === 200) {
+          setNotice(`Project "${updateRes.data?.project_name || name}" updated successfully.`);
+          resetForm();
+          setReloadKey((k) => k + 1);
+          setSubTab("list");
+        } else {
+          setFormError(extractError(updateRes, "Failed to update project."));
+        }
+        return;
+      }
+
+      const payload = {
+        project_name: name,
+        customer_id: Number(form.customerId),
+        created_by: Number(sessionStorage.getItem("token")) || 0,
+      };
+      if (form.description.trim()) payload.project_description = form.description.trim();
+      if (form.projectManager.trim()) payload.project_manager = form.projectManager.trim();
+
       const res = await createProject(payload);
       if (res?.response_code === 201 || res?.response_code === 200) {
         setNotice(`Project "${res.data?.project_name || name}" created successfully.`);
@@ -2587,16 +2730,51 @@ function ProjectsSection({ setProjects }) {
     }
   };
 
+  const openDelete = (p) => {
+    setDeleteError("");
+    setDeleteTarget(p);
+  };
+
+  const closeDelete = () => {
+    if (deleting) return;
+    setDeleteTarget(null);
+    setDeleteError("");
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const res = await deleteProject(deleteTarget.project_id);
+      const code = res?.response_code;
+      if (code === 200 || code === 204) {
+        setNotice(`Project "${deleteTarget.project_name}" deleted successfully.`);
+        setProjects((prev) => prev.filter((x) => x.id !== deleteTarget.project_id));
+        if (projectRows.length === 1 && page > 1) setPage((p) => p - 1);
+        setReloadKey((k) => k + 1);
+        setDeleteTarget(null);
+      } else {
+        setDeleteError(extractError(res, "Failed to delete project."));
+      }
+    } catch {
+      setDeleteError("Unable to reach the server. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="pt-card">
       <SubTabs
         tabs={[
           { key: "list", label: "Projects List" },
-          { key: "form", label: "Add New Project" },
+          { key: "form", label: editingId !== null ? "Update Project" : "Add New Project" },
         ]}
         active={subTab}
         onChange={(k) => {
-          if (k === "form") resetForm();
+          if (k === "form" && editingId === null) resetForm();
+          if (k === "list") resetForm();
           setSubTab(k);
         }}
       />
@@ -2630,7 +2808,7 @@ function ProjectsSection({ setProjects }) {
                   <th>Description</th>
                   <th>Project Manager</th>
                   <th>Created At</th>
-                  <th>Created By</th>
+                  <th className="pt-col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -2642,7 +2820,10 @@ function ProjectsSection({ setProjects }) {
                     <td className="pt-cell-truncate" title={p.project_description || ""}>{p.project_description || "—"}</td>
                     <td>{p.project_manager || "—"}</td>
                     <td>{formatDateTime(p.created_at)}</td>
-                    <td>{p.created_by ?? "—"}</td>
+                    <td className="pt-col-actions">
+                      <button type="button" className="pt-icon-btn" title="Edit" onClick={() => handleEdit(p)}>✏️</button>
+                      <button type="button" className="pt-icon-btn" title="Delete" onClick={() => openDelete(p)}>🗑️</button>
+                    </td>
                   </tr>
                 ))}
                 {loading && projectRows.length === 0 && (
@@ -2666,7 +2847,9 @@ function ProjectsSection({ setProjects }) {
       {subTab === "form" && (
         <div className="pt-panel">
           <div className="pt-form-card">
-            <div className="pt-form-idbar">New Project</div>
+            <div className="pt-form-idbar">
+              {editingId !== null ? <>Project ID: <span>{editingId}</span></> : "New Project"}
+            </div>
 
             <div className="pt-form-body">
               {formError && <div className="pt-alert pt-alert-error">{formError}</div>}
@@ -2700,7 +2883,23 @@ function ProjectsSection({ setProjects }) {
 
             <div className="pt-form-footer">
               <button type="button" className="pt-btn pt-btn-outline" disabled={saving} onClick={() => { resetForm(); setSubTab("list"); }}>Cancel</button>
-              <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : "Save"}</button>
+              <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : editingId !== null ? "Update" : "Save"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="pt-modal-overlay" onClick={closeDelete}>
+          <div className="pt-modal" role="dialog" aria-modal="true" onClick={(ev) => ev.stopPropagation()}>
+            <div className="pt-modal-title">Delete Project</div>
+            <p className="pt-modal-text">
+              Are you sure you want to delete <strong>{deleteTarget.project_name}</strong>? This action cannot be undone.
+            </p>
+            {deleteError && <div className="pt-alert pt-alert-error">{deleteError}</div>}
+            <div className="pt-modal-footer">
+              <button type="button" className="pt-btn pt-btn-outline" disabled={deleting} onClick={closeDelete}>Cancel</button>
+              <button type="button" className="pt-btn pt-btn-danger" disabled={deleting} onClick={handleConfirmDelete}>{deleting ? "Deleting…" : "Delete"}</button>
             </div>
           </div>
         </div>

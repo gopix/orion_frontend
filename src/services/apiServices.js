@@ -1,6 +1,4 @@
 
- 
-
 
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -870,6 +868,34 @@
 //   }
 // };
 
+// // ── Editor+: Projects ───────────────────────────────────────────
+
+// // POST /api/v1/editor/projects  (Create Project)
+// // Body: { project_name, customer_id, project_description, project_manager, created_by }
+// // Returns: response_code 201, message, data { project_id, project_name, customer_id, customer_name,
+// //          project_description, project_manager, created_at, created_by }, errors
+// export const createProject = async (payload) => {
+//   const response = await fetch(`${BASE_URL}/editor/projects`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify(payload)
+//   });
+//   return response.json();
+// };
+
+// // GET /api/v1/editor/projects  (Get All Projects)
+// // Query params: customer_id, search (project name or manager), skip (min 0), limit (1-500)
+// // Returns: response_code 200, message, data { total, skip, limit, items: [...] }, errors
+// export const getProjects = async (skip = 0, limit = 100, search = "", customerId = "") => {
+//   const params = new URLSearchParams({ skip, limit });
+//   if (search) params.append("search", search);
+//   if (customerId) params.append("customer_id", customerId);
+//   const response = await fetch(`${BASE_URL}/editor/projects?${params.toString()}`, {
+//     method: "GET",
+//     headers: { "Accept": "application/json" }
+//   });
+//   return response.json();
+// };
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -1766,4 +1792,31 @@ export const getProjects = async (skip = 0, limit = 100, search = "", customerId
     headers: { "Accept": "application/json" }
   });
   return response.json();
+};
+
+// PUT /api/v1/editor/projects/{project_id}  (Update Project)
+// Body: any of { project_name, customer_id, project_description, project_manager } — only fields sent are changed
+// Returns: response_code 200, message, data { project_id, project_name, customer_id, customer_name, ... }, errors
+export const updateProject = async (projectId, payload) => {
+  const response = await fetch(`${BASE_URL}/editor/projects/${projectId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  return response.json();
+};
+
+// DELETE /api/v1/editor/projects/{project_id}  (Delete Project)
+// Returns: response_code, message, data, errors
+export const deleteProject = async (projectId) => {
+  const response = await fetch(`${BASE_URL}/editor/projects/${projectId}`, {
+    method: "DELETE",
+    headers: { "Accept": "application/json" }
+  });
+  const text = await response.text();
+  try {
+    return text ? JSON.parse(text) : { response_code: response.status };
+  } catch {
+    return { response_code: response.status, message: text };
+  }
 };

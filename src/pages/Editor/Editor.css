@@ -974,6 +974,14 @@
   white-space: nowrap;
 }
 
+.pt-table tbody td.pt-cell-wrap {
+  min-width: 180px;
+  max-width: 300px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
 .pt-cell-link {
   color: var(--blue-600);
   font-weight: 600;
