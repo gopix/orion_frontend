@@ -12,6 +12,10 @@
 //   deleteCustomer,
 //   getProjects,
 //   createProject,
+//   updateProject,
+//   deleteProject,
+//   getTemplates,
+//   createTemplate,
 // } from "../../services/apiServices";
 
 // /* ────────────────────────────────────────────────────────────
@@ -117,6 +121,7 @@
 // function StatusBadge({ status }) {
 //   const map = {
 //     Active: "pt-badge-active",
+//     Draft: "pt-badge-pending",
 //     Inactive: "pt-badge-inactive",
 //     Pending: "pt-badge-pending",
 //     "In Progress": "pt-badge-progress",
@@ -450,7 +455,7 @@
 //                     <td className="pt-cell-strong">{c.customer_name}</td>
 //                     <td>{c.phone_no || "—"}</td>
 //                     <td>{c.email_id || "—"}</td>
-//                     <td className="pt-cell-truncate" title={c.customer_address || ""}>{c.customer_address || "—"}</td>
+//                     <td className="pt-cell-wrap">{c.customer_address || "—"}</td>
 //                     <td>{formatDateTime(c.created_at)}</td>
 //                     <td className="pt-col-actions">
 //                       <button type="button" className="pt-icon-btn" title="Edit" onClick={() => handleEdit(c)}>✏️</button>
@@ -559,6 +564,11 @@
 //   const [notice, setNotice] = useState("");
 //   const [reloadKey, setReloadKey] = useState(0);
 //   const [customers, setCustomers] = useState([]);
+//   const [editingId, setEditingId] = useState(null);
+//   const [originalForm, setOriginalForm] = useState(null);
+//   const [deleteTarget, setDeleteTarget] = useState(null);
+//   const [deleting, setDeleting] = useState(false);
+//   const [deleteError, setDeleteError] = useState("");
 
 //   useEffect(() => {
 //     let cancelled = false;
@@ -648,6 +658,23 @@
 //   const resetForm = () => {
 //     setForm(emptyForm);
 //     setFormError("");
+//     setEditingId(null);
+//     setOriginalForm(null);
+//   };
+
+//   const handleEdit = (p) => {
+//     const values = {
+//       name: p.project_name || "",
+//       customerId: p.customer_id ? String(p.customer_id) : "",
+//       projectManager: p.project_manager || "",
+//       description: p.project_description || "",
+//     };
+//     setForm(values);
+//     setOriginalForm(values);
+//     setEditingId(p.project_id);
+//     setFormError("");
+//     setNotice("");
+//     setSubTab("form");
 //   };
 
 //   const handleSave = async () => {
@@ -661,17 +688,45 @@
 //       return;
 //     }
 
-//     const payload = {
-//       project_name: name,
-//       customer_id: Number(form.customerId),
-//       created_by: Number(sessionStorage.getItem("token")) || 0,
-//     };
-//     if (form.description.trim()) payload.project_description = form.description.trim();
-//     if (form.projectManager.trim()) payload.project_manager = form.projectManager.trim();
-
 //     setSaving(true);
 //     setFormError("");
 //     try {
+//       if (editingId !== null) {
+//         const updatePayload = {};
+//         if (name !== (originalForm?.name || "").trim()) updatePayload.project_name = name;
+//         if (form.customerId !== originalForm?.customerId) updatePayload.customer_id = Number(form.customerId);
+//         if (form.projectManager.trim() !== (originalForm?.projectManager || "").trim()) {
+//           updatePayload.project_manager = form.projectManager.trim() || null;
+//         }
+//         if (form.description.trim() !== (originalForm?.description || "").trim()) {
+//           updatePayload.project_description = form.description.trim() || null;
+//         }
+
+//         if (Object.keys(updatePayload).length === 0) {
+//           setFormError("No changes to save.");
+//           return;
+//         }
+
+//         const updateRes = await updateProject(editingId, updatePayload);
+//         if (updateRes?.response_code === 200) {
+//           setNotice(`Project "${updateRes.data?.project_name || name}" updated successfully.`);
+//           resetForm();
+//           setReloadKey((k) => k + 1);
+//           setSubTab("list");
+//         } else {
+//           setFormError(extractError(updateRes, "Failed to update project."));
+//         }
+//         return;
+//       }
+
+//       const payload = {
+//         project_name: name,
+//         customer_id: Number(form.customerId),
+//         created_by: Number(sessionStorage.getItem("token")) || 0,
+//       };
+//       if (form.description.trim()) payload.project_description = form.description.trim();
+//       if (form.projectManager.trim()) payload.project_manager = form.projectManager.trim();
+
 //       const res = await createProject(payload);
 //       if (res?.response_code === 201 || res?.response_code === 200) {
 //         setNotice(`Project "${res.data?.project_name || name}" created successfully.`);
@@ -691,16 +746,51 @@
 //     }
 //   };
 
+//   const openDelete = (p) => {
+//     setDeleteError("");
+//     setDeleteTarget(p);
+//   };
+
+//   const closeDelete = () => {
+//     if (deleting) return;
+//     setDeleteTarget(null);
+//     setDeleteError("");
+//   };
+
+//   const handleConfirmDelete = async () => {
+//     if (!deleteTarget) return;
+//     setDeleting(true);
+//     setDeleteError("");
+//     try {
+//       const res = await deleteProject(deleteTarget.project_id);
+//       const code = res?.response_code;
+//       if (code === 200 || code === 204) {
+//         setNotice(`Project "${deleteTarget.project_name}" deleted successfully.`);
+//         setProjects((prev) => prev.filter((x) => x.id !== deleteTarget.project_id));
+//         if (projectRows.length === 1 && page > 1) setPage((p) => p - 1);
+//         setReloadKey((k) => k + 1);
+//         setDeleteTarget(null);
+//       } else {
+//         setDeleteError(extractError(res, "Failed to delete project."));
+//       }
+//     } catch {
+//       setDeleteError("Unable to reach the server. Please try again.");
+//     } finally {
+//       setDeleting(false);
+//     }
+//   };
+
 //   return (
 //     <div className="pt-card">
 //       <SubTabs
 //         tabs={[
 //           { key: "list", label: "Projects List" },
-//           { key: "form", label: "Add New Project" },
+//           { key: "form", label: editingId !== null ? "Update Project" : "Add New Project" },
 //         ]}
 //         active={subTab}
 //         onChange={(k) => {
-//           if (k === "form") resetForm();
+//           if (k === "form" && editingId === null) resetForm();
+//           if (k === "list") resetForm();
 //           setSubTab(k);
 //         }}
 //       />
@@ -734,7 +824,7 @@
 //                   <th>Description</th>
 //                   <th>Project Manager</th>
 //                   <th>Created At</th>
-//                   <th>Created By</th>
+//                   <th className="pt-col-actions">Actions</th>
 //                 </tr>
 //               </thead>
 //               <tbody>
@@ -746,7 +836,10 @@
 //                     <td className="pt-cell-truncate" title={p.project_description || ""}>{p.project_description || "—"}</td>
 //                     <td>{p.project_manager || "—"}</td>
 //                     <td>{formatDateTime(p.created_at)}</td>
-//                     <td>{p.created_by ?? "—"}</td>
+//                     <td className="pt-col-actions">
+//                       <button type="button" className="pt-icon-btn" title="Edit" onClick={() => handleEdit(p)}>✏️</button>
+//                       <button type="button" className="pt-icon-btn" title="Delete" onClick={() => openDelete(p)}>🗑️</button>
+//                     </td>
 //                   </tr>
 //                 ))}
 //                 {loading && projectRows.length === 0 && (
@@ -770,7 +863,9 @@
 //       {subTab === "form" && (
 //         <div className="pt-panel">
 //           <div className="pt-form-card">
-//             <div className="pt-form-idbar">New Project</div>
+//             <div className="pt-form-idbar">
+//               {editingId !== null ? <>Project ID: <span>{editingId}</span></> : "New Project"}
+//             </div>
 
 //             <div className="pt-form-body">
 //               {formError && <div className="pt-alert pt-alert-error">{formError}</div>}
@@ -804,7 +899,23 @@
 
 //             <div className="pt-form-footer">
 //               <button type="button" className="pt-btn pt-btn-outline" disabled={saving} onClick={() => { resetForm(); setSubTab("list"); }}>Cancel</button>
-//               <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : "Save"}</button>
+//               <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : editingId !== null ? "Update" : "Save"}</button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {deleteTarget && (
+//         <div className="pt-modal-overlay" onClick={closeDelete}>
+//           <div className="pt-modal" role="dialog" aria-modal="true" onClick={(ev) => ev.stopPropagation()}>
+//             <div className="pt-modal-title">Delete Project</div>
+//             <p className="pt-modal-text">
+//               Are you sure you want to delete <strong>{deleteTarget.project_name}</strong>? This action cannot be undone.
+//             </p>
+//             {deleteError && <div className="pt-alert pt-alert-error">{deleteError}</div>}
+//             <div className="pt-modal-footer">
+//               <button type="button" className="pt-btn pt-btn-outline" disabled={deleting} onClick={closeDelete}>Cancel</button>
+//               <button type="button" className="pt-btn pt-btn-danger" disabled={deleting} onClick={handleConfirmDelete}>{deleting ? "Deleting…" : "Delete"}</button>
 //             </div>
 //           </div>
 //         </div>
@@ -817,19 +928,34 @@
 //    TEMPLATES SECTION (Templates List / Add New Template)
 //    Includes the 3 selectable template designs from the reference
 //    ════════════════════════════════════════════════════════════ */
-// const LANGUAGES = ["English", "Hindi", "Spanish", "French", "German"];
-// const DATE_FORMATS = ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"];
-
 // const TEMPLATE_DESIGNS = [
 //   { key: "standard", name: "Standard Layout", icon: "📄", desc: "Classic single-column layout with header & footer." },
 //   { key: "modern", name: "Modern Layout", icon: "🗂️", desc: "Two-column layout with sidebar navigation & callouts." },
 //   { key: "compact", name: "Compact Layout", icon: "📘", desc: "Condensed layout optimized for EPUB & mobile reading." },
 // ];
 
+// const TEMPLATE_STATUSES = ["draft", "active", "inactive"];
+
+// const statusLabel = (status) => {
+//   const s = String(status || "");
+//   return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "—";
+// };
+
+// // template_design comes back from the API as a JSON string. Our design cards store { layout: "<key>" }.
+// const designNameFromApi = (raw) => {
+//   if (!raw) return "—";
+//   try {
+//     const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+//     const match = TEMPLATE_DESIGNS.find((d) => d.key === parsed?.layout);
+//     return match ? match.name : "Custom";
+//   } catch {
+//     return "Custom";
+//   }
+// };
+
 // function TemplatesSection({
-//   templates,
 //   setTemplates,
-//   projects,
+//   setProjects,
 //   features,
 //   setFeatures,
 //   featureGroups,
@@ -838,85 +964,183 @@
 //   setAbbreviations,
 // }) {
 //   const emptyForm = {
-//     id: null,
 //     name: "",
 //     projectId: "",
-//     status: "Active",
+//     status: "draft",
 //     description: "",
-//     language: "",
-//     dateFormat: "",
 //     design: "standard",
-//     featureFileName: "",
 //   };
 //   const [subTab, setSubTab] = useState("list");
 //   const [form, setForm] = useState(emptyForm);
 //   const [search, setSearch] = useState("");
+//   const [debouncedSearch, setDebouncedSearch] = useState("");
+//   const [projectFilter, setProjectFilter] = useState("");
+//   const [statusFilter, setStatusFilter] = useState("");
 //   const [page, setPage] = useState(1);
 //   const [rowsPerPage, setRowsPerPage] = useState(10);
-//   const fileInputRef = useRef(null);
+//   const [templateRows, setTemplateRows] = useState([]);
+//   const [total, setTotal] = useState(0);
+//   const [loading, setLoading] = useState(false);
+//   const [listError, setListError] = useState("");
+//   const [saving, setSaving] = useState(false);
+//   const [formError, setFormError] = useState("");
+//   const [notice, setNotice] = useState("");
+//   const [reloadKey, setReloadKey] = useState(0);
+//   const [projectOptions, setProjectOptions] = useState([]);
 
-//   const projectName = (id) => projects.find((p) => p.id === Number(id))?.name || "—";
-//   const designName = (key) => TEMPLATE_DESIGNS.find((d) => d.key === key)?.name || "—";
+//   useEffect(() => {
+//     let cancelled = false;
+//     getProjects(0, 500)
+//       .then((res) => {
+//         if (cancelled || res?.response_code !== 200) return;
+//         const items = res.data?.items || [];
+//         setProjectOptions(items);
 
-//   const filtered = useMemo(() => {
-//     const term = search.trim().toLowerCase();
-//     if (!term) return templates;
-//     return templates.filter((t) => t.name.toLowerCase().includes(term) || projectName(t.projectId).toLowerCase().includes(term));
+//         // Keep the shared project list (used by Copy Edit) in sync with the API.
+//         setProjects((prev) => {
+//           const next = [...prev];
+//           items.forEach((p) => {
+//             const mapped = {
+//               id: p.project_id,
+//               name: p.project_name,
+//               customerId: p.customer_id,
+//               projectManager: p.project_manager || "",
+//               description: p.project_description || "",
+//               createdAt: formatDateTime(p.created_at),
+//               createdBy: p.created_by,
+//             };
+//             const idx = next.findIndex((x) => x.id === mapped.id);
+//             if (idx === -1) next.push(mapped);
+//             else next[idx] = { ...next[idx], ...mapped };
+//           });
+//           return next;
+//         });
+//       })
+//       .catch(() => {});
+//     return () => {
+//       cancelled = true;
+//     };
 //     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [templates, search, projects]);
+//   }, []);
 
-//   const { pageRows, total, totalPages, safePage, start, end } = paginateData(filtered, page, rowsPerPage);
+//   useEffect(() => {
+//     const timer = setTimeout(() => {
+//       setDebouncedSearch(search.trim());
+//       setPage(1);
+//     }, 400);
+//     return () => clearTimeout(timer);
+//   }, [search]);
 
-//   const resetForm = () => setForm(emptyForm);
+//   useEffect(() => {
+//     let cancelled = false;
 
-//   const handleSave = () => {
-//     if (!form.name.trim() || !form.projectId || !form.language) return;
-//     if (form.id == null) {
-//       const newTemplate = {
-//         id: nextId(),
-//         name: form.name.trim(),
-//         projectId: Number(form.projectId),
-//         status: form.status,
-//         description: form.description.trim(),
-//         language: form.language,
-//         dateFormat: form.dateFormat,
-//         design: form.design,
-//         features: form.featureFileName || "—",
-//         createdAt: todayStr(),
-//         createdBy: currentUser(),
-//       };
-//       setTemplates((prev) => [newTemplate, ...prev]);
-//     } else {
-//       setTemplates((prev) =>
-//         prev.map((t) =>
-//           t.id === form.id ? { ...t, ...form, projectId: Number(form.projectId), features: form.featureFileName || t.features } : t
-//         )
-//       );
+//     const loadTemplates = async () => {
+//       setLoading(true);
+//       setListError("");
+//       try {
+//         const res = await getTemplates((page - 1) * rowsPerPage, rowsPerPage, debouncedSearch, projectFilter, statusFilter);
+//         if (cancelled) return;
+//         if (res?.response_code === 200 && res.data) {
+//           const items = res.data.items || [];
+//           setTemplateRows(items);
+//           setTotal(res.data.total || 0);
+
+//           // Keep the shared template list (used by Copy Edit) in sync with the API.
+//           setTemplates((prev) => {
+//             const next = [...prev];
+//             items.forEach((t) => {
+//               const mapped = {
+//                 id: t.template_id ?? t.id,
+//                 name: t.template_name,
+//                 projectId: t.project_id,
+//                 status: statusLabel(t.template_status),
+//                 description: t.template_description || "",
+//               };
+//               const idx = next.findIndex((x) => x.id === mapped.id);
+//               if (idx === -1) next.push(mapped);
+//               else next[idx] = { ...next[idx], ...mapped };
+//             });
+//             return next;
+//           });
+//         } else {
+//           setListError(extractError(res, "Failed to load templates."));
+//         }
+//       } catch {
+//         if (!cancelled) setListError("Unable to reach the server. Please try again.");
+//       } finally {
+//         if (!cancelled) setLoading(false);
+//       }
+//     };
+
+//     loadTemplates();
+//     return () => {
+//       cancelled = true;
+//     };
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [page, rowsPerPage, debouncedSearch, projectFilter, statusFilter, reloadKey]);
+
+//   useEffect(() => {
+//     if (!notice) return undefined;
+//     const timer = setTimeout(() => setNotice(""), 4000);
+//     return () => clearTimeout(timer);
+//   }, [notice]);
+
+//   const projectNameFor = (t) => {
+//     if (t.project_name) return t.project_name;
+//     const match = projectOptions.find((p) => p.project_id === Number(t.project_id));
+//     return match?.project_name || "—";
+//   };
+
+//   const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+//   const start = total === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+//   const end = Math.min((page - 1) * rowsPerPage + templateRows.length, total);
+
+//   const resetForm = () => {
+//     setForm(emptyForm);
+//     setFormError("");
+//   };
+
+//   const handleSave = async () => {
+//     const name = form.name.trim();
+//     if (!name) {
+//       setFormError("Template name is required.");
+//       return;
 //     }
-//     resetForm();
-//     setSubTab("list");
-//   };
+//     if (!form.projectId) {
+//       setFormError("Please select a project.");
+//       return;
+//     }
 
-//   const handleEdit = (t) => {
-//     setForm({
-//       id: t.id,
-//       name: t.name,
-//       projectId: String(t.projectId),
-//       status: t.status,
-//       description: t.description,
-//       language: t.language,
-//       dateFormat: t.dateFormat,
-//       design: t.design || "standard",
-//       featureFileName: "",
-//     });
-//     setSubTab("form");
-//   };
+//     setSaving(true);
+//     setFormError("");
+//     try {
+//       const payload = {
+//         template_name: name,
+//         project_id: Number(form.projectId),
+//         template_design: JSON.stringify({ layout: form.design }),
+//         template_status: form.status,
+//       };
+//       if (form.description.trim()) payload.template_description = form.description.trim();
 
-//   const handleDelete = (id) => setTemplates((prev) => prev.filter((t) => t.id !== id));
-
-//   const handleFeatureUpload = (e) => {
-//     const file = e.target.files?.[0];
-//     if (file) setForm((f) => ({ ...f, featureFileName: file.name }));
+//       const res = await createTemplate(payload);
+//       if (res?.response_code === 201 || res?.response_code === 200) {
+//         setNotice(`Template "${res.data?.template_name || name}" created successfully.`);
+//         resetForm();
+//         setSearch("");
+//         setDebouncedSearch("");
+//         setProjectFilter("");
+//         setStatusFilter("");
+//         setPage(1);
+//         setReloadKey((k) => k + 1);
+//         setSubTab("list");
+//       } else {
+//         setFormError(extractError(res, "Failed to create template."));
+//       }
+//     } catch {
+//       setFormError("Unable to reach the server. Please try again.");
+//     } finally {
+//       setSaving(false);
+//     }
 //   };
 
 //   return (
@@ -930,76 +1154,114 @@
 //         ]}
 //         active={subTab}
 //         onChange={(k) => {
-//           if (k === "form" && form.id == null) resetForm();
+//           if (k === "form") resetForm();
 //           setSubTab(k);
 //         }}
 //       />
 
 //       {subTab === "list" && (
 //         <div className="pt-panel">
+//           {notice && <div className="pt-alert pt-alert-success">{notice}</div>}
+//           {listError && (
+//             <div className="pt-alert pt-alert-error">
+//               <span>{listError}</span>
+//               <button type="button" className="pt-alert-action" onClick={() => setReloadKey((k) => k + 1)}>
+//                 Retry
+//               </button>
+//             </div>
+//           )}
+
 //           <SearchBox
 //             label="Search for Templates"
-//             placeholder="Search"
+//             placeholder="Filter by template name"
 //             value={search}
-//             onChange={(v) => {
-//               setSearch(v);
-//               setPage(1);
-//             }}
+//             onChange={setSearch}
 //           />
+
+//           <div className="pt-field-row">
+//             <div className="pt-field">
+//               <label>Project</label>
+//               <select
+//                 value={projectFilter}
+//                 onChange={(e) => {
+//                   setProjectFilter(e.target.value);
+//                   setPage(1);
+//                 }}
+//               >
+//                 <option value="">All Projects</option>
+//                 {projectOptions.map((p) => (
+//                   <option key={p.project_id} value={p.project_id}>{p.project_name}</option>
+//                 ))}
+//               </select>
+//             </div>
+//             <div className="pt-field">
+//               <label>Status</label>
+//               <select
+//                 value={statusFilter}
+//                 onChange={(e) => {
+//                   setStatusFilter(e.target.value);
+//                   setPage(1);
+//                 }}
+//               >
+//                 <option value="">All Statuses</option>
+//                 {TEMPLATE_STATUSES.map((s) => (
+//                   <option key={s} value={s}>{statusLabel(s)}</option>
+//                 ))}
+//               </select>
+//             </div>
+//           </div>
 
 //           <div className="pt-table-wrap">
 //             <table className="pt-table">
 //               <thead>
 //                 <tr>
+//                   <th>ID</th>
 //                   <th>Name</th>
 //                   <th>Project</th>
 //                   <th>Design</th>
 //                   <th>Description</th>
 //                   <th>Status</th>
 //                   <th>Created At</th>
-//                   <th>Created By</th>
-//                   <th>Features</th>
-//                   <th className="pt-col-actions">Actions</th>
 //                 </tr>
 //               </thead>
 //               <tbody>
-//                 {pageRows.map((t) => (
-//                   <tr key={t.id}>
-//                     <td className="pt-cell-strong">{t.name}</td>
-//                     <td>{projectName(t.projectId)}</td>
-//                     <td>{designName(t.design)}</td>
-//                     <td className="pt-cell-truncate">{t.description || "—"}</td>
-//                     <td><StatusBadge status={t.status} /></td>
-//                     <td>{t.createdAt}</td>
-//                     <td>{t.createdBy}</td>
-//                     <td>{t.features || "—"}</td>
-//                     <td className="pt-col-actions">
-//                       <button className="pt-icon-btn" title="Edit" onClick={() => handleEdit(t)}>✏️</button>
-//                       <button className="pt-icon-btn" title="Delete" onClick={() => handleDelete(t.id)}>🗑️</button>
-//                     </td>
+//                 {templateRows.map((t) => (
+//                   <tr key={t.template_id ?? t.id}>
+//                     <td>{t.template_id ?? t.id}</td>
+//                     <td className="pt-cell-strong">{t.template_name}</td>
+//                     <td>{projectNameFor(t)}</td>
+//                     <td>{designNameFromApi(t.template_design)}</td>
+//                     <td className="pt-cell-truncate" title={t.template_description || ""}>{t.template_description || "—"}</td>
+//                     <td><StatusBadge status={statusLabel(t.template_status)} /></td>
+//                     <td>{formatDateTime(t.created_at)}</td>
 //                   </tr>
 //                 ))}
-//                 {pageRows.length === 0 && (
+//                 {loading && templateRows.length === 0 && (
 //                   <tr>
-//                     <td colSpan={9} className="pt-empty-row">No templates found.</td>
+//                     <td colSpan={7} className="pt-empty-row">Loading templates…</td>
+//                   </tr>
+//                 )}
+//                 {!loading && templateRows.length === 0 && (
+//                   <tr>
+//                     <td colSpan={7} className="pt-empty-row">No templates found.</td>
 //                   </tr>
 //                 )}
 //               </tbody>
 //             </table>
 //           </div>
 
-//           <PaginationBar page={safePage} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} total={total} totalPages={totalPages} start={start} end={end} />
+//           <PaginationBar page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} total={total} totalPages={totalPages} start={start} end={end} />
 //         </div>
 //       )}
 
 //       {subTab === "form" && (
 //         <div className="pt-panel">
 //           <div className="pt-form-card">
-//             <div className="pt-form-idbar">
-//               Template ID: <span>{form.id ?? 0}</span>
-//             </div>
+//             <div className="pt-form-idbar">New Template</div>
 
 //             <div className="pt-form-body">
+//               {formError && <div className="pt-alert pt-alert-error">{formError}</div>}
+
 //               <div className="pt-field">
 //                 <label>Choose Template Design <span className="pt-required">*</span></label>
 //                 <div className="pt-design-grid">
@@ -1019,7 +1281,7 @@
 
 //               <div className="pt-field">
 //                 <label>Name <span className="pt-required">*</span></label>
-//                 <input type="text" placeholder="Template name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+//                 <input type="text" placeholder="e.g. APA 7 Copyedit Style" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
 //               </div>
 
 //               <div className="pt-field-row">
@@ -1027,57 +1289,30 @@
 //                   <label>Project <span className="pt-required">*</span></label>
 //                   <select value={form.projectId} onChange={(e) => setForm({ ...form, projectId: e.target.value })}>
 //                     <option value="">Select Project</option>
-//                     {projects.map((p) => (
-//                       <option key={p.id} value={p.id}>{p.name}</option>
+//                     {projectOptions.map((p) => (
+//                       <option key={p.project_id} value={p.project_id}>{p.project_id} - {p.project_name}</option>
 //                     ))}
 //                   </select>
 //                 </div>
 //                 <div className="pt-field">
 //                   <label>Status</label>
 //                   <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-//                     <option value="Active">Active</option>
-//                     <option value="Inactive">Inactive</option>
+//                     {TEMPLATE_STATUSES.map((s) => (
+//                       <option key={s} value={s}>{statusLabel(s)}</option>
+//                     ))}
 //                   </select>
 //                 </div>
 //               </div>
 
 //               <div className="pt-field">
 //                 <label>Description</label>
-//                 <input type="text" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-//               </div>
-
-//               <div className="pt-field-row">
-//                 <div className="pt-field">
-//                   <label>Language <span className="pt-required">*</span></label>
-//                   <select value={form.language} onChange={(e) => setForm({ ...form, language: e.target.value })}>
-//                     <option value="">Select Language</option>
-//                     {LANGUAGES.map((l) => (
-//                       <option key={l} value={l}>{l}</option>
-//                     ))}
-//                   </select>
-//                 </div>
-//                 <div className="pt-field">
-//                   <label>Date Format</label>
-//                   <select value={form.dateFormat} onChange={(e) => setForm({ ...form, dateFormat: e.target.value })}>
-//                     <option value="">Select Date Format</option>
-//                     {DATE_FORMATS.map((d) => (
-//                       <option key={d} value={d}>{d}</option>
-//                     ))}
-//                   </select>
-//                 </div>
+//                 <input type="text" placeholder="e.g. House style for Biology 3e" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
 //               </div>
 //             </div>
 
-//             <div className="pt-form-footer pt-form-footer-split">
-//               <div>
-//                 <input ref={fileInputRef} type="file" hidden onChange={handleFeatureUpload} />
-//                 <button type="button" className="pt-btn pt-btn-primary" onClick={() => fileInputRef.current?.click()}>Upload Feature Data</button>
-//                 {form.featureFileName && <span className="pt-file-chip">{form.featureFileName}</span>}
-//               </div>
-//               <div className="pt-form-footer-actions">
-//                 <button type="button" className="pt-btn pt-btn-outline" onClick={() => { resetForm(); setSubTab("list"); }}>Cancel</button>
-//                 <button type="button" className="pt-btn pt-btn-primary" onClick={handleSave}>Save</button>
-//               </div>
+//             <div className="pt-form-footer">
+//               <button type="button" className="pt-btn pt-btn-outline" disabled={saving} onClick={() => { resetForm(); setSubTab("list"); }}>Cancel</button>
+//               <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : "Save"}</button>
 //             </div>
 //           </div>
 //         </div>
@@ -1823,10 +2058,6 @@
 //   { id: 102, name: "Cloud Essentials", customerId: 2, projectManager: "Jane Smith", description: "Cloud computing course material", createdAt: "29 Jun 2026", createdBy: "admin@orion.com" },
 // ];
 
-// const seedTemplates = [
-//   { id: 201, name: "Standard EPUB Template", projectId: 101, status: "Active", description: "Default EPUB layout", language: "English", dateFormat: "DD/MM/YYYY", design: "standard", features: "features_v1.xlsx", createdAt: "04 Jul 2026", createdBy: "admin@orion.com" },
-// ];
-
 // const seedUsers = [
 //   { id: 401, name: "Sara Lee", email: "sara.lee@orion.com", contact: "9812345670", role: "Copy Editor", status: "Active", createdAt: "01 Jul 2026", createdBy: "admin@orion.com" },
 //   { id: 402, name: "Mike Johnson", email: "mike.johnson@orion.com", contact: "9812345671", role: "Editor", status: "Active", createdAt: "28 Jun 2026", createdBy: "admin@orion.com" },
@@ -1898,7 +2129,7 @@
 //   const [activeTab, setActiveTab] = useState(userIsAdmin ? "customers" : "copyedit");
 
 //   const [projects, setProjects] = useState(seedProjects);
-//   const [templates, setTemplates] = useState(seedTemplates);
+//   const [templates, setTemplates] = useState([]);
 //   const [users, setUsers] = useState(seedUsers);
 //   const [featureGroups, setFeatureGroups] = useState(seedFeatureGroups);
 //   const [features, setFeatures] = useState(seedFeatures);
@@ -1963,9 +2194,8 @@
 
 //             {activeTab === "templates" && (
 //               <TemplatesSection
-//                 templates={templates}
 //                 setTemplates={setTemplates}
-//                 projects={projects}
+//                 setProjects={setProjects}
 //                 features={features}
 //                 setFeatures={setFeatures}
 //                 featureGroups={featureGroups}
@@ -2001,6 +2231,8 @@ import {
   createProject,
   updateProject,
   deleteProject,
+  getTemplates,
+  createTemplate,
 } from "../../services/apiServices";
 
 /* ────────────────────────────────────────────────────────────
@@ -2106,6 +2338,7 @@ function PaginationBar({ page, setPage, rowsPerPage, setRowsPerPage, total, tota
 function StatusBadge({ status }) {
   const map = {
     Active: "pt-badge-active",
+    Draft: "pt-badge-pending",
     Inactive: "pt-badge-inactive",
     Pending: "pt-badge-pending",
     "In Progress": "pt-badge-progress",
@@ -2912,19 +3145,16 @@ function ProjectsSection({ setProjects }) {
    TEMPLATES SECTION (Templates List / Add New Template)
    Includes the 3 selectable template designs from the reference
    ════════════════════════════════════════════════════════════ */
-const LANGUAGES = ["English", "Hindi", "Spanish", "French", "German"];
-const DATE_FORMATS = ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"];
+const TEMPLATE_STATUSES = ["draft", "active", "inactive"];
 
-const TEMPLATE_DESIGNS = [
-  { key: "standard", name: "Standard Layout", icon: "📄", desc: "Classic single-column layout with header & footer." },
-  { key: "modern", name: "Modern Layout", icon: "🗂️", desc: "Two-column layout with sidebar navigation & callouts." },
-  { key: "compact", name: "Compact Layout", icon: "📘", desc: "Condensed layout optimized for EPUB & mobile reading." },
-];
+const statusLabel = (status) => {
+  const s = String(status || "");
+  return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "—";
+};
 
 function TemplatesSection({
-  templates,
   setTemplates,
-  projects,
+  setProjects,
   features,
   setFeatures,
   featureGroups,
@@ -2933,85 +3163,183 @@ function TemplatesSection({
   setAbbreviations,
 }) {
   const emptyForm = {
-    id: null,
     name: "",
     projectId: "",
-    status: "Active",
+    status: "draft",
     description: "",
-    language: "",
-    dateFormat: "",
-    design: "standard",
-    featureFileName: "",
+    design: "",
   };
   const [subTab, setSubTab] = useState("list");
   const [form, setForm] = useState(emptyForm);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [projectFilter, setProjectFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const fileInputRef = useRef(null);
+  const [templateRows, setTemplateRows] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [listError, setListError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+  const [projectOptions, setProjectOptions] = useState([]);
 
-  const projectName = (id) => projects.find((p) => p.id === Number(id))?.name || "—";
-  const designName = (key) => TEMPLATE_DESIGNS.find((d) => d.key === key)?.name || "—";
+  useEffect(() => {
+    let cancelled = false;
+    getProjects(0, 500)
+      .then((res) => {
+        if (cancelled || res?.response_code !== 200) return;
+        const items = res.data?.items || [];
+        setProjectOptions(items);
 
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return templates;
-    return templates.filter((t) => t.name.toLowerCase().includes(term) || projectName(t.projectId).toLowerCase().includes(term));
+        // Keep the shared project list (used by Copy Edit) in sync with the API.
+        setProjects((prev) => {
+          const next = [...prev];
+          items.forEach((p) => {
+            const mapped = {
+              id: p.project_id,
+              name: p.project_name,
+              customerId: p.customer_id,
+              projectManager: p.project_manager || "",
+              description: p.project_description || "",
+              createdAt: formatDateTime(p.created_at),
+              createdBy: p.created_by,
+            };
+            const idx = next.findIndex((x) => x.id === mapped.id);
+            if (idx === -1) next.push(mapped);
+            else next[idx] = { ...next[idx], ...mapped };
+          });
+          return next;
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templates, search, projects]);
+  }, []);
 
-  const { pageRows, total, totalPages, safePage, start, end } = paginateData(filtered, page, rowsPerPage);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  const resetForm = () => setForm(emptyForm);
+  useEffect(() => {
+    let cancelled = false;
 
-  const handleSave = () => {
-    if (!form.name.trim() || !form.projectId || !form.language) return;
-    if (form.id == null) {
-      const newTemplate = {
-        id: nextId(),
-        name: form.name.trim(),
-        projectId: Number(form.projectId),
-        status: form.status,
-        description: form.description.trim(),
-        language: form.language,
-        dateFormat: form.dateFormat,
-        design: form.design,
-        features: form.featureFileName || "—",
-        createdAt: todayStr(),
-        createdBy: currentUser(),
-      };
-      setTemplates((prev) => [newTemplate, ...prev]);
-    } else {
-      setTemplates((prev) =>
-        prev.map((t) =>
-          t.id === form.id ? { ...t, ...form, projectId: Number(form.projectId), features: form.featureFileName || t.features } : t
-        )
-      );
+    const loadTemplates = async () => {
+      setLoading(true);
+      setListError("");
+      try {
+        const res = await getTemplates((page - 1) * rowsPerPage, rowsPerPage, debouncedSearch, projectFilter, statusFilter);
+        if (cancelled) return;
+        if (res?.response_code === 200 && res.data) {
+          const items = res.data.items || [];
+          setTemplateRows(items);
+          setTotal(res.data.total || 0);
+
+          // Keep the shared template list (used by Copy Edit) in sync with the API.
+          setTemplates((prev) => {
+            const next = [...prev];
+            items.forEach((t) => {
+              const mapped = {
+                id: t.template_id ?? t.id,
+                name: t.template_name,
+                projectId: t.project_id,
+                status: statusLabel(t.template_status),
+                description: t.template_description || "",
+              };
+              const idx = next.findIndex((x) => x.id === mapped.id);
+              if (idx === -1) next.push(mapped);
+              else next[idx] = { ...next[idx], ...mapped };
+            });
+            return next;
+          });
+        } else {
+          setListError(extractError(res, "Failed to load templates."));
+        }
+      } catch {
+        if (!cancelled) setListError("Unable to reach the server. Please try again.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadTemplates();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage, debouncedSearch, projectFilter, statusFilter, reloadKey]);
+
+  useEffect(() => {
+    if (!notice) return undefined;
+    const timer = setTimeout(() => setNotice(""), 4000);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
+  const projectNameFor = (t) => {
+    if (t.project_name) return t.project_name;
+    const match = projectOptions.find((p) => p.project_id === Number(t.project_id));
+    return match?.project_name || "—";
+  };
+
+  const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+  const start = total === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+  const end = Math.min((page - 1) * rowsPerPage + templateRows.length, total);
+
+  const resetForm = () => {
+    setForm(emptyForm);
+    setFormError("");
+  };
+
+  const handleSave = async () => {
+    const name = form.name.trim();
+    if (!name) {
+      setFormError("Template name is required.");
+      return;
     }
-    resetForm();
-    setSubTab("list");
-  };
+    if (!form.projectId) {
+      setFormError("Please select a project.");
+      return;
+    }
 
-  const handleEdit = (t) => {
-    setForm({
-      id: t.id,
-      name: t.name,
-      projectId: String(t.projectId),
-      status: t.status,
-      description: t.description,
-      language: t.language,
-      dateFormat: t.dateFormat,
-      design: t.design || "standard",
-      featureFileName: "",
-    });
-    setSubTab("form");
-  };
+    setSaving(true);
+    setFormError("");
+    try {
+      const payload = {
+        template_name: name,
+        project_id: Number(form.projectId),
+        template_status: form.status,
+      };
+      if (form.design.trim()) payload.template_design = form.design.trim();
+      if (form.description.trim()) payload.template_description = form.description.trim();
 
-  const handleDelete = (id) => setTemplates((prev) => prev.filter((t) => t.id !== id));
-
-  const handleFeatureUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) setForm((f) => ({ ...f, featureFileName: file.name }));
+      const res = await createTemplate(payload);
+      if (res?.response_code === 201 || res?.response_code === 200) {
+        setNotice(`Template "${res.data?.template_name || name}" created successfully.`);
+        resetForm();
+        setSearch("");
+        setDebouncedSearch("");
+        setProjectFilter("");
+        setStatusFilter("");
+        setPage(1);
+        setReloadKey((k) => k + 1);
+        setSubTab("list");
+      } else {
+        setFormError(extractError(res, "Failed to create template."));
+      }
+    } catch {
+      setFormError("Unable to reach the server. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -3025,96 +3353,117 @@ function TemplatesSection({
         ]}
         active={subTab}
         onChange={(k) => {
-          if (k === "form" && form.id == null) resetForm();
+          if (k === "form") resetForm();
           setSubTab(k);
         }}
       />
 
       {subTab === "list" && (
         <div className="pt-panel">
+          {notice && <div className="pt-alert pt-alert-success">{notice}</div>}
+          {listError && (
+            <div className="pt-alert pt-alert-error">
+              <span>{listError}</span>
+              <button type="button" className="pt-alert-action" onClick={() => setReloadKey((k) => k + 1)}>
+                Retry
+              </button>
+            </div>
+          )}
+
           <SearchBox
             label="Search for Templates"
-            placeholder="Search"
+            placeholder="Filter by template name"
             value={search}
-            onChange={(v) => {
-              setSearch(v);
-              setPage(1);
-            }}
+            onChange={setSearch}
           />
+
+          <div className="pt-field-row">
+            <div className="pt-field">
+              <label>Project</label>
+              <select
+                value={projectFilter}
+                onChange={(e) => {
+                  setProjectFilter(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">All Projects</option>
+                {projectOptions.map((p) => (
+                  <option key={p.project_id} value={p.project_id}>{p.project_name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="pt-field">
+              <label>Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">All Statuses</option>
+                {TEMPLATE_STATUSES.map((s) => (
+                  <option key={s} value={s}>{statusLabel(s)}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           <div className="pt-table-wrap">
             <table className="pt-table">
               <thead>
                 <tr>
+                  <th>ID</th>
                   <th>Name</th>
                   <th>Project</th>
                   <th>Design</th>
                   <th>Description</th>
                   <th>Status</th>
                   <th>Created At</th>
-                  <th>Created By</th>
-                  <th>Features</th>
-                  <th className="pt-col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {pageRows.map((t) => (
-                  <tr key={t.id}>
-                    <td className="pt-cell-strong">{t.name}</td>
-                    <td>{projectName(t.projectId)}</td>
-                    <td>{designName(t.design)}</td>
-                    <td className="pt-cell-truncate">{t.description || "—"}</td>
-                    <td><StatusBadge status={t.status} /></td>
-                    <td>{t.createdAt}</td>
-                    <td>{t.createdBy}</td>
-                    <td>{t.features || "—"}</td>
-                    <td className="pt-col-actions">
-                      <button className="pt-icon-btn" title="Edit" onClick={() => handleEdit(t)}>✏️</button>
-                      <button className="pt-icon-btn" title="Delete" onClick={() => handleDelete(t.id)}>🗑️</button>
-                    </td>
+                {templateRows.map((t) => (
+                  <tr key={t.template_id ?? t.id}>
+                    <td>{t.template_id ?? t.id}</td>
+                    <td className="pt-cell-strong">{t.template_name}</td>
+                    <td>{projectNameFor(t)}</td>
+                    <td className="pt-cell-truncate" title={t.template_design || ""}>{t.template_design || "—"}</td>
+                    <td className="pt-cell-truncate" title={t.template_description || ""}>{t.template_description || "—"}</td>
+                    <td><StatusBadge status={statusLabel(t.template_status)} /></td>
+                    <td>{formatDateTime(t.created_at)}</td>
                   </tr>
                 ))}
-                {pageRows.length === 0 && (
+                {loading && templateRows.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="pt-empty-row">No templates found.</td>
+                    <td colSpan={7} className="pt-empty-row">Loading templates…</td>
+                  </tr>
+                )}
+                {!loading && templateRows.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="pt-empty-row">No templates found.</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
 
-          <PaginationBar page={safePage} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} total={total} totalPages={totalPages} start={start} end={end} />
+          <PaginationBar page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} total={total} totalPages={totalPages} start={start} end={end} />
         </div>
       )}
 
       {subTab === "form" && (
         <div className="pt-panel">
           <div className="pt-form-card">
-            <div className="pt-form-idbar">
-              Template ID: <span>{form.id ?? 0}</span>
-            </div>
+            <div className="pt-form-idbar">New Template</div>
 
             <div className="pt-form-body">
-              <div className="pt-field">
-                <label>Choose Template Design <span className="pt-required">*</span></label>
-                <div className="pt-design-grid">
-                  {TEMPLATE_DESIGNS.map((d) => (
-                    <div
-                      key={d.key}
-                      className={`pt-design-card ${form.design === d.key ? "active" : ""}`}
-                      onClick={() => setForm({ ...form, design: d.key })}
-                    >
-                      <div className="pt-design-icon">{d.icon}</div>
-                      <p className="pt-design-name">{d.name}</p>
-                      <p className="pt-design-desc">{d.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {formError && <div className="pt-alert pt-alert-error">{formError}</div>}
 
               <div className="pt-field">
                 <label>Name <span className="pt-required">*</span></label>
-                <input type="text" placeholder="Template name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                <input type="text" placeholder="e.g. APA 7 Copyedit Style" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
 
               <div className="pt-field-row">
@@ -3122,57 +3471,35 @@ function TemplatesSection({
                   <label>Project <span className="pt-required">*</span></label>
                   <select value={form.projectId} onChange={(e) => setForm({ ...form, projectId: e.target.value })}>
                     <option value="">Select Project</option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                    {projectOptions.map((p) => (
+                      <option key={p.project_id} value={p.project_id}>{p.project_id} - {p.project_name}</option>
                     ))}
                   </select>
                 </div>
                 <div className="pt-field">
                   <label>Status</label>
                   <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
+                    {TEMPLATE_STATUSES.map((s) => (
+                      <option key={s} value={s}>{statusLabel(s)}</option>
+                    ))}
                   </select>
                 </div>
               </div>
 
               <div className="pt-field">
-                <label>Description</label>
-                <input type="text" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                <label>Design</label>
+                <input type="text" placeholder='e.g. {"headings": {"h1": "Title Case"}, "citation": "APA"}' value={form.design} onChange={(e) => setForm({ ...form, design: e.target.value })} />
               </div>
 
-              <div className="pt-field-row">
-                <div className="pt-field">
-                  <label>Language <span className="pt-required">*</span></label>
-                  <select value={form.language} onChange={(e) => setForm({ ...form, language: e.target.value })}>
-                    <option value="">Select Language</option>
-                    {LANGUAGES.map((l) => (
-                      <option key={l} value={l}>{l}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="pt-field">
-                  <label>Date Format</label>
-                  <select value={form.dateFormat} onChange={(e) => setForm({ ...form, dateFormat: e.target.value })}>
-                    <option value="">Select Date Format</option>
-                    {DATE_FORMATS.map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
+              <div className="pt-field">
+                <label>Description</label>
+                <input type="text" placeholder="e.g. House style for Biology 3e" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
             </div>
 
-            <div className="pt-form-footer pt-form-footer-split">
-              <div>
-                <input ref={fileInputRef} type="file" hidden onChange={handleFeatureUpload} />
-                <button type="button" className="pt-btn pt-btn-primary" onClick={() => fileInputRef.current?.click()}>Upload Feature Data</button>
-                {form.featureFileName && <span className="pt-file-chip">{form.featureFileName}</span>}
-              </div>
-              <div className="pt-form-footer-actions">
-                <button type="button" className="pt-btn pt-btn-outline" onClick={() => { resetForm(); setSubTab("list"); }}>Cancel</button>
-                <button type="button" className="pt-btn pt-btn-primary" onClick={handleSave}>Save</button>
-              </div>
+            <div className="pt-form-footer">
+              <button type="button" className="pt-btn pt-btn-outline" disabled={saving} onClick={() => { resetForm(); setSubTab("list"); }}>Cancel</button>
+              <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : "Save"}</button>
             </div>
           </div>
         </div>
@@ -3918,10 +4245,6 @@ const seedProjects = [
   { id: 102, name: "Cloud Essentials", customerId: 2, projectManager: "Jane Smith", description: "Cloud computing course material", createdAt: "29 Jun 2026", createdBy: "admin@orion.com" },
 ];
 
-const seedTemplates = [
-  { id: 201, name: "Standard EPUB Template", projectId: 101, status: "Active", description: "Default EPUB layout", language: "English", dateFormat: "DD/MM/YYYY", design: "standard", features: "features_v1.xlsx", createdAt: "04 Jul 2026", createdBy: "admin@orion.com" },
-];
-
 const seedUsers = [
   { id: 401, name: "Sara Lee", email: "sara.lee@orion.com", contact: "9812345670", role: "Copy Editor", status: "Active", createdAt: "01 Jul 2026", createdBy: "admin@orion.com" },
   { id: 402, name: "Mike Johnson", email: "mike.johnson@orion.com", contact: "9812345671", role: "Editor", status: "Active", createdAt: "28 Jun 2026", createdBy: "admin@orion.com" },
@@ -3993,7 +4316,7 @@ export default function Editor() {
   const [activeTab, setActiveTab] = useState(userIsAdmin ? "customers" : "copyedit");
 
   const [projects, setProjects] = useState(seedProjects);
-  const [templates, setTemplates] = useState(seedTemplates);
+  const [templates, setTemplates] = useState([]);
   const [users, setUsers] = useState(seedUsers);
   const [featureGroups, setFeatureGroups] = useState(seedFeatureGroups);
   const [features, setFeatures] = useState(seedFeatures);
@@ -4058,9 +4381,8 @@ export default function Editor() {
 
             {activeTab === "templates" && (
               <TemplatesSection
-                templates={templates}
                 setTemplates={setTemplates}
-                projects={projects}
+                setProjects={setProjects}
                 features={features}
                 setFeatures={setFeatures}
                 featureGroups={featureGroups}
