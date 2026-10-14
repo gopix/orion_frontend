@@ -1,6 +1,5 @@
 
 
-
 // import { useEffect, useMemo, useRef, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import "./Editor.css";
@@ -928,29 +927,11 @@
 //    TEMPLATES SECTION (Templates List / Add New Template)
 //    Includes the 3 selectable template designs from the reference
 //    ════════════════════════════════════════════════════════════ */
-// const TEMPLATE_DESIGNS = [
-//   { key: "standard", name: "Standard Layout", icon: "📄", desc: "Classic single-column layout with header & footer." },
-//   { key: "modern", name: "Modern Layout", icon: "🗂️", desc: "Two-column layout with sidebar navigation & callouts." },
-//   { key: "compact", name: "Compact Layout", icon: "📘", desc: "Condensed layout optimized for EPUB & mobile reading." },
-// ];
-
 // const TEMPLATE_STATUSES = ["draft", "active", "inactive"];
 
 // const statusLabel = (status) => {
 //   const s = String(status || "");
 //   return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "—";
-// };
-
-// // template_design comes back from the API as a JSON string. Our design cards store { layout: "<key>" }.
-// const designNameFromApi = (raw) => {
-//   if (!raw) return "—";
-//   try {
-//     const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-//     const match = TEMPLATE_DESIGNS.find((d) => d.key === parsed?.layout);
-//     return match ? match.name : "Custom";
-//   } catch {
-//     return "Custom";
-//   }
 // };
 
 // function TemplatesSection({
@@ -968,7 +949,7 @@
 //     projectId: "",
 //     status: "draft",
 //     description: "",
-//     design: "standard",
+//     design: "",
 //   };
 //   const [subTab, setSubTab] = useState("list");
 //   const [form, setForm] = useState(emptyForm);
@@ -1117,9 +1098,9 @@
 //       const payload = {
 //         template_name: name,
 //         project_id: Number(form.projectId),
-//         template_design: JSON.stringify({ layout: form.design }),
 //         template_status: form.status,
 //       };
+//       if (form.design.trim()) payload.template_design = form.design.trim();
 //       if (form.description.trim()) payload.template_description = form.description.trim();
 
 //       const res = await createTemplate(payload);
@@ -1230,7 +1211,7 @@
 //                     <td>{t.template_id ?? t.id}</td>
 //                     <td className="pt-cell-strong">{t.template_name}</td>
 //                     <td>{projectNameFor(t)}</td>
-//                     <td>{designNameFromApi(t.template_design)}</td>
+//                     <td className="pt-cell-truncate" title={t.template_design || ""}>{t.template_design || "—"}</td>
 //                     <td className="pt-cell-truncate" title={t.template_description || ""}>{t.template_description || "—"}</td>
 //                     <td><StatusBadge status={statusLabel(t.template_status)} /></td>
 //                     <td>{formatDateTime(t.created_at)}</td>
@@ -1263,23 +1244,6 @@
 //               {formError && <div className="pt-alert pt-alert-error">{formError}</div>}
 
 //               <div className="pt-field">
-//                 <label>Choose Template Design <span className="pt-required">*</span></label>
-//                 <div className="pt-design-grid">
-//                   {TEMPLATE_DESIGNS.map((d) => (
-//                     <div
-//                       key={d.key}
-//                       className={`pt-design-card ${form.design === d.key ? "active" : ""}`}
-//                       onClick={() => setForm({ ...form, design: d.key })}
-//                     >
-//                       <div className="pt-design-icon">{d.icon}</div>
-//                       <p className="pt-design-name">{d.name}</p>
-//                       <p className="pt-design-desc">{d.desc}</p>
-//                     </div>
-//                   ))}
-//                 </div>
-//               </div>
-
-//               <div className="pt-field">
 //                 <label>Name <span className="pt-required">*</span></label>
 //                 <input type="text" placeholder="e.g. APA 7 Copyedit Style" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
 //               </div>
@@ -1302,6 +1266,11 @@
 //                     ))}
 //                   </select>
 //                 </div>
+//               </div>
+
+//               <div className="pt-field">
+//                 <label>Design</label>
+//                 <input type="text" placeholder='e.g. {"headings": {"h1": "Title Case"}, "citation": "APA"}' value={form.design} onChange={(e) => setForm({ ...form, design: e.target.value })} />
 //               </div>
 
 //               <div className="pt-field">
@@ -2233,6 +2202,8 @@ import {
   deleteProject,
   getTemplates,
   createTemplate,
+  updateTemplate,
+  deleteTemplate,
 } from "../../services/apiServices";
 
 /* ────────────────────────────────────────────────────────────
@@ -3186,6 +3157,11 @@ function TemplatesSection({
   const [notice, setNotice] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [projectOptions, setProjectOptions] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [originalForm, setOriginalForm] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -3297,6 +3273,24 @@ function TemplatesSection({
   const resetForm = () => {
     setForm(emptyForm);
     setFormError("");
+    setEditingId(null);
+    setOriginalForm(null);
+  };
+
+  const handleEdit = (t) => {
+    const values = {
+      name: t.template_name || "",
+      projectId: t.project_id != null ? String(t.project_id) : "",
+      status: String(t.template_status || "draft").toLowerCase(),
+      description: t.template_description || "",
+      design: t.template_design || "",
+    };
+    setForm(values);
+    setOriginalForm(values);
+    setEditingId(t.template_id ?? t.id);
+    setFormError("");
+    setNotice("");
+    setSubTab("form");
   };
 
   const handleSave = async () => {
@@ -3313,6 +3307,35 @@ function TemplatesSection({
     setSaving(true);
     setFormError("");
     try {
+      if (editingId !== null) {
+        const updatePayload = {};
+        if (name !== (originalForm?.name || "").trim()) updatePayload.template_name = name;
+        if (form.projectId !== originalForm?.projectId) updatePayload.project_id = Number(form.projectId);
+        if (form.status !== originalForm?.status) updatePayload.template_status = form.status;
+        if (form.design.trim() !== (originalForm?.design || "").trim()) {
+          updatePayload.template_design = form.design.trim() || null;
+        }
+        if (form.description.trim() !== (originalForm?.description || "").trim()) {
+          updatePayload.template_description = form.description.trim() || null;
+        }
+
+        if (Object.keys(updatePayload).length === 0) {
+          setFormError("No changes to save.");
+          return;
+        }
+
+        const updateRes = await updateTemplate(editingId, updatePayload);
+        if (updateRes?.response_code === 200) {
+          setNotice(`Template "${updateRes.data?.template_name || name}" updated successfully.`);
+          resetForm();
+          setReloadKey((k) => k + 1);
+          setSubTab("list");
+        } else {
+          setFormError(extractError(updateRes, "Failed to update template."));
+        }
+        return;
+      }
+
       const payload = {
         template_name: name,
         project_id: Number(form.projectId),
@@ -3342,18 +3365,53 @@ function TemplatesSection({
     }
   };
 
+  const openDelete = (t) => {
+    setDeleteError("");
+    setDeleteTarget(t);
+  };
+
+  const closeDelete = () => {
+    if (deleting) return;
+    setDeleteTarget(null);
+    setDeleteError("");
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const targetId = deleteTarget.template_id ?? deleteTarget.id;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const res = await deleteTemplate(targetId);
+      const code = res?.response_code;
+      if (code === 200 || code === 204) {
+        setNotice(`Template "${deleteTarget.template_name}" deleted successfully.`);
+        setTemplates((prev) => prev.filter((x) => x.id !== targetId));
+        if (templateRows.length === 1 && page > 1) setPage((p) => p - 1);
+        setReloadKey((k) => k + 1);
+        setDeleteTarget(null);
+      } else {
+        setDeleteError(extractError(res, "Failed to delete template."));
+      }
+    } catch {
+      setDeleteError("Unable to reach the server. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="pt-card">
       <SubTabs
         tabs={[
           { key: "list", label: "Templates List" },
-          { key: "form", label: "Add New Template" },
+          { key: "form", label: editingId !== null ? "Update Template" : "Add New Template" },
           { key: "features", label: "Features" },
           { key: "abbreviations", label: "Abbreviations" },
         ]}
         active={subTab}
         onChange={(k) => {
-          if (k === "form") resetForm();
+          if (k !== "form" || editingId === null) resetForm();
           setSubTab(k);
         }}
       />
@@ -3421,6 +3479,7 @@ function TemplatesSection({
                   <th>Description</th>
                   <th>Status</th>
                   <th>Created At</th>
+                  <th className="pt-col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -3433,16 +3492,20 @@ function TemplatesSection({
                     <td className="pt-cell-truncate" title={t.template_description || ""}>{t.template_description || "—"}</td>
                     <td><StatusBadge status={statusLabel(t.template_status)} /></td>
                     <td>{formatDateTime(t.created_at)}</td>
+                    <td className="pt-col-actions">
+                      <button type="button" className="pt-icon-btn" title="Edit" onClick={() => handleEdit(t)}>✏️</button>
+                      <button type="button" className="pt-icon-btn" title="Delete" onClick={() => openDelete(t)}>🗑️</button>
+                    </td>
                   </tr>
                 ))}
                 {loading && templateRows.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="pt-empty-row">Loading templates…</td>
+                    <td colSpan={8} className="pt-empty-row">Loading templates…</td>
                   </tr>
                 )}
                 {!loading && templateRows.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="pt-empty-row">No templates found.</td>
+                    <td colSpan={8} className="pt-empty-row">No templates found.</td>
                   </tr>
                 )}
               </tbody>
@@ -3456,7 +3519,9 @@ function TemplatesSection({
       {subTab === "form" && (
         <div className="pt-panel">
           <div className="pt-form-card">
-            <div className="pt-form-idbar">New Template</div>
+            <div className="pt-form-idbar">
+              {editingId !== null ? <>Template ID: <span>{editingId}</span></> : "New Template"}
+            </div>
 
             <div className="pt-form-body">
               {formError && <div className="pt-alert pt-alert-error">{formError}</div>}
@@ -3499,7 +3564,7 @@ function TemplatesSection({
 
             <div className="pt-form-footer">
               <button type="button" className="pt-btn pt-btn-outline" disabled={saving} onClick={() => { resetForm(); setSubTab("list"); }}>Cancel</button>
-              <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : "Save"}</button>
+              <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : editingId !== null ? "Update" : "Save"}</button>
             </div>
           </div>
         </div>
@@ -3516,6 +3581,22 @@ function TemplatesSection({
 
       {subTab === "abbreviations" && (
         <AbbreviationsSection abbreviations={abbreviations} setAbbreviations={setAbbreviations} />
+      )}
+
+      {deleteTarget && (
+        <div className="pt-modal-overlay" onClick={closeDelete}>
+          <div className="pt-modal" role="dialog" aria-modal="true" onClick={(ev) => ev.stopPropagation()}>
+            <div className="pt-modal-title">Delete Template</div>
+            <p className="pt-modal-text">
+              Are you sure you want to delete <strong>{deleteTarget.template_name}</strong>? This action cannot be undone.
+            </p>
+            {deleteError && <div className="pt-alert pt-alert-error">{deleteError}</div>}
+            <div className="pt-modal-footer">
+              <button type="button" className="pt-btn pt-btn-outline" disabled={deleting} onClick={closeDelete}>Cancel</button>
+              <button type="button" className="pt-btn pt-btn-danger" disabled={deleting} onClick={handleConfirmDelete}>{deleting ? "Deleting…" : "Delete"}</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

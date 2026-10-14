@@ -1,5 +1,7 @@
 
 
+
+
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 // // ── Auth ─────────────────────────────────────────────────────
@@ -924,6 +926,34 @@
 //   }
 // };
 
+// // ── Editor+: Templates ──────────────────────────────────────────
+
+// // POST /api/v1/editor/templates  (Create Template)
+// // Body: { template_name, project_id, template_design (JSON string), template_description, template_status }
+// // Returns: response_code 201, message, data { ...created template }, errors
+// export const createTemplate = async (payload) => {
+//   const response = await fetch(`${BASE_URL}/editor/templates`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify(payload)
+//   });
+//   return response.json();
+// };
+
+// // GET /api/v1/editor/templates  (Get All Templates)
+// // Query params: project_id, template_status, search (template name), skip (min 0), limit (1-500)
+// // Returns: response_code 200, message, data { total, skip, limit, items: [...] }, errors
+// export const getTemplates = async (skip = 0, limit = 100, search = "", projectId = "", status = "") => {
+//   const params = new URLSearchParams({ skip, limit });
+//   if (search) params.append("search", search);
+//   if (projectId) params.append("project_id", projectId);
+//   if (status) params.append("template_status", status);
+//   const response = await fetch(`${BASE_URL}/editor/templates?${params.toString()}`, {
+//     method: "GET",
+//     headers: { "Accept": "application/json" }
+//   });
+//   return response.json();
+// };
 
 
 
@@ -1878,4 +1908,31 @@ export const getTemplates = async (skip = 0, limit = 100, search = "", projectId
     headers: { "Accept": "application/json" }
   });
   return response.json();
+};
+
+// PUT /api/v1/editor/templates/{template_id}  (Update Template)
+// Body: any of { template_name, project_id, template_design, template_description, template_status } — only fields sent are changed
+// Returns: response_code 200, message, data { ...updated template }, errors
+export const updateTemplate = async (templateId, payload) => {
+  const response = await fetch(`${BASE_URL}/editor/templates/${templateId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  return response.json();
+};
+
+// DELETE /api/v1/editor/templates/{template_id}  (Delete Template)
+// Returns: response_code, message, errors
+export const deleteTemplate = async (templateId) => {
+  const response = await fetch(`${BASE_URL}/editor/templates/${templateId}`, {
+    method: "DELETE",
+    headers: { "Accept": "application/json" }
+  });
+  const text = await response.text();
+  try {
+    return text ? JSON.parse(text) : { response_code: response.status };
+  } catch {
+    return { response_code: response.status, message: text };
+  }
 };
