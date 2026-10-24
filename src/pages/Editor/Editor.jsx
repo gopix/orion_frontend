@@ -2,11 +2,6 @@
 
 
 
-
-
-
-
-
 // import { useEffect, useMemo, useRef, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import "./Editor.css";
@@ -25,6 +20,7 @@
 //   updateTemplate,
 //   deleteTemplate,
 //   getFeatureGroups,
+//   getFeatures,
 // } from "../../services/apiServices";
 
 // /* ────────────────────────────────────────────────────────────
@@ -1590,21 +1586,60 @@
 // /* ════════════════════════════════════════════════════════════
 //    FEATURES SECTION (Features / Feature Group)
 //    ════════════════════════════════════════════════════════════ */
-// function FeaturesSection({ features, setFeatures, featureGroups }) {
+// function FeaturesSection({ setFeatures, featureGroups }) {
 //   const emptyForm = { id: null, name: "", group: "", description: "", status: "Active" };
 //   const [subTab, setSubTab] = useState("list");
 //   const [form, setForm] = useState(emptyForm);
 //   const [search, setSearch] = useState("");
+//   const [debouncedSearch, setDebouncedSearch] = useState("");
+//   const [groupFilter, setGroupFilter] = useState("");
 //   const [page, setPage] = useState(1);
 //   const [rowsPerPage, setRowsPerPage] = useState(10);
+//   const [featureRows, setFeatureRows] = useState([]);
+//   const [total, setTotal] = useState(0);
+//   const [loading, setLoading] = useState(false);
+//   const [listError, setListError] = useState("");
+//   const [reloadKey, setReloadKey] = useState(0);
 
-//   const filtered = useMemo(() => {
-//     const term = search.trim().toLowerCase();
-//     if (!term) return features;
-//     return features.filter((f) => f.name.toLowerCase().includes(term) || f.group.toLowerCase().includes(term));
-//   }, [features, search]);
+//   useEffect(() => {
+//     const timer = setTimeout(() => {
+//       setDebouncedSearch(search.trim());
+//       setPage(1);
+//     }, 400);
+//     return () => clearTimeout(timer);
+//   }, [search]);
 
-//   const { pageRows, total, totalPages, safePage, start, end } = paginateData(filtered, page, rowsPerPage);
+//   useEffect(() => {
+//     let cancelled = false;
+
+//     const loadFeatures = async () => {
+//       setLoading(true);
+//       setListError("");
+//       try {
+//         const res = await getFeatures((page - 1) * rowsPerPage, rowsPerPage, debouncedSearch, groupFilter);
+//         if (cancelled) return;
+//         if (res?.response_code === 200 && res.data) {
+//           setFeatureRows(res.data.items || []);
+//           setTotal(res.data.total || 0);
+//         } else {
+//           setListError(extractError(res, "Failed to load features."));
+//         }
+//       } catch {
+//         if (!cancelled) setListError("Unable to reach the server. Please try again.");
+//       } finally {
+//         if (!cancelled) setLoading(false);
+//       }
+//     };
+
+//     loadFeatures();
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [page, rowsPerPage, debouncedSearch, groupFilter, reloadKey]);
+
+//   const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+//   const start = total === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+//   const end = Math.min((page - 1) * rowsPerPage + featureRows.length, total);
 
 //   const resetForm = () => setForm(emptyForm);
 
@@ -1628,13 +1663,6 @@
 //     setSubTab("list");
 //   };
 
-//   const handleEditFeature = (f) => {
-//     setForm({ id: f.id, name: f.name, group: f.group, description: f.description, status: f.status });
-//     setSubTab("form");
-//   };
-
-//   const handleDeleteFeature = (id) => setFeatures((prev) => prev.filter((f) => f.id !== id));
-
 //   return (
 //     <div className="pt-card">
 //       <SubTabs
@@ -1651,43 +1679,68 @@
 
 //       {subTab === "list" && (
 //         <div className="pt-panel">
-//           <SearchBox
-//             label="Search for feature"
-//             placeholder="Search"
-//             value={search}
-//             onChange={(v) => {
-//               setSearch(v);
-//               setPage(1);
-//             }}
-//           />
+//           {listError && (
+//             <div className="pt-alert pt-alert-error">
+//               <span>{listError}</span>
+//               <button type="button" className="pt-alert-action" onClick={() => setReloadKey((k) => k + 1)}>
+//                 Retry
+//               </button>
+//             </div>
+//           )}
+
+//           <div className="pt-copyedit-filters">
+//             <SearchBox
+//               label="Search for feature"
+//               placeholder="Filter by feature name"
+//               value={search}
+//               onChange={setSearch}
+//             />
+//             <div className="pt-field pt-status-filter">
+//               <label>Feature Group</label>
+//               <select
+//                 value={groupFilter}
+//                 onChange={(e) => {
+//                   setGroupFilter(e.target.value);
+//                   setPage(1);
+//                 }}
+//               >
+//                 <option value="">All Groups</option>
+//                 {featureGroups.map((g) => (
+//                   <option key={g.feature_group_id} value={g.group_code}>{g.group_name}</option>
+//                 ))}
+//               </select>
+//             </div>
+//           </div>
 
 //           <div className="pt-table-wrap">
 //             <table className="pt-table">
 //               <thead>
 //                 <tr>
+//                   <th>ID</th>
+//                   <th>Code</th>
 //                   <th>Feature Name</th>
 //                   <th>Group</th>
 //                   <th>Description</th>
-//                   <th>Status</th>
 //                   <th>Created At</th>
-//                   <th className="pt-col-actions">Actions</th>
 //                 </tr>
 //               </thead>
 //               <tbody>
-//                 {pageRows.map((f) => (
-//                   <tr key={f.id}>
-//                     <td className="pt-cell-strong">{f.name}</td>
-//                     <td>{f.group}</td>
-//                     <td className="pt-cell-truncate">{f.description || "—"}</td>
-//                     <td><StatusBadge status={f.status} /></td>
-//                     <td>{f.createdAt}</td>
-//                     <td className="pt-col-actions">
-//                       <button className="pt-icon-btn" title="Edit" onClick={() => handleEditFeature(f)}>✏️</button>
-//                       <button className="pt-icon-btn" title="Delete" onClick={() => handleDeleteFeature(f.id)}>🗑️</button>
-//                     </td>
+//                 {featureRows.map((f) => (
+//                   <tr key={f.feature_id}>
+//                     <td>{f.feature_id}</td>
+//                     <td>{f.feature_code}</td>
+//                     <td className="pt-cell-strong">{f.feature_name}</td>
+//                     <td>{f.group_name || "—"}</td>
+//                     <td className="pt-cell-truncate" title={f.feature_description || ""}>{f.feature_description || "—"}</td>
+//                     <td>{formatDateTime(f.created_at)}</td>
 //                   </tr>
 //                 ))}
-//                 {pageRows.length === 0 && (
+//                 {loading && featureRows.length === 0 && (
+//                   <tr>
+//                     <td colSpan={6} className="pt-empty-row">Loading features…</td>
+//                   </tr>
+//                 )}
+//                 {!loading && featureRows.length === 0 && (
 //                   <tr>
 //                     <td colSpan={6} className="pt-empty-row">No features found.</td>
 //                   </tr>
@@ -1696,7 +1749,7 @@
 //             </table>
 //           </div>
 
-//           <PaginationBar page={safePage} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} total={total} totalPages={totalPages} start={start} end={end} />
+//           <PaginationBar page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} total={total} totalPages={totalPages} start={start} end={end} />
 //         </div>
 //       )}
 
@@ -1900,8 +1953,44 @@
 // }
 
 // /* ════════════════════════════════════════════════════════════
-//    FEATURES SECTION (Feature Group / Features / Abbreviations)
+//    FEATURE GROUPS — shared loader + two separate screens
 //    ════════════════════════════════════════════════════════════ */
+// function useFeatureGroups() {
+//   const [featureGroups, setFeatureGroups] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState("");
+//   const [reloadKey, setReloadKey] = useState(0);
+
+//   useEffect(() => {
+//     let cancelled = false;
+
+//     const loadFeatureGroups = async () => {
+//       setLoading(true);
+//       setError("");
+//       try {
+//         const res = await getFeatureGroups(0, 500);
+//         if (cancelled) return;
+//         if (res?.response_code === 200 && res.data) {
+//           setFeatureGroups(res.data.items || []);
+//         } else {
+//           setError(extractError(res, "Failed to load feature groups."));
+//         }
+//       } catch {
+//         if (!cancelled) setError("Unable to reach the server. Please try again.");
+//       } finally {
+//         if (!cancelled) setLoading(false);
+//       }
+//     };
+
+//     loadFeatureGroups();
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [reloadKey]);
+
+//   return { featureGroups, loading, error, reload: () => setReloadKey((k) => k + 1) };
+// }
+
 // function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
 //   const [selectedId, setSelectedId] = useState("");
 
@@ -1939,45 +2028,35 @@
 //   );
 // }
 
-// function FeatureGroupSection({ features, setFeatures, abbreviations, setAbbreviations }) {
-//   const [subTab, setSubTab] = useState("featuregroup");
-//   const [featureGroups, setFeatureGroups] = useState([]);
-//   const [groupsLoading, setGroupsLoading] = useState(false);
-//   const [groupsError, setGroupsError] = useState("");
-//   const [reloadKey, setReloadKey] = useState(0);
+// function FeatureGroupScreen() {
+//   const { featureGroups, loading, error, reload } = useFeatureGroups();
 
-//   useEffect(() => {
-//     let cancelled = false;
+//   return (
+//     <div className="pt-card">
+//       <SubTabs
+//         tabs={[{ key: "featuregroup", label: "Feature Group" }]}
+//         active="featuregroup"
+//         onChange={() => {}}
+//       />
 
-//     const loadFeatureGroups = async () => {
-//       setGroupsLoading(true);
-//       setGroupsError("");
-//       try {
-//         const res = await getFeatureGroups(0, 500);
-//         if (cancelled) return;
-//         if (res?.response_code === 200 && res.data) {
-//           setFeatureGroups(res.data.items || []);
-//         } else {
-//           setGroupsError(extractError(res, "Failed to load feature groups."));
-//         }
-//       } catch {
-//         if (!cancelled) setGroupsError("Unable to reach the server. Please try again.");
-//       } finally {
-//         if (!cancelled) setGroupsLoading(false);
-//       }
-//     };
+//       <FeatureGroupsPanel
+//         featureGroups={featureGroups}
+//         loading={loading}
+//         error={error}
+//         onRetry={reload}
+//       />
+//     </div>
+//   );
+// }
 
-//     loadFeatureGroups();
-//     return () => {
-//       cancelled = true;
-//     };
-//   }, [reloadKey]);
+// function FeaturesScreen({ setFeatures, abbreviations, setAbbreviations }) {
+//   const [subTab, setSubTab] = useState("features");
+//   const { featureGroups } = useFeatureGroups();
 
 //   return (
 //     <div className="pt-card">
 //       <SubTabs
 //         tabs={[
-//           { key: "featuregroup", label: "Feature Group" },
 //           { key: "features", label: "Features" },
 //           { key: "abbreviations", label: "Abbreviations" },
 //         ]}
@@ -1985,17 +2064,8 @@
 //         onChange={setSubTab}
 //       />
 
-//       {subTab === "featuregroup" && (
-//         <FeatureGroupsPanel
-//           featureGroups={featureGroups}
-//           loading={groupsLoading}
-//           error={groupsError}
-//           onRetry={() => setReloadKey((k) => k + 1)}
-//         />
-//       )}
-
 //       {subTab === "features" && (
-//         <FeaturesSection features={features} setFeatures={setFeatures} featureGroups={featureGroups} />
+//         <FeaturesSection setFeatures={setFeatures} featureGroups={featureGroups} />
 //       )}
 
 //       {subTab === "abbreviations" && (
@@ -2208,11 +2278,23 @@
 //     subtitle: "Manage template layouts and their designs.",
 //   },
 //   {
-//     key: "featuregroups",
-//     label: "Features",
+//     key: "feature",
+//     label: "Feature",
 //     Icon: IconFeatureGroup,
-//     title: "Features",
-//     subtitle: "Manage feature groups, features and abbreviations.",
+//     children: [
+//       {
+//         key: "features",
+//         label: "Features",
+//         title: "Features",
+//         subtitle: "Manage features and abbreviations.",
+//       },
+//       {
+//         key: "featuregroups",
+//         label: "Feature Group",
+//         title: "Feature Group",
+//         subtitle: "Manage feature groups.",
+//       },
+//     ],
 //   },
 //   {
 //     key: "users",
@@ -2234,18 +2316,28 @@
 //   const navigate = useNavigate();
 //   const userIsAdmin = isAdmin();
 //   const [activeTab, setActiveTab] = useState(userIsAdmin ? "customers" : "copyedit");
+//   const [expandedGroups, setExpandedGroups] = useState({});
 
 //   const [projects, setProjects] = useState(seedProjects);
 //   const [templates, setTemplates] = useState([]);
 //   const [users, setUsers] = useState(seedUsers);
-//   const [features, setFeatures] = useState(seedFeatures);
+//   const [, setFeatures] = useState(seedFeatures);
 //   const [abbreviations, setAbbreviations] = useState(seedAbbreviations);
 //   const [files, setFiles] = useState(seedFiles);
 
 //   // Non-admin users only get the Copy Edit page — Customer, Project,
 //   // Template, Feature Group and User management stay admin-only.
 //   const pages = userIsAdmin ? EDITOR_PAGES : EDITOR_PAGES.filter((p) => p.key === "copyedit");
-//   const currentPage = pages.find((p) => p.key === activeTab) || pages[0];
+//   const flatPages = pages.flatMap((p) => p.children || [p]);
+//   const currentPage = flatPages.find((p) => p.key === activeTab) || flatPages[0];
+
+//   const handleGroupClick = (group) => {
+//     const isOpen = !!expandedGroups[group.key];
+//     setExpandedGroups((prev) => ({ ...prev, [group.key]: !isOpen }));
+//     if (!isOpen && !group.children.some((c) => c.key === activeTab)) {
+//       setActiveTab(group.children[0].key);
+//     }
+//   };
 
 //   return (
 //     <div className="editor-page">
@@ -2261,17 +2353,58 @@
 
 //         <nav className="editor-nav">
 //           <p className="editor-nav-label">EDITOR+</p>
-//           {pages.map(({ key, label, Icon }) => (
-//             <div
-//               key={key}
-//               className={`editor-nav-item${activeTab === key ? " active" : ""}`}
-//               onClick={() => setActiveTab(key)}
-//             >
-//               <span className="editor-nav-icon"><Icon /></span>
-//               <span>{label}</span>
-//               {activeTab === key && <span className="editor-nav-dot"></span>}
-//             </div>
-//           ))}
+//           {pages.map((page) => {
+//             const { key, label, Icon, children } = page;
+
+//             if (children) {
+//               const isOpen = !!expandedGroups[key];
+//               const hasActiveChild = children.some((c) => c.key === activeTab);
+//               return (
+//                 <div key={key}>
+//                   <div
+//                     className={`editor-nav-item${hasActiveChild ? " parent-active" : ""}`}
+//                     onClick={() => handleGroupClick(page)}
+//                     aria-expanded={isOpen}
+//                   >
+//                     <span className="editor-nav-icon"><Icon /></span>
+//                     <span>{label}</span>
+//                     <span className={`editor-nav-chevron${isOpen ? " open" : ""}`}>
+//                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+//                         <path d="M9 6l6 6-6 6" />
+//                       </svg>
+//                     </span>
+//                   </div>
+
+//                   {isOpen && (
+//                     <div className="editor-nav-sub">
+//                       {children.map((child) => (
+//                         <div
+//                           key={child.key}
+//                           className={`editor-nav-item editor-nav-subitem${activeTab === child.key ? " active" : ""}`}
+//                           onClick={() => setActiveTab(child.key)}
+//                         >
+//                           <span>{child.label}</span>
+//                           {activeTab === child.key && <span className="editor-nav-dot"></span>}
+//                         </div>
+//                       ))}
+//                     </div>
+//                   )}
+//                 </div>
+//               );
+//             }
+
+//             return (
+//               <div
+//                 key={key}
+//                 className={`editor-nav-item${activeTab === key ? " active" : ""}`}
+//                 onClick={() => setActiveTab(key)}
+//               >
+//                 <span className="editor-nav-icon"><Icon /></span>
+//                 <span>{label}</span>
+//                 {activeTab === key && <span className="editor-nav-dot"></span>}
+//               </div>
+//             );
+//           })}
 //         </nav>
 
 //         <div className="editor-sidebar-footer">
@@ -2302,14 +2435,15 @@
 //               <TemplatesSection setTemplates={setTemplates} setProjects={setProjects} />
 //             )}
 
-//             {activeTab === "featuregroups" && (
-//               <FeatureGroupSection
-//                 features={features}
+//             {activeTab === "features" && (
+//               <FeaturesScreen
 //                 setFeatures={setFeatures}
 //                 abbreviations={abbreviations}
 //                 setAbbreviations={setAbbreviations}
 //               />
 //             )}
+
+//             {activeTab === "featuregroups" && <FeatureGroupScreen />}
 
 //             {activeTab === "users" && <UsersSection users={users} setUsers={setUsers} />}
 
@@ -2322,11 +2456,6 @@
 //     </div>
 //   );
 // }
-
-
-
-
-
 
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -2347,6 +2476,7 @@ import {
   updateTemplate,
   deleteTemplate,
   getFeatureGroups,
+  getFeatureGroupById,
   getFeatures,
 } from "../../services/apiServices";
 
@@ -4280,10 +4410,96 @@ function AbbreviationsSection({ abbreviations, setAbbreviations }) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   FEATURES SECTION (Feature Group / Features / Abbreviations)
+   FEATURE GROUPS — shared loader + two separate screens
    ════════════════════════════════════════════════════════════ */
+function useFeatureGroups() {
+  const [featureGroups, setFeatureGroups] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadFeatureGroups = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await getFeatureGroups(0, 500);
+        if (cancelled) return;
+        if (res?.response_code === 200 && res.data) {
+          setFeatureGroups(res.data.items || []);
+        } else {
+          setError(extractError(res, "Failed to load feature groups."));
+        }
+      } catch {
+        if (!cancelled) setError("Unable to reach the server. Please try again.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadFeatureGroups();
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  return { featureGroups, loading, error, reload: () => setReloadKey((k) => k + 1) };
+}
+
 function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
   const [selectedId, setSelectedId] = useState("");
+  const [groupDetail, setGroupDetail] = useState(null);
+  const [groupFeatures, setGroupFeatures] = useState([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState("");
+  const [detailReloadKey, setDetailReloadKey] = useState(0);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setGroupDetail(null);
+      setGroupFeatures([]);
+      setDetailError("");
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const loadGroupDetail = async () => {
+      setDetailLoading(true);
+      setDetailError("");
+      try {
+        const groupRes = await getFeatureGroupById(selectedId);
+        if (cancelled) return;
+        if (groupRes?.response_code !== 200 || !groupRes.data) {
+          setGroupDetail(null);
+          setGroupFeatures([]);
+          setDetailError(extractError(groupRes, "Failed to load feature group."));
+          return;
+        }
+        setGroupDetail(groupRes.data);
+
+        const featuresRes = await getFeatures(0, 500, "", groupRes.data.group_code);
+        if (cancelled) return;
+        if (featuresRes?.response_code === 200 && featuresRes.data) {
+          setGroupFeatures(featuresRes.data.items || []);
+        } else {
+          setGroupFeatures([]);
+          setDetailError(extractError(featuresRes, "Failed to load features."));
+        }
+      } catch {
+        if (!cancelled) setDetailError("Unable to reach the server. Please try again.");
+      } finally {
+        if (!cancelled) setDetailLoading(false);
+      }
+    };
+
+    loadGroupDetail();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedId, detailReloadKey]);
 
   return (
     <div className="pt-panel">
@@ -4313,66 +4529,113 @@ function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
               ))}
             </select>
           </div>
+
+          {groupDetail && (
+            <>
+              <div className="pt-field-row">
+                <div className="pt-field">
+                  <label>Group Name</label>
+                  <input type="text" value={groupDetail.group_name || ""} readOnly />
+                </div>
+                <div className="pt-field">
+                  <label>Group Code</label>
+                  <input type="text" value={groupDetail.group_code ?? ""} readOnly />
+                </div>
+              </div>
+
+              <div className="pt-field">
+                <label>Description</label>
+                <input type="text" value={groupDetail.group_description || ""} readOnly />
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {selectedId && detailError && (
+        <div className="pt-alert pt-alert-error">
+          <span>{detailError}</span>
+          <button type="button" className="pt-alert-action" onClick={() => setDetailReloadKey((k) => k + 1)}>
+            Retry
+          </button>
+        </div>
+      )}
+
+      {selectedId && (
+        <div className="pt-table-wrap">
+          <table className="pt-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Code</th>
+                <th>Feature Name</th>
+                <th>Description</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {groupFeatures.map((f) => (
+                <tr key={f.feature_id}>
+                  <td>{f.feature_id}</td>
+                  <td>{f.feature_code}</td>
+                  <td className="pt-cell-strong">{f.feature_name}</td>
+                  <td className="pt-cell-truncate" title={f.feature_description || ""}>{f.feature_description || "—"}</td>
+                  <td>{formatDateTime(f.created_at)}</td>
+                </tr>
+              ))}
+              {detailLoading && groupFeatures.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="pt-empty-row">Loading features…</td>
+                </tr>
+              )}
+              {!detailLoading && !detailError && groupFeatures.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="pt-empty-row">No features found in this group.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
 
-function FeatureGroupSection({ setFeatures, abbreviations, setAbbreviations }) {
-  const [subTab, setSubTab] = useState("featuregroup");
-  const [featureGroups, setFeatureGroups] = useState([]);
-  const [groupsLoading, setGroupsLoading] = useState(false);
-  const [groupsError, setGroupsError] = useState("");
-  const [reloadKey, setReloadKey] = useState(0);
+function FeatureGroupScreen() {
+  const { featureGroups, loading, error, reload } = useFeatureGroups();
 
-  useEffect(() => {
-    let cancelled = false;
+  return (
+    <div className="pt-card">
+      <SubTabs
+        tabs={[{ key: "featuregroup", label: "Feature Group" }]}
+        active="featuregroup"
+        onChange={() => {}}
+      />
 
-    const loadFeatureGroups = async () => {
-      setGroupsLoading(true);
-      setGroupsError("");
-      try {
-        const res = await getFeatureGroups(0, 500);
-        if (cancelled) return;
-        if (res?.response_code === 200 && res.data) {
-          setFeatureGroups(res.data.items || []);
-        } else {
-          setGroupsError(extractError(res, "Failed to load feature groups."));
-        }
-      } catch {
-        if (!cancelled) setGroupsError("Unable to reach the server. Please try again.");
-      } finally {
-        if (!cancelled) setGroupsLoading(false);
-      }
-    };
+      <FeatureGroupsPanel
+        featureGroups={featureGroups}
+        loading={loading}
+        error={error}
+        onRetry={reload}
+      />
+    </div>
+  );
+}
 
-    loadFeatureGroups();
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadKey]);
+function FeaturesScreen({ setFeatures, abbreviations, setAbbreviations }) {
+  const [subTab, setSubTab] = useState("features");
+  const { featureGroups } = useFeatureGroups();
 
   return (
     <div className="pt-card">
       <SubTabs
         tabs={[
-          { key: "featuregroup", label: "Feature Group" },
           { key: "features", label: "Features" },
           { key: "abbreviations", label: "Abbreviations" },
         ]}
         active={subTab}
         onChange={setSubTab}
       />
-
-      {subTab === "featuregroup" && (
-        <FeatureGroupsPanel
-          featureGroups={featureGroups}
-          loading={groupsLoading}
-          error={groupsError}
-          onRetry={() => setReloadKey((k) => k + 1)}
-        />
-      )}
 
       {subTab === "features" && (
         <FeaturesSection setFeatures={setFeatures} featureGroups={featureGroups} />
@@ -4588,11 +4851,23 @@ const EDITOR_PAGES = [
     subtitle: "Manage template layouts and their designs.",
   },
   {
-    key: "featuregroups",
-    label: "Features",
+    key: "feature",
+    label: "Feature",
     Icon: IconFeatureGroup,
-    title: "Features",
-    subtitle: "Manage feature groups, features and abbreviations.",
+    children: [
+      {
+        key: "features",
+        label: "Features",
+        title: "Features",
+        subtitle: "Manage features and abbreviations.",
+      },
+      {
+        key: "featuregroups",
+        label: "Feature Group",
+        title: "Feature Group",
+        subtitle: "Manage feature groups.",
+      },
+    ],
   },
   {
     key: "users",
@@ -4614,6 +4889,7 @@ export default function Editor() {
   const navigate = useNavigate();
   const userIsAdmin = isAdmin();
   const [activeTab, setActiveTab] = useState(userIsAdmin ? "customers" : "copyedit");
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   const [projects, setProjects] = useState(seedProjects);
   const [templates, setTemplates] = useState([]);
@@ -4625,7 +4901,16 @@ export default function Editor() {
   // Non-admin users only get the Copy Edit page — Customer, Project,
   // Template, Feature Group and User management stay admin-only.
   const pages = userIsAdmin ? EDITOR_PAGES : EDITOR_PAGES.filter((p) => p.key === "copyedit");
-  const currentPage = pages.find((p) => p.key === activeTab) || pages[0];
+  const flatPages = pages.flatMap((p) => p.children || [p]);
+  const currentPage = flatPages.find((p) => p.key === activeTab) || flatPages[0];
+
+  const handleGroupClick = (group) => {
+    const isOpen = !!expandedGroups[group.key];
+    setExpandedGroups((prev) => ({ ...prev, [group.key]: !isOpen }));
+    if (!isOpen && !group.children.some((c) => c.key === activeTab)) {
+      setActiveTab(group.children[0].key);
+    }
+  };
 
   return (
     <div className="editor-page">
@@ -4641,17 +4926,58 @@ export default function Editor() {
 
         <nav className="editor-nav">
           <p className="editor-nav-label">EDITOR+</p>
-          {pages.map(({ key, label, Icon }) => (
-            <div
-              key={key}
-              className={`editor-nav-item${activeTab === key ? " active" : ""}`}
-              onClick={() => setActiveTab(key)}
-            >
-              <span className="editor-nav-icon"><Icon /></span>
-              <span>{label}</span>
-              {activeTab === key && <span className="editor-nav-dot"></span>}
-            </div>
-          ))}
+          {pages.map((page) => {
+            const { key, label, Icon, children } = page;
+
+            if (children) {
+              const isOpen = !!expandedGroups[key];
+              const hasActiveChild = children.some((c) => c.key === activeTab);
+              return (
+                <div key={key}>
+                  <div
+                    className={`editor-nav-item${hasActiveChild ? " parent-active" : ""}`}
+                    onClick={() => handleGroupClick(page)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="editor-nav-icon"><Icon /></span>
+                    <span>{label}</span>
+                    <span className={`editor-nav-chevron${isOpen ? " open" : ""}`}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 6l6 6-6 6" />
+                      </svg>
+                    </span>
+                  </div>
+
+                  {isOpen && (
+                    <div className="editor-nav-sub">
+                      {children.map((child) => (
+                        <div
+                          key={child.key}
+                          className={`editor-nav-item editor-nav-subitem${activeTab === child.key ? " active" : ""}`}
+                          onClick={() => setActiveTab(child.key)}
+                        >
+                          <span>{child.label}</span>
+                          {activeTab === child.key && <span className="editor-nav-dot"></span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={key}
+                className={`editor-nav-item${activeTab === key ? " active" : ""}`}
+                onClick={() => setActiveTab(key)}
+              >
+                <span className="editor-nav-icon"><Icon /></span>
+                <span>{label}</span>
+                {activeTab === key && <span className="editor-nav-dot"></span>}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="editor-sidebar-footer">
@@ -4682,13 +5008,15 @@ export default function Editor() {
               <TemplatesSection setTemplates={setTemplates} setProjects={setProjects} />
             )}
 
-            {activeTab === "featuregroups" && (
-              <FeatureGroupSection
+            {activeTab === "features" && (
+              <FeaturesScreen
                 setFeatures={setFeatures}
                 abbreviations={abbreviations}
                 setAbbreviations={setAbbreviations}
               />
             )}
+
+            {activeTab === "featuregroups" && <FeatureGroupScreen />}
 
             {activeTab === "users" && <UsersSection users={users} setUsers={setUsers} />}
 

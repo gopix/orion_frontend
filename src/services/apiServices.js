@@ -3,7 +3,6 @@
 
 
 
-
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 // // ── Auth ─────────────────────────────────────────────────────
@@ -1001,8 +1000,23 @@
 //   return response.json();
 // };
 
+// // ── Editor+: Features ───────────────────────────────────────────
 
-
+// // GET /api/v1/editor/features  (List Features, ordered by feature_code)
+// // Query params: group_code, search (feature name), skip (min 0), limit (1-500)
+// // Returns: response_code 200, message, data { total, skip, limit, items: [{ feature_id,
+// //          feature_name, feature_code, group_code, group_name, feature_description,
+// //          created_by, updated_by, created_at, updated_at }] }, errors
+// export const getFeatures = async (skip = 0, limit = 100, search = "", groupCode = "") => {
+//   const params = new URLSearchParams({ skip, limit });
+//   if (search) params.append("search", search);
+//   if (groupCode !== "") params.append("group_code", groupCode);
+//   const response = await fetch(`${BASE_URL}/editor/features?${params.toString()}`, {
+//     method: "GET",
+//     headers: { "Accept": "application/json" }
+//   });
+//   return response.json();
+// };
 
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -1996,6 +2010,17 @@ export const getFeatureGroups = async (skip = 0, limit = 100, search = "") => {
   const params = new URLSearchParams({ skip, limit });
   if (search) params.append("search", search);
   const response = await fetch(`${BASE_URL}/editor/feature-groups?${params.toString()}`, {
+    method: "GET",
+    headers: { "Accept": "application/json" }
+  });
+  return response.json();
+};
+
+// GET /api/v1/editor/feature-groups/{feature_group_id}  (Get Feature Group)
+// Returns: response_code 200, message, data { feature_group_id, group_name, group_code,
+//          group_description, created_by, updated_by, created_at, updated_at }, errors
+export const getFeatureGroupById = async (featureGroupId) => {
+  const response = await fetch(`${BASE_URL}/editor/feature-groups/${featureGroupId}`, {
     method: "GET",
     headers: { "Accept": "application/json" }
   });
