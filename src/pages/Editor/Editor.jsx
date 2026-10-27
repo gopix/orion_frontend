@@ -1,7 +1,6 @@
 
 
 
-
 // import { useEffect, useMemo, useRef, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import "./Editor.css";
@@ -20,6 +19,7 @@
 //   updateTemplate,
 //   deleteTemplate,
 //   getFeatureGroups,
+//   getFeatureGroupById,
 //   getFeatures,
 // } from "../../services/apiServices";
 
@@ -1993,6 +1993,56 @@
 
 // function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
 //   const [selectedId, setSelectedId] = useState("");
+//   const [groupDetail, setGroupDetail] = useState(null);
+//   const [groupFeatures, setGroupFeatures] = useState([]);
+//   const [detailLoading, setDetailLoading] = useState(false);
+//   const [detailError, setDetailError] = useState("");
+//   const [detailReloadKey, setDetailReloadKey] = useState(0);
+
+//   useEffect(() => {
+//     if (!selectedId) {
+//       setGroupDetail(null);
+//       setGroupFeatures([]);
+//       setDetailError("");
+//       return undefined;
+//     }
+
+//     let cancelled = false;
+
+//     const loadGroupDetail = async () => {
+//       setDetailLoading(true);
+//       setDetailError("");
+//       try {
+//         const groupRes = await getFeatureGroupById(selectedId);
+//         if (cancelled) return;
+//         if (groupRes?.response_code !== 200 || !groupRes.data) {
+//           setGroupDetail(null);
+//           setGroupFeatures([]);
+//           setDetailError(extractError(groupRes, "Failed to load feature group."));
+//           return;
+//         }
+//         setGroupDetail(groupRes.data);
+
+//         const featuresRes = await getFeatures(0, 500, "", groupRes.data.group_code);
+//         if (cancelled) return;
+//         if (featuresRes?.response_code === 200 && featuresRes.data) {
+//           setGroupFeatures(featuresRes.data.items || []);
+//         } else {
+//           setGroupFeatures([]);
+//           setDetailError(extractError(featuresRes, "Failed to load features."));
+//         }
+//       } catch {
+//         if (!cancelled) setDetailError("Unable to reach the server. Please try again.");
+//       } finally {
+//         if (!cancelled) setDetailLoading(false);
+//       }
+//     };
+
+//     loadGroupDetail();
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [selectedId, detailReloadKey]);
 
 //   return (
 //     <div className="pt-panel">
@@ -2022,8 +2072,74 @@
 //               ))}
 //             </select>
 //           </div>
+
+//           {groupDetail && (
+//             <>
+//               <div className="pt-field-row">
+//                 <div className="pt-field">
+//                   <label>Group Name</label>
+//                   <input type="text" value={groupDetail.group_name || ""} readOnly />
+//                 </div>
+//                 <div className="pt-field">
+//                   <label>Group Code</label>
+//                   <input type="text" value={groupDetail.group_code ?? ""} readOnly />
+//                 </div>
+//               </div>
+
+//               <div className="pt-field">
+//                 <label>Description</label>
+//                 <input type="text" value={groupDetail.group_description || ""} readOnly />
+//               </div>
+//             </>
+//           )}
 //         </div>
 //       </div>
+
+//       {selectedId && detailError && (
+//         <div className="pt-alert pt-alert-error">
+//           <span>{detailError}</span>
+//           <button type="button" className="pt-alert-action" onClick={() => setDetailReloadKey((k) => k + 1)}>
+//             Retry
+//           </button>
+//         </div>
+//       )}
+
+//       {selectedId && (
+//         <div className="pt-table-wrap">
+//           <table className="pt-table">
+//             <thead>
+//               <tr>
+//                 <th>ID</th>
+//                 <th>Code</th>
+//                 <th>Feature Name</th>
+//                 <th>Description</th>
+//                 <th>Created At</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {groupFeatures.map((f) => (
+//                 <tr key={f.feature_id}>
+//                   <td>{f.feature_id}</td>
+//                   <td>{f.feature_code}</td>
+//                   <td className="pt-cell-strong">{f.feature_name}</td>
+//                   <td className="pt-cell-truncate" title={f.feature_description || ""}>{f.feature_description || "—"}</td>
+//                   <td>{formatDateTime(f.created_at)}</td>
+//                 </tr>
+//               ))}
+//               {detailLoading && groupFeatures.length === 0 && (
+//                 <tr>
+//                   <td colSpan={5} className="pt-empty-row">Loading features…</td>
+//                 </tr>
+//               )}
+//               {!detailLoading && !detailError && groupFeatures.length === 0 && (
+//                 <tr>
+//                   <td colSpan={5} className="pt-empty-row">No features found in this group.</td>
+//                 </tr>
+//               )}
+//             </tbody>
+//           </table>
+//         </div>
+//       )}
 //     </div>
 //   );
 // }
@@ -2456,6 +2572,7 @@
 //     </div>
 //   );
 // }
+
 
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -4044,7 +4161,7 @@ function UsersSection({ users, setUsers }) {
    FEATURES SECTION (Features / Feature Group)
    ════════════════════════════════════════════════════════════ */
 function FeaturesSection({ setFeatures, featureGroups }) {
-  const emptyForm = { id: null, name: "", group: "", description: "", status: "Active" };
+  const emptyForm = { id: null, name: "", group: "", description: "" };
   const [subTab, setSubTab] = useState("list");
   const [form, setForm] = useState(emptyForm);
   const [search, setSearch] = useState("");
@@ -4108,7 +4225,6 @@ function FeaturesSection({ setFeatures, featureGroups }) {
         name: form.name.trim(),
         group: form.group,
         description: form.description.trim(),
-        status: form.status,
         createdAt: todayStr(),
         createdBy: currentUser(),
       };
@@ -4223,23 +4339,14 @@ function FeaturesSection({ setFeatures, featureGroups }) {
                 <input type="text" placeholder="Feature name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
 
-              <div className="pt-field-row">
-                <div className="pt-field">
-                  <label>Feature Group <span className="pt-required">*</span></label>
-                  <select value={form.group} onChange={(e) => setForm({ ...form, group: e.target.value })}>
-                    <option value="">Select Group</option>
-                    {featureGroups.map((g) => (
-                      <option key={g.feature_group_id} value={g.group_name}>{g.group_name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="pt-field">
-                  <label>Status</label>
-                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
+              <div className="pt-field">
+                <label>Feature Group <span className="pt-required">*</span></label>
+                <select value={form.group} onChange={(e) => setForm({ ...form, group: e.target.value })}>
+                  <option value="">Select Group</option>
+                  {featureGroups.map((g) => (
+                    <option key={g.feature_group_id} value={g.group_name}>{g.group_name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="pt-field">
@@ -4448,7 +4555,7 @@ function useFeatureGroups() {
   return { featureGroups, loading, error, reload: () => setReloadKey((k) => k + 1) };
 }
 
-function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
+function FeatureGroupsPanel({ featureGroups, loading, error, onRetry, onEdit }) {
   const [selectedId, setSelectedId] = useState("");
   const [groupDetail, setGroupDetail] = useState(null);
   const [groupFeatures, setGroupFeatures] = useState([]);
@@ -4513,42 +4620,43 @@ function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
       )}
 
       <div className="pt-form-card">
-        <div className="pt-form-idbar">
-          Existing Feature Groups: <span>{featureGroups.length}</span>
-        </div>
-
         <div className="pt-form-body">
-          <div className="pt-field">
-            <label>Feature Group</label>
-            <select value={selectedId} disabled={loading} onChange={(e) => setSelectedId(e.target.value)}>
-              <option value="">{loading ? "Loading feature groups…" : "Select Feature Group"}</option>
-              {featureGroups.map((g) => (
-                <option key={g.feature_group_id} value={g.feature_group_id}>
-                  {g.group_code} - {g.group_name}
-                </option>
-              ))}
-            </select>
+          <div className="pt-group-row">
+            <div className="pt-field">
+              <label>Feature Group</label>
+              <select value={selectedId} disabled={loading} onChange={(e) => setSelectedId(e.target.value)}>
+                <option value="">{loading ? "Loading feature groups…" : "Select Feature Group"}</option>
+                {featureGroups.map((g) => (
+                  <option key={g.feature_group_id} value={g.feature_group_id}>
+                    {g.group_code} - {g.group_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="pt-field">
+              <label>Description</label>
+              <input type="text" value={groupDetail?.group_description || ""} readOnly />
+            </div>
+
+            <div className="pt-field pt-group-actions">
+              <label>Actions</label>
+              <div className="pt-group-actions-btns">
+                <button
+                  type="button"
+                  className="pt-icon-btn"
+                  title="Edit"
+                  disabled={!groupDetail}
+                  onClick={() => onEdit(groupDetail)}
+                >
+                  ✏️
+                </button>
+                <button type="button" className="pt-icon-btn" title="Delete" disabled={!groupDetail}>
+                  🗑️
+                </button>
+              </div>
+            </div>
           </div>
-
-          {groupDetail && (
-            <>
-              <div className="pt-field-row">
-                <div className="pt-field">
-                  <label>Group Name</label>
-                  <input type="text" value={groupDetail.group_name || ""} readOnly />
-                </div>
-                <div className="pt-field">
-                  <label>Group Code</label>
-                  <input type="text" value={groupDetail.group_code ?? ""} readOnly />
-                </div>
-              </div>
-
-              <div className="pt-field">
-                <label>Description</label>
-                <input type="text" value={groupDetail.group_description || ""} readOnly />
-              </div>
-            </>
-          )}
         </div>
       </div>
 
@@ -4561,6 +4669,8 @@ function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
         </div>
       )}
 
+      {selectedId && <h3 className="pt-group-features-title">Features</h3>}
+
       {selectedId && (
         <div className="pt-table-wrap">
           <table className="pt-table">
@@ -4570,7 +4680,6 @@ function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
                 <th>Code</th>
                 <th>Feature Name</th>
                 <th>Description</th>
-                <th>Created At</th>
               </tr>
             </thead>
             <tbody>
@@ -4580,17 +4689,16 @@ function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
                   <td>{f.feature_code}</td>
                   <td className="pt-cell-strong">{f.feature_name}</td>
                   <td className="pt-cell-truncate" title={f.feature_description || ""}>{f.feature_description || "—"}</td>
-                  <td>{formatDateTime(f.created_at)}</td>
                 </tr>
               ))}
               {detailLoading && groupFeatures.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="pt-empty-row">Loading features…</td>
+                  <td colSpan={4} className="pt-empty-row">Loading features…</td>
                 </tr>
               )}
               {!detailLoading && !detailError && groupFeatures.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="pt-empty-row">No features found in this group.</td>
+                  <td colSpan={4} className="pt-empty-row">No features found in this group.</td>
                 </tr>
               )}
             </tbody>
@@ -4601,51 +4709,98 @@ function FeatureGroupsPanel({ featureGroups, loading, error, onRetry }) {
   );
 }
 
-function FeatureGroupScreen() {
-  const { featureGroups, loading, error, reload } = useFeatureGroups();
+function FeatureGroupForm({ group, onClose }) {
+  const [form, setForm] = useState({
+    id: group?.feature_group_id ?? null,
+    name: group?.group_name || "",
+    code: group?.group_code ?? "",
+    description: group?.group_description || "",
+  });
 
   return (
-    <div className="pt-card">
-      <SubTabs
-        tabs={[{ key: "featuregroup", label: "Feature Group" }]}
-        active="featuregroup"
-        onChange={() => {}}
-      />
+    <div className="pt-panel">
+      <div className="pt-form-card">
+        <div className="pt-form-idbar">
+          Feature Group ID: <span>{form.id ?? 0}</span>
+        </div>
 
-      <FeatureGroupsPanel
-        featureGroups={featureGroups}
-        loading={loading}
-        error={error}
-        onRetry={reload}
-      />
+        <div className="pt-form-body">
+          <div className="pt-field-row">
+            <div className="pt-field">
+              <label>Group Name <span className="pt-required">*</span></label>
+              <input type="text" placeholder="Group name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div className="pt-field">
+              <label>Group Code <span className="pt-required">*</span></label>
+              <input type="text" placeholder="e.g. 2000" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
+            </div>
+          </div>
+
+          <div className="pt-field">
+            <label>Description</label>
+            <input type="text" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </div>
+        </div>
+
+        <div className="pt-form-footer">
+          <button type="button" className="pt-btn pt-btn-outline" onClick={onClose}>Cancel</button>
+          <button type="button" className="pt-btn pt-btn-primary" onClick={onClose}>Save</button>
+        </div>
+      </div>
     </div>
   );
 }
 
-function FeaturesScreen({ setFeatures, abbreviations, setAbbreviations }) {
-  const [subTab, setSubTab] = useState("features");
-  const { featureGroups } = useFeatureGroups();
+function FeatureGroupScreen() {
+  const { featureGroups, loading, error, reload } = useFeatureGroups();
+  const [subTab, setSubTab] = useState("list");
+  const [editGroup, setEditGroup] = useState(null);
 
   return (
     <div className="pt-card">
       <SubTabs
         tabs={[
-          { key: "features", label: "Features" },
-          { key: "abbreviations", label: "Abbreviations" },
+          { key: "list", label: "Feature Group" },
+          { key: "form", label: "Add New Feature Group" },
         ]}
         active={subTab}
-        onChange={setSubTab}
+        onChange={(k) => {
+          if (k === "form") setEditGroup(null);
+          setSubTab(k);
+        }}
       />
 
-      {subTab === "features" && (
-        <FeaturesSection setFeatures={setFeatures} featureGroups={featureGroups} />
+      {subTab === "list" && (
+        <FeatureGroupsPanel
+          featureGroups={featureGroups}
+          loading={loading}
+          error={error}
+          onRetry={reload}
+          onEdit={(group) => {
+            setEditGroup(group);
+            setSubTab("form");
+          }}
+        />
       )}
 
-      {subTab === "abbreviations" && (
-        <AbbreviationsSection abbreviations={abbreviations} setAbbreviations={setAbbreviations} />
+      {subTab === "form" && (
+        <FeatureGroupForm
+          key={editGroup?.feature_group_id ?? "new"}
+          group={editGroup}
+          onClose={() => {
+            setEditGroup(null);
+            setSubTab("list");
+          }}
+        />
       )}
     </div>
   );
+}
+
+function FeaturesScreen({ setFeatures }) {
+  const { featureGroups } = useFeatureGroups();
+
+  return <FeaturesSection setFeatures={setFeatures} featureGroups={featureGroups} />;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -4856,16 +5011,22 @@ const EDITOR_PAGES = [
     Icon: IconFeatureGroup,
     children: [
       {
-        key: "features",
-        label: "Features",
-        title: "Features",
-        subtitle: "Manage features and abbreviations.",
-      },
-      {
         key: "featuregroups",
         label: "Feature Group",
         title: "Feature Group",
         subtitle: "Manage feature groups.",
+      },
+      {
+        key: "features",
+        label: "Features",
+        title: "Features",
+        subtitle: "Manage features.",
+      },
+      {
+        key: "abbreviations",
+        label: "Abbreviations",
+        title: "Abbreviations",
+        subtitle: "Manage abbreviations.",
       },
     ],
   },
@@ -5008,15 +5169,13 @@ export default function Editor() {
               <TemplatesSection setTemplates={setTemplates} setProjects={setProjects} />
             )}
 
-            {activeTab === "features" && (
-              <FeaturesScreen
-                setFeatures={setFeatures}
-                abbreviations={abbreviations}
-                setAbbreviations={setAbbreviations}
-              />
-            )}
-
             {activeTab === "featuregroups" && <FeatureGroupScreen />}
+
+            {activeTab === "features" && <FeaturesScreen setFeatures={setFeatures} />}
+
+            {activeTab === "abbreviations" && (
+              <AbbreviationsSection abbreviations={abbreviations} setAbbreviations={setAbbreviations} />
+            )}
 
             {activeTab === "users" && <UsersSection users={users} setUsers={setUsers} />}
 
