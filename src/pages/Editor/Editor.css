@@ -1265,6 +1265,10 @@
   gap: 18px;
 }
 
+.pt-field-row-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .pt-field {
   display: flex;
   flex-direction: column;
