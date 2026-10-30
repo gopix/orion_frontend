@@ -1,5 +1,4 @@
 
-
 // import { useEffect, useMemo, useRef, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import "./Editor.css";
@@ -19,6 +18,7 @@
 //   deleteTemplate,
 //   getFeatureGroups,
 //   getFeatureGroupById,
+//   updateFeatureGroup,
 //   getFeatures,
 // } from "../../services/apiServices";
 
@@ -1991,8 +1991,7 @@
 //   return { featureGroups, loading, error, reload: () => setReloadKey((k) => k + 1) };
 // }
 
-// function FeatureGroupsPanel({ featureGroups, loading, error, onRetry, onEdit }) {
-//   const [selectedId, setSelectedId] = useState("");
+// function FeatureGroupsPanel({ featureGroups, loading, error, onRetry, onEdit, selectedId, setSelectedId, notice }) {
 //   const [groupDetail, setGroupDetail] = useState(null);
 //   const [groupFeatures, setGroupFeatures] = useState([]);
 //   const [detailLoading, setDetailLoading] = useState(false);
@@ -2046,6 +2045,7 @@
 
 //   return (
 //     <div className="pt-panel">
+//       {notice && <div className="pt-alert pt-alert-success">{notice}</div>}
 //       {error && (
 //         <div className="pt-alert pt-alert-error">
 //           <span>{error}</span>
@@ -2142,13 +2142,46 @@
 //   );
 // }
 
-// function FeatureGroupForm({ group, onClose }) {
+// function FeatureGroupForm({ group, onClose, onSaved }) {
+//   const isEdit = !!group;
 //   const [form, setForm] = useState({
 //     id: group?.feature_group_id ?? null,
 //     name: group?.group_name || "",
 //     code: group?.group_code ?? "",
 //     description: group?.group_description || "",
 //   });
+//   const [saving, setSaving] = useState(false);
+//   const [formError, setFormError] = useState("");
+
+//   const handleSave = async () => {
+//     if (!isEdit) {
+//       onClose();
+//       return;
+//     }
+
+//     if (form.description.trim() === (group.group_description || "").trim()) {
+//       setFormError("No changes to save.");
+//       return;
+//     }
+
+//     setSaving(true);
+//     setFormError("");
+//     try {
+//       const res = await updateFeatureGroup(group.feature_group_id, {
+//         group_description: form.description.trim(),
+//         updated_by: Number(sessionStorage.getItem("token")) || 0,
+//       });
+//       if (res?.response_code === 200) {
+//         onSaved(`Feature group "${res.data?.group_name || form.name}" updated successfully.`);
+//       } else {
+//         setFormError(extractError(res, "Failed to update feature group."));
+//       }
+//     } catch {
+//       setFormError("Unable to reach the server. Please try again.");
+//     } finally {
+//       setSaving(false);
+//     }
+//   };
 
 //   return (
 //     <div className="pt-panel">
@@ -2158,14 +2191,30 @@
 //         </div>
 
 //         <div className="pt-form-body">
+//           {formError && <div className="pt-alert pt-alert-error">{formError}</div>}
+
 //           <div className="pt-field-row">
 //             <div className="pt-field">
 //               <label>Group Name <span className="pt-required">*</span></label>
-//               <input type="text" placeholder="Group name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+//               <input
+//                 type="text"
+//                 placeholder="Group name"
+//                 className={isEdit ? "pt-input-readonly" : ""}
+//                 value={form.name}
+//                 readOnly={isEdit}
+//                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+//               />
 //             </div>
 //             <div className="pt-field">
 //               <label>Group Code <span className="pt-required">*</span></label>
-//               <input type="text" placeholder="e.g. 2000" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
+//               <input
+//                 type="text"
+//                 placeholder="e.g. 2000"
+//                 className={isEdit ? "pt-input-readonly" : ""}
+//                 value={form.code}
+//                 readOnly={isEdit}
+//                 onChange={(e) => setForm({ ...form, code: e.target.value })}
+//               />
 //             </div>
 //           </div>
 
@@ -2176,8 +2225,10 @@
 //         </div>
 
 //         <div className="pt-form-footer">
-//           <button type="button" className="pt-btn pt-btn-outline" onClick={onClose}>Cancel</button>
-//           <button type="button" className="pt-btn pt-btn-primary" onClick={onClose}>Save</button>
+//           <button type="button" className="pt-btn pt-btn-outline" disabled={saving} onClick={onClose}>Cancel</button>
+//           <button type="button" className="pt-btn pt-btn-primary" disabled={saving} onClick={handleSave}>
+//             {saving ? "Saving…" : isEdit ? "Update" : "Save"}
+//           </button>
 //         </div>
 //       </div>
 //     </div>
@@ -2188,17 +2239,20 @@
 //   const { featureGroups, loading, error, reload } = useFeatureGroups();
 //   const [subTab, setSubTab] = useState("list");
 //   const [editGroup, setEditGroup] = useState(null);
+//   const [selectedId, setSelectedId] = useState("");
+//   const [notice, setNotice] = useState("");
 
 //   return (
 //     <div className="pt-card">
 //       <SubTabs
 //         tabs={[
 //           { key: "list", label: "Feature Group" },
-//           { key: "form", label: "Add New Feature Group" },
+//           { key: "form", label: editGroup ? "Update Feature Group" : "Add New Feature Group" },
 //         ]}
 //         active={subTab}
 //         onChange={(k) => {
 //           if (k === "form") setEditGroup(null);
+//           setNotice("");
 //           setSubTab(k);
 //         }}
 //       />
@@ -2209,7 +2263,11 @@
 //           loading={loading}
 //           error={error}
 //           onRetry={reload}
+//           selectedId={selectedId}
+//           setSelectedId={setSelectedId}
+//           notice={notice}
 //           onEdit={(group) => {
+//             setNotice("");
 //             setEditGroup(group);
 //             setSubTab("form");
 //           }}
@@ -2222,6 +2280,12 @@
 //           group={editGroup}
 //           onClose={() => {
 //             setEditGroup(null);
+//             setSubTab("list");
+//           }}
+//           onSaved={(message) => {
+//             setNotice(message);
+//             setEditGroup(null);
+//             reload();
 //             setSubTab("list");
 //           }}
 //         />
@@ -2240,20 +2304,56 @@
 //       />
 
 //       <div className="pt-panel">
+//         <div className="pt-form-card">
+//           <div className="pt-form-body">
+//             <div className="pt-field pt-map-template">
+//               <label>Template</label>
+//               <select defaultValue="">
+//                 <option value="">Select Template</option>
+//               </select>
+//             </div>
+
+//             <div className="pt-map-lists">
+//               <div className="pt-field">
+//                 <label>Feature Group</label>
+//                 <ul className="pt-map-list">
+//                   <li>clean UP</li>
+//                   <li>Punctuation</li>
+//                 </ul>
+//               </div>
+
+//               <div className="pt-map-actions">
+//                 <button type="button" className="pt-map-btn" title="Move selected">›</button>
+//                 <button type="button" className="pt-map-btn" title="Move all">»</button>
+//               </div>
+
+//               <div className="pt-field">
+//                 <label>Master Feature Group</label>
+//                 <ul className="pt-map-list">
+//                   <li>clean UP</li>
+//                   <li>Punctuation</li>
+//                   <li>List</li>
+//                 </ul>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         <h3 className="pt-group-features-title">Features</h3>
+
 //         <div className="pt-table-wrap">
 //           <table className="pt-table">
 //             <thead>
 //               <tr>
 //                 <th>ID</th>
-//                 <th>Template</th>
-//                 <th>Feature Group</th>
-//                 <th>Feature</th>
-//                 <th>Created At</th>
+//                 <th>Code</th>
+//                 <th>Feature Name</th>
+//                 <th>Description</th>
 //               </tr>
 //             </thead>
 //             <tbody>
 //               <tr>
-//                 <td colSpan={5} className="pt-empty-row">No template feature mappings found.</td>
+//                 <td colSpan={4} className="pt-empty-row">No features to display.</td>
 //               </tr>
 //             </tbody>
 //           </table>
@@ -4824,7 +4924,19 @@ function FeatureGroupForm({ group, onClose, onSaved }) {
       return;
     }
 
-    if (form.description.trim() === (group.group_description || "").trim()) {
+    const name = form.name.trim();
+    const description = form.description.trim();
+
+    if (!name) {
+      setFormError("Group name is required.");
+      return;
+    }
+
+    const updatePayload = {};
+    if (name !== (group.group_name || "").trim()) updatePayload.group_name = name;
+    if (description !== (group.group_description || "").trim()) updatePayload.group_description = description;
+
+    if (Object.keys(updatePayload).length === 0) {
       setFormError("No changes to save.");
       return;
     }
@@ -4833,11 +4945,11 @@ function FeatureGroupForm({ group, onClose, onSaved }) {
     setFormError("");
     try {
       const res = await updateFeatureGroup(group.feature_group_id, {
-        group_description: form.description.trim(),
+        ...updatePayload,
         updated_by: Number(sessionStorage.getItem("token")) || 0,
       });
       if (res?.response_code === 200) {
-        onSaved(`Feature group "${res.data?.group_name || form.name}" updated successfully.`);
+        onSaved(`Feature group "${res.data?.group_name || name}" updated successfully.`);
       } else {
         setFormError(extractError(res, "Failed to update feature group."));
       }
@@ -4864,9 +4976,7 @@ function FeatureGroupForm({ group, onClose, onSaved }) {
               <input
                 type="text"
                 placeholder="Group name"
-                className={isEdit ? "pt-input-readonly" : ""}
                 value={form.name}
-                readOnly={isEdit}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </div>
@@ -4960,6 +5070,104 @@ function FeatureGroupScreen() {
 }
 
 function TemplateFeatureMappingScreen() {
+  const { featureGroups: masterGroups, loading: groupsLoading, error: groupsError, reload: reloadGroups } = useFeatureGroups();
+  const [templates, setTemplates] = useState([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [templatesError, setTemplatesError] = useState("");
+  const [templatesReloadKey, setTemplatesReloadKey] = useState(0);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [mappedGroups, setMappedGroups] = useState([]);
+  const [mappedSelected, setMappedSelected] = useState([]);
+  const [masterSelected, setMasterSelected] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadTemplates = async () => {
+      setTemplatesLoading(true);
+      setTemplatesError("");
+      try {
+        const res = await getTemplates(0, 500);
+        if (cancelled) return;
+        if (res?.response_code === 200 && res.data) {
+          setTemplates(res.data.items || []);
+        } else {
+          setTemplatesError(extractError(res, "Failed to load templates."));
+        }
+      } catch {
+        if (!cancelled) setTemplatesError("Unable to reach the server. Please try again.");
+      } finally {
+        if (!cancelled) setTemplatesLoading(false);
+      }
+    };
+
+    loadTemplates();
+    return () => {
+      cancelled = true;
+    };
+  }, [templatesReloadKey]);
+
+  const mappedIds = new Set(mappedGroups.map((g) => g.feature_group_id));
+  const availableGroups = masterGroups.filter((g) => !mappedIds.has(g.feature_group_id));
+
+  const toggleSelection = (id, setSelected) => {
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleItemKeyDown = (e, id, setSelected) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleSelection(id, setSelected);
+    }
+  };
+
+  const moveSelectedToMapped = () => {
+    const moving = availableGroups.filter((g) => masterSelected.includes(g.feature_group_id));
+    if (moving.length === 0) return;
+    setMappedGroups((prev) => [...prev, ...moving]);
+    setMasterSelected([]);
+  };
+
+  const moveAllToMapped = () => {
+    if (availableGroups.length === 0) return;
+    setMappedGroups((prev) => [...prev, ...availableGroups]);
+    setMasterSelected([]);
+  };
+
+  const moveSelectedToMaster = () => {
+    if (mappedSelected.length === 0) return;
+    setMappedGroups((prev) => prev.filter((g) => !mappedSelected.includes(g.feature_group_id)));
+    setMappedSelected([]);
+  };
+
+  const moveAllToMaster = () => {
+    if (mappedGroups.length === 0) return;
+    setMappedGroups([]);
+    setMappedSelected([]);
+  };
+
+  const renderGroupItems = (groups, selected, setSelected, emptyText) => {
+    if (groups.length === 0) {
+      return <li className="pt-map-empty">{emptyText}</li>;
+    }
+    return groups.map((g) => {
+      const isSelected = selected.includes(g.feature_group_id);
+      return (
+        <li
+          key={g.feature_group_id}
+          role="option"
+          aria-selected={isSelected}
+          tabIndex={0}
+          className={isSelected ? "pt-map-item-selected" : ""}
+          onClick={() => toggleSelection(g.feature_group_id, setSelected)}
+          onKeyDown={(e) => handleItemKeyDown(e, g.feature_group_id, setSelected)}
+        >
+          {g.group_name}
+        </li>
+      );
+    });
+  };
+
   return (
     <div className="pt-card">
       <SubTabs
@@ -4969,35 +5177,101 @@ function TemplateFeatureMappingScreen() {
       />
 
       <div className="pt-panel">
+        {templatesError && (
+          <div className="pt-alert pt-alert-error">
+            <span>{templatesError}</span>
+            <button type="button" className="pt-alert-action" onClick={() => setTemplatesReloadKey((k) => k + 1)}>
+              Retry
+            </button>
+          </div>
+        )}
+        {groupsError && (
+          <div className="pt-alert pt-alert-error">
+            <span>{groupsError}</span>
+            <button type="button" className="pt-alert-action" onClick={reloadGroups}>
+              Retry
+            </button>
+          </div>
+        )}
+
         <div className="pt-form-card">
           <div className="pt-form-body">
             <div className="pt-field pt-map-template">
               <label>Template</label>
-              <select defaultValue="">
-                <option value="">Select Template</option>
+              <select
+                value={selectedTemplateId}
+                disabled={templatesLoading}
+                onChange={(e) => setSelectedTemplateId(e.target.value)}
+              >
+                <option value="">{templatesLoading ? "Loading templates…" : "Select Template"}</option>
+                {templates.map((t) => {
+                  const id = t.template_id ?? t.id;
+                  return (
+                    <option key={id} value={id}>
+                      {t.template_name}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
             <div className="pt-map-lists">
               <div className="pt-field">
                 <label>Feature Group</label>
-                <ul className="pt-map-list">
-                  <li>clean UP</li>
-                  <li>Punctuation</li>
+                <ul className="pt-map-list" role="listbox" aria-multiselectable="true" aria-label="Feature Group">
+                  {renderGroupItems(mappedGroups, mappedSelected, setMappedSelected, "No feature groups added.")}
                 </ul>
               </div>
 
               <div className="pt-map-actions">
-                <button type="button" className="pt-map-btn" title="Move selected">›</button>
-                <button type="button" className="pt-map-btn" title="Move all">»</button>
+                <button
+                  type="button"
+                  className="pt-map-btn"
+                  title="Move selected to Master Feature Group"
+                  aria-label="Move selected to Master Feature Group"
+                  disabled={mappedSelected.length === 0}
+                  onClick={moveSelectedToMaster}
+                >
+                  ›
+                </button>
+                <button
+                  type="button"
+                  className="pt-map-btn"
+                  title="Move all to Master Feature Group"
+                  aria-label="Move all to Master Feature Group"
+                  disabled={mappedGroups.length === 0}
+                  onClick={moveAllToMaster}
+                >
+                  »
+                </button>
+                <button
+                  type="button"
+                  className="pt-map-btn"
+                  title="Move selected to Feature Group"
+                  aria-label="Move selected to Feature Group"
+                  disabled={masterSelected.length === 0}
+                  onClick={moveSelectedToMapped}
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="pt-map-btn"
+                  title="Move all to Feature Group"
+                  aria-label="Move all to Feature Group"
+                  disabled={availableGroups.length === 0}
+                  onClick={moveAllToMapped}
+                >
+                  «
+                </button>
               </div>
 
               <div className="pt-field">
                 <label>Master Feature Group</label>
-                <ul className="pt-map-list">
-                  <li>clean UP</li>
-                  <li>Punctuation</li>
-                  <li>List</li>
+                <ul className="pt-map-list" role="listbox" aria-multiselectable="true" aria-label="Master Feature Group">
+                  {groupsLoading && availableGroups.length === 0
+                    ? <li className="pt-map-empty">Loading feature groups…</li>
+                    : renderGroupItems(availableGroups, masterSelected, setMasterSelected, "No feature groups available.")}
                 </ul>
               </div>
             </div>

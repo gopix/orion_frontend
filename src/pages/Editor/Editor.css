@@ -1877,6 +1877,36 @@
   color: var(--blue-600);
 }
 
+.pt-map-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pt-map-list {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.pt-map-list li {
+  cursor: pointer;
+  user-select: none;
+}
+
+.pt-map-list li.pt-map-item-selected {
+  background: var(--blue-50);
+  color: var(--blue-600);
+  box-shadow: inset 0 0 0 1px var(--blue-400);
+}
+
+.pt-map-list li.pt-map-empty,
+.pt-map-list li.pt-map-empty:hover {
+  background: transparent;
+  color: var(--slate-400);
+  font-weight: 500;
+  cursor: default;
+}
+
 @media (max-width: 900px) {
   .pt-map-lists {
     grid-template-columns: 1fr;
