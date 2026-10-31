@@ -1788,6 +1788,14 @@
   color: var(--slate-900);
 }
 
+.pt-group-features-block {
+  margin-top: 18px;
+}
+
+.pt-group-features-block .pt-group-features-title {
+  margin: 0 0 10px;
+}
+
 @media (max-width: 900px) {
   .pt-group-row {
     grid-template-columns: 1fr;

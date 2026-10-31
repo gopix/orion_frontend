@@ -1,6 +1,4 @@
 
-
-
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 // // ── Auth ─────────────────────────────────────────────────────
@@ -1005,6 +1003,19 @@
 //   const response = await fetch(`${BASE_URL}/editor/feature-groups/${featureGroupId}`, {
 //     method: "GET",
 //     headers: { "Accept": "application/json" }
+//   });
+//   return response.json();
+// };
+
+// // PUT /api/v1/editor/feature-groups/{feature_group_id}  (Update Feature Group)
+// // Body: any of { group_name, group_description, updated_by } — only fields sent are changed
+// // Returns: response_code 200, message, data { feature_group_id, group_name, group_code,
+// //          group_description, created_by, updated_by, created_at, updated_at }, errors
+// export const updateFeatureGroup = async (featureGroupId, payload) => {
+//   const response = await fetch(`${BASE_URL}/editor/feature-groups/${featureGroupId}`, {
+//     method: "PUT",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify(payload)
 //   });
 //   return response.json();
 // };
@@ -2062,6 +2073,21 @@ export const getFeatures = async (skip = 0, limit = 100, search = "", groupCode 
   if (search) params.append("search", search);
   if (groupCode !== "") params.append("group_code", groupCode);
   const response = await fetch(`${BASE_URL}/editor/features?${params.toString()}`, {
+    method: "GET",
+    headers: { "Accept": "application/json" }
+  });
+  return response.json();
+};
+
+// GET /api/v1/editor/feature-groups-features/{group_code}  (List Group Features For Template)
+// Query params: template_id (optional — omit / empty -> every feature has status 1)
+// Returns: response_code 200, message, data { feature_group_id, group_code, group_name, template_id,
+//          template_mapped, total, features: [{ feature_id, feature_name, feature_code, status (1/0) }] }, errors
+export const getGroupFeaturesForTemplate = async (groupCode, templateId = "") => {
+  const params = new URLSearchParams();
+  if (templateId !== "" && templateId !== null && templateId !== undefined) params.append("template_id", templateId);
+  const query = params.toString();
+  const response = await fetch(`${BASE_URL}/editor/feature-groups-features/${groupCode}${query ? `?${query}` : ""}`, {
     method: "GET",
     headers: { "Accept": "application/json" }
   });
