@@ -1,4 +1,6 @@
 
+
+
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 // // ── Auth ─────────────────────────────────────────────────────
@@ -1038,6 +1040,20 @@
 //   return response.json();
 // };
 
+// // GET /api/v1/editor/feature-groups-features/{group_code}  (List Group Features For Template)
+// // Query params: template_id (optional — omit / empty -> every feature has status 1)
+// // Returns: response_code 200, message, data { feature_group_id, group_code, group_name, template_id,
+// //          template_mapped, total, features: [{ feature_id, feature_name, feature_code, status (1/0) }] }, errors
+// export const getGroupFeaturesForTemplate = async (groupCode, templateId = "") => {
+//   const params = new URLSearchParams();
+//   if (templateId !== "" && templateId !== null && templateId !== undefined) params.append("template_id", templateId);
+//   const query = params.toString();
+//   const response = await fetch(`${BASE_URL}/editor/feature-groups-features/${groupCode}${query ? `?${query}` : ""}`, {
+//     method: "GET",
+//     headers: { "Accept": "application/json" }
+//   });
+//   return response.json();
+// };
 
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -2090,6 +2106,19 @@ export const getGroupFeaturesForTemplate = async (groupCode, templateId = "") =>
   const response = await fetch(`${BASE_URL}/editor/feature-groups-features/${groupCode}${query ? `?${query}` : ""}`, {
     method: "GET",
     headers: { "Accept": "application/json" }
+  });
+  return response.json();
+};
+
+// PUT /api/v1/editor/template-features  (Upsert Template Feature)
+// Body: { template_id, features: [{ feature_id, status (1/0) }] }
+// Bulk upsert for one template: inserts new (feature_id, status) pairs, updates status on existing ones.
+// All-or-nothing (single transaction).
+export const upsertTemplateFeatures = async (payload) => {
+  const response = await fetch(`${BASE_URL}/editor/template-features`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
   return response.json();
 };

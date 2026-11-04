@@ -1926,3 +1926,16 @@
     padding: 10px;
   }
 }
+
+/* ── Template Feature Mapping: cursor behaviour ───────────── */
+.pt-map-page {
+  cursor: default;
+}
+
+.pt-map-page :is(button, li, label) {
+  cursor: default;
+}
+
+.pt-map-page :is(h1, h3) {
+  cursor: pointer;
+}
