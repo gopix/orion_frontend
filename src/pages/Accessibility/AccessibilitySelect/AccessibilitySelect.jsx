@@ -1,5 +1,6 @@
 
 
+
 // import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { isAdmin } from "../../../utils/auth";
@@ -20,9 +21,8 @@
 // ];
 
 // // Where each (fileType, action) combination should go.
-// // "web" only supports Validate (its website management dashboard) —
-// // it has no Remediate flow, so that action is filtered out in
-// // handleActionSelect below before ACTIONS is rendered.
+// // "web" is handled separately in handleFileTypeSelect — it has no
+// // Remediate/Validate step of its own, it jumps straight to its dashboard.
 // const ROUTES = {
 //   "pdf-remediate": "/remediate-pdf",
 //   "pdf-validate": "/validate-pdf",
@@ -30,7 +30,6 @@
 //   "epub-validate": "/validate-epub",
 //   "ppt-validate": "/validate-ppt",
 //   "ppt-remediate": "/remediate-ppt",
-//   "web-validate": "/validate-web",
 // };
 
 // export default function AccessibilitySelect() {
@@ -42,17 +41,26 @@
 
 //   const fileTypes = userIsAdmin ? [...FILE_TYPES, MIS_TYPE] : FILE_TYPES;
 
-//   // The Web card only ever offers Validate — it has no Remediate flow.
-//   const actions = fileType === "web" ? ACTIONS.filter((act) => act.id === "validate") : ACTIONS;
-
 //   const handleFileTypeSelect = (id) => {
-//     setFileType(id);
-//     setAction(null);
-
 //     // MIS has no Remediate/Validate step — it goes straight to the report.
 //     if (id === "mis") {
+//       setFileType(id);
+//       setAction(null);
 //       navigate("/mis-pdf");
+//       return;
 //     }
+
+//     // Web has no Remediate/Validate step either — it goes straight to its
+//     // accessibility dashboard, skipping the unnecessary "Validate" card.
+//     if (id === "web") {
+//       setFileType(id);
+//       setAction(null);
+//       navigate("/validate-web");
+//       return;
+//     }
+
+//     setFileType(id);
+//     setAction(null);
 //   };
 
 //   const handleActionSelect = (id) => {
@@ -122,11 +130,11 @@
 //             </div>
 //           </section>
 
-//           {fileType && fileType !== "mis" && (
+//           {fileType && fileType !== "mis" && fileType !== "web" && (
 //             <section className="as-step">
 //               <p className="as-step-label">Step 2 · Action</p>
-//               <div className={`as-option-grid ${actions.length === 1 ? "as-option-grid-1" : "as-option-grid-2"}`}>
-//                 {actions.map((act) => (
+//               <div className="as-option-grid as-option-grid-2">
+//                 {ACTIONS.map((act) => (
 //                   <label
 //                     key={act.id}
 //                     className={`as-option-card${action === act.id ? " as-option-selected" : ""}`}
@@ -163,6 +171,7 @@ const FILE_TYPES = [
   { id: "pdf", label: "PDF", icon: "📄", desc: "Portable Document Format" },
   { id: "epub", label: "EPUB", icon: "📘", desc: "eBook Publication" },
   { id: "ppt", label: "PPT", icon: "📽️", desc: "PowerPoint Presentation" },
+  { id: "word", label: "Word", icon: "📝", desc: "Microsoft Word Document" },
   { id: "web", label: "Web", icon: "🌐", desc: "Web Pages / HTML Content" },
 ];
 
@@ -183,13 +192,15 @@ const ROUTES = {
   "epub-validate": "/validate-epub",
   "ppt-validate": "/validate-ppt",
   "ppt-remediate": "/remediate-ppt",
+  "word-validate": "/validate-word",
+  "word-remediate": "/remediate-word",
 };
 
 export default function AccessibilitySelect() {
   const navigate = useNavigate();
   const userIsAdmin = isAdmin();
 
-  const [fileType, setFileType] = useState(null);   // "pdf" | "epub" | "ppt" | "mis"
+  const [fileType, setFileType] = useState(null);   // "pdf" | "epub" | "ppt" | "word" | "mis"
   const [action, setAction]     = useState(null);   // "remediate" | "validate"
 
   const fileTypes = userIsAdmin ? [...FILE_TYPES, MIS_TYPE] : FILE_TYPES;
@@ -261,7 +272,7 @@ export default function AccessibilitySelect() {
 
           <section className="as-step">
             <p className="as-step-label">Step 1 · File Type</p>
-            <div className={`as-option-grid ${userIsAdmin ? "as-option-grid-5" : "as-option-grid-4"}`}>
+            <div className={`as-option-grid ${userIsAdmin ? "as-option-grid-6" : "as-option-grid-5"}`}>
               {fileTypes.map((type) => (
                 <label
                   key={type.id}

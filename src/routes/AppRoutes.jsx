@@ -21,6 +21,7 @@
 // import ValidateEpub   from "../pages/Accessibility/ValidateEpub/ValidateEpub";
 // import ValidateWeb    from "../pages/Accessibility/ValidateWeb/ValidateWeb";
 // import ScanWebsite    from "../pages/Accessibility/ScanWebsite/ScanWebsite";
+// import Crawls         from "../pages/Accessibility/Crawls/Crawls";
 // import MisPdf         from "../pages/Accessibility/MisPdf/MisPdf";
 // import Submit         from "../pages/Submit/Submit";
 // import Editor         from "../pages/Editor/Editor";
@@ -205,6 +206,18 @@
 //           }
 //         />
 //         <Route
+//           path="/crawls"
+//           element={
+//             SHOW_ACCESSIBILITY_PLUS ? (
+//               <ProtectedRoute>
+//                 <Crawls />
+//               </ProtectedRoute>
+//             ) : (
+//               <Navigate to="/" replace />
+//             )
+//           }
+//         />
+//         <Route
 //           path="/mis-pdf"
 //           element={
 //             SHOW_ACCESSIBILITY_PLUS ? (
@@ -259,7 +272,6 @@
 
 // export default AppRoutes;
 
-
 import {
   BrowserRouter,
   Routes,
@@ -274,8 +286,10 @@ import Template       from "../pages/Template/Template";
 import AccessibilitySelect from "../pages/Accessibility/AccessibilitySelect/AccessibilitySelect";
 import ValidatePdf    from "../pages/Accessibility/ValidatePdf/ValidatePdf";
 import ValidatePpt    from "../pages/Accessibility/ValidatePpt/ValidatePpt";
+import ValidateWord   from "../pages/Accessibility/ValidateWord/ValidateWord";
 import RemediatePdf   from "../pages/Accessibility/RemediatePdf/RemediatePdf";
 import RemediatePpt   from "../pages/Accessibility/RemediatePpt/RemediatePpt";
+import RemediateWord  from "../pages/Accessibility/RemediateWord/RemediateWord";
 import RemediateEpub  from "../pages/Accessibility/RemediateEpub/RemediateEpub";
 import ValidateEpub   from "../pages/Accessibility/ValidateEpub/ValidateEpub";
 import ValidateWeb    from "../pages/Accessibility/ValidateWeb/ValidateWeb";
@@ -417,11 +431,35 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/remediate-word"
+          element={
+            SHOW_ACCESSIBILITY_PLUS ? (
+              <ProtectedRoute>
+                <RemediateWord />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
           path="/remediate-epub"
           element={
             SHOW_ACCESSIBILITY_PLUS ? (
               <ProtectedRoute>
                 <RemediateEpub />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/validate-word"
+          element={
+            SHOW_ACCESSIBILITY_PLUS ? (
+              <ProtectedRoute>
+                <ValidateWord />
               </ProtectedRoute>
             ) : (
               <Navigate to="/" replace />
