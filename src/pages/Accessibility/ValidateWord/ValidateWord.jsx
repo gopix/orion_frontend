@@ -1,5 +1,9 @@
+
+
+
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { orionValidateWord } from "../../../services/apiServices";
 import "./ValidateWord.css";
 
 const downloadAsJson = (data, filename) => {
@@ -15,20 +19,31 @@ const downloadAsJson = (data, filename) => {
   URL.revokeObjectURL(url);
 };
 
-// The score agent is rendered as its own dedicated card, not inside
-// the regular agent grid.
-const SCORE_AGENT_NAME = "Word Accessibility Score Agent";
+const CATEGORY_LABELS = {
+  STRUCTURAL_ACCESSIBILITY:    "Structure Accessibility",
+  METADATA_ACCESSIBILITY:      "Metadata Accessibility",
+  IMAGE_ACCESSIBILITY:         "Image Accessibility",
+  TABLE_ACCESSIBILITY:         "Table Accessibility",
+  VISUAL_ACCESSIBILITY:        "Visual Accessibility",
+  READING_ORDER:               "Reading Order",
+  SCREEN_READER_COMPATIBILITY: "Screen Reader Compatibility",
+};
 
 const AGENT_META = {
-  "Word Metadata Agent":       { icon: "🏷️", color: "#6366f1", bg: "#eef2ff" },
-  "Word Heading Agent":        { icon: "🏗️", color: "#0891b2", bg: "#ecfeff" },
-  "Word Structure Agent":      { icon: "🧩", color: "#7c3aed", bg: "#f5f3ff" },
-  "Word Reading Order Agent":  { icon: "🔀", color: "#0d9488", bg: "#f0fdfa" },
-  "Word Text Agent":           { icon: "📝", color: "#4f46e5", bg: "#eef2ff" },
-  "Word Image Agent":          { icon: "🖼️", color: "#7c3aed", bg: "#f5f3ff" },
-  "Word Table Agent":          { icon: "📊", color: "#0d9488", bg: "#f0fdfa" },
-  "Word Color Contrast Agent": { icon: "🎨", color: "#db2777", bg: "#fdf2f8" },
-  "Word Hyperlink Agent":      { icon: "🔗", color: "#2563eb", bg: "#eff6ff" },
+  "Structure Accessibility":     { icon: "🏗️", color: "#0891b2", bg: "#ecfeff" },
+  "Metadata Accessibility":      { icon: "🏷️", color: "#6366f1", bg: "#eef2ff" },
+  "Image Accessibility":         { icon: "🖼️", color: "#7c3aed", bg: "#f5f3ff" },
+  "Table Accessibility":         { icon: "📊", color: "#0d9488", bg: "#f0fdfa" },
+  "Visual Accessibility":        { icon: "🎨", color: "#db2777", bg: "#fdf2f8" },
+  "Reading Order":               { icon: "🔀", color: "#ea580c", bg: "#fff7ed" },
+  "Screen Reader Compatibility": { icon: "🔊", color: "#2563eb", bg: "#eff6ff" },
+};
+
+const STATUS_RANK = { FAIL: 0, WARNING: 1, PASS: 2 };
+
+const STATUS_LABELS = {
+  MANUAL_REVIEW: "MANUAL REVIEW",
+  NOT_TESTED:    "NOT TESTED",
 };
 
 const SEVERITY_ORDER = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, INFO: 4 };
@@ -50,9 +65,9 @@ const statusClass = (s) => {
 
 const scoreColors = (band) => {
   const b = (band || "").toLowerCase();
-  if (b === "excellent") return { color: "#16a34a", bg: "#dcfce7" };
-  if (b === "good")      return { color: "#2563eb", bg: "#dbeafe" };
-  if (b === "fair")      return { color: "#d97706", bg: "#fef3c7" };
+  if (b.startsWith("low"))    return { color: "#16a34a", bg: "#dcfce7" };
+  if (b.startsWith("medium")) return { color: "#d97706", bg: "#fef3c7" };
+  if (b.startsWith("high"))   return { color: "#ea580c", bg: "#ffedd5" };
   return { color: "#dc2626", bg: "#fee2e2" };
 };
 
@@ -61,7 +76,7 @@ export default function ValidateWord() {
 
   const [wordFile, setWordFile]         = useState(null);
   const [dragOver, setDragOver]       = useState(false);
-  const [submitting]                 = useState(false);
+  const [submitting, setSubmitting]   = useState(false);
   const [rawResult, setRawResult]     = useState(null);
   const [submitError, setSubmitError] = useState("");
   const [activeCat, setActiveCat]     = useState({});
@@ -91,61 +106,117 @@ export default function ValidateWord() {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!wordFile) { alert("Please upload a Word document first."); return; }
-    setRawResult(null);
-    setSubmitError("Word API is not connected yet.");
+    setSubmitting(true); setRawResult(null); setSubmitError("");
+    try {
+      const orgId     = sessionStorage.getItem("organization_id") || 1;
+      const projectId = sessionStorage.getItem("project_id")      || 1;
+      const response  = await orionValidateWord(wordFile, orgId, projectId);
+      if (!response.ok) {
+        let errMsg = `Server error: ${response.status}`;
+        try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
+        catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
+        throw new Error(errMsg);
+      }
+      const data = await response.json();
+      setRawResult(data);
+      setActiveCat({});
+    } catch (err) {
+      setSubmitError(err.message || "Unexpected error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const parseResult = (raw) => {
     if (!raw) return null;
     const d = raw?.data ?? raw;
 
+    const summary    = d.summary ?? {};
+    const sevDist    = d.severity_distribution ?? {};
+    const doc        = d.document ?? {};
+    const scoreInfo  = d.accessibility_score ?? null;
+    const categories = d.findings_by_category ?? {};
+
+    const failed        = summary.failed ?? 0;
+    const manualPending = summary.manual_validation_pending ?? 0;
+    const totalIssues   = failed + manualPending;
+
+    const executionTime = Object.values(categories).reduce((sum, c) => sum + (c.duration_ms ?? 0), 0);
+
     const meta = {
-      document_name:       d.document_name,
-      total_pages:         d.total_pages,
-      total_checks:        d.total_checks,
-      total_issues:        d.total_issues,
-      overall_status:      d.overall_status,
-      critical_count:      d.critical_count,
-      high_count:          d.high_count,
-      medium_count:        d.medium_count,
-      low_count:           d.low_count,
-      warning_count:       d.warning_count,
-      auto_fixable_count:  d.auto_fixable_count,
-      manual_review_count: d.manual_review_count,
-      ai_review_count:     d.ai_review_count,
-      execution_time_ms:   d.execution_time_ms,
+      document_name:       d.document_name ?? doc.name,
+      total_pages:         doc.pages_reported,
+      total_checks:        summary.total_checks,
+      total_issues:        totalIssues,
+      overall_status:      failed > 0 ? "FAIL" : "PASS",
+      critical_count:      sevDist.CRITICAL?.failed_checks ?? 0,
+      high_count:          sevDist.HIGH?.failed_checks ?? 0,
+      medium_count:        sevDist.MEDIUM?.failed_checks ?? 0,
+      low_count:           sevDist.LOW?.failed_checks ?? 0,
+      warning_count:       manualPending,
+      manual_review_count: manualPending,
+      execution_time_ms:   executionTime > 0 ? executionTime : null,
     };
 
-    const score = d.accessibility_score ?? null;
+    const score = scoreInfo ? {
+      overall:        scoreInfo.score,
+      band:           `${scoreInfo.risk_level ?? "Unknown"} Risk`,
+      scored_checks:  summary.total_checks,
+      counts: {
+        pass:    summary.passed ?? 0,
+        fail:    failed,
+        warning: manualPending,
+        info:    summary.not_applicable ?? 0,
+      },
+      categories: Object.fromEntries(
+        Object.entries(categories)
+          .filter(([, c]) => (c.passed ?? 0) + (c.failed ?? 0) > 0)
+          .map(([key, c]) => [
+            CATEGORY_LABELS[key] ?? key,
+            Math.round(((c.passed ?? 0) / ((c.passed ?? 0) + (c.failed ?? 0))) * 100),
+          ])
+      ),
+    } : null;
 
-    const agentResults = (d.agent_results ?? []).filter(
-      (a) => a.agent_name !== SCORE_AGENT_NAME
-    );
+    const agents = Object.entries(categories).map(([key, cat]) => {
+      const name = CATEGORY_LABELS[key] ?? key;
+      const findingByRule = {};
+      for (const f of cat.findings ?? []) findingByRule[f.rule_id] = f;
 
-    const agents = agentResults.map((agent) => {
-      const issues = [...(agent.issues ?? [])].sort(
-        (a, b) => (SEVERITY_ORDER[a.severity] ?? 9) - (SEVERITY_ORDER[b.severity] ?? 9)
-      );
+      const issues = (cat.checks ?? [])
+        .filter((c) => c.status !== "NOT_APPLICABLE")
+        .map((c) => {
+          const finding = findingByRule[c.rule_id];
+          const status = c.status === "FAIL" || c.status === "PASS" ? c.status : "WARNING";
+          return {
+            rule_id:        c.rule_id,
+            severity:       c.severity,
+            status,
+            status_label:   STATUS_LABELS[c.status] ?? status,
+            category:       "Checks",
+            message:        finding?.issue ?? c.title,
+            recommendation: finding?.recommendation,
+            wcag:           finding?.wcag ?? [],
+          };
+        })
+        .sort((a, b) =>
+          (STATUS_RANK[a.status] ?? 9) - (STATUS_RANK[b.status] ?? 9) ||
+          (SEVERITY_ORDER[a.severity] ?? 9) - (SEVERITY_ORDER[b.severity] ?? 9)
+        );
 
-      const catMap = {};
-      for (const issue of issues) {
-        const cat = issue.category ?? "General";
-        if (!catMap[cat]) catMap[cat] = [];
-        catMap[cat].push(issue);
-      }
-
+      const catMap = { Checks: issues };
       const failCount = issues.filter(i => i.status === "FAIL").length;
       const warnCount = issues.filter(i => i.status === "WARNING").length;
       const passCount = issues.filter(i => i.status === "PASS").length;
-      const meta = AGENT_META[agent.agent_name] ?? { icon: "🔍", color: "#6366f1", bg: "#eef2ff" };
+      const agentMeta = AGENT_META[name] ?? { icon: "🔍", color: "#6366f1", bg: "#eef2ff" };
 
       return {
-        name: agent.agent_name,
-        ...meta,
-        success:    agent.success,
-        issueCount: agent.issue_count,
+        name,
+        ...agentMeta,
+        success:    cat.status === "completed",
+        issueCount: issues.length,
         failCount,
         warnCount,
         passCount,
@@ -233,7 +304,7 @@ export default function ValidateWord() {
                 <div className="vwd-agent-pills">
                   {Object.entries(AGENT_META).slice(0, 6).map(([name, m]) => (
                     <span key={name} className="vwd-agent-pill" style={{ "--pill-color": m.color, "--pill-bg": m.bg }}>
-                      {m.icon} {name.replace("Word ", "").split(" ")[0]}
+                      {m.icon} {name.split(" ")[0]}
                     </span>
                   ))}
                 </div>
@@ -637,7 +708,7 @@ export default function ValidateWord() {
                                     <code className="vwd-rule-id">{issue.rule_id}</code>
                                   </div>
                                   <div className="vwd-issue-right">
-                                    <span className={`vwd-status-badge ${statusClass(issue.status)}`}>{issue.status}</span>
+                                    <span className={`vwd-status-badge ${statusClass(issue.status)}`}>{issue.status_label}</span>
                                     {issue.auto_fixable && (
                                       <span className="vwd-autofixable" title="Auto-fixable">⚡</span>
                                     )}
@@ -650,8 +721,8 @@ export default function ValidateWord() {
                                     <p>{issue.recommendation}</p>
                                   </div>
                                 )}
-                                {issue.page_no != null && (
-                                  <span className="vwd-page-tag">Page {issue.page_no}</span>
+                                {issue.wcag?.length > 0 && (
+                                  <span className="vwd-page-tag">WCAG {issue.wcag.join(", ")}</span>
                                 )}
                               </div>
                             ))}
@@ -711,10 +782,9 @@ export default function ValidateWord() {
                             ? `Document has ${parsed.meta.total_issues} accessibility issue${parsed.meta.total_issues !== 1 ? "s" : ""} that need attention`
                             : "Document passed all accessibility checks!"}
                         </p>
-                        {isFail && (
+                        {parsed.meta.manual_review_count > 0 && (
                           <p className="vwd-verdict-sub">
-                            {parsed.meta.auto_fixable_count} can be auto-fixed · {parsed.meta.manual_review_count} need manual review
-                            {parsed.meta.ai_review_count ? ` · ${parsed.meta.ai_review_count} need AI review` : ""}
+                            {parsed.meta.manual_review_count} need manual review
                           </p>
                         )}
                       </div>
