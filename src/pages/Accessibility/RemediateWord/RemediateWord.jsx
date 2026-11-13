@@ -1,8 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+
+
+
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  orionRemediateWord,
+  getWordRemediationStatus,
+  downloadRemediatedWord,
+} from "../../../services/apiServices";
 import "./RemediateWord.css";
 
 const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200 MB
+const POLL_INTERVAL_MS = 4000;
 const DONE_STATUSES = ["completed", "done", "success", "succeeded"];
 const FAILED_STATUSES = ["failed", "error", "errored"];
 
@@ -24,7 +33,7 @@ export default function RemediateWord() {
 
   const [wordFile, setWordFile]         = useState(null);
   const [dragOver, setDragOver]       = useState(false);
-  const [submitting]                 = useState(false);
+  const [submitting, setSubmitting]   = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   // ── Job / status polling state ──────────────────────────────
@@ -35,6 +44,7 @@ export default function RemediateWord() {
   const [polling, setPolling]         = useState(false);
   const [lastChecked, setLastChecked] = useState(null);
   const [submittedAt, setSubmittedAt] = useState(null);
+  const [resultData, setResultData]   = useState(null);
 
   // ── Download state ───────────────────────────────────────────
   const [downloading, setDownloading]     = useState(false);
@@ -74,6 +84,7 @@ export default function RemediateWord() {
     setPolling(false);
     setLastChecked(null);
     setSubmittedAt(null);
+    setResultData(null);
     setDownloading(false);
     setDownloadError("");
     setDownloaded(false);
@@ -124,6 +135,44 @@ export default function RemediateWord() {
     resetJobState();
   };
 
+  // ── Poll status until completed / failed ─────────────────────
+  const checkStatusOnce = useCallback(async (id) => {
+    try {
+      const response = await getWordRemediationStatus(id);
+      if (!response.ok) {
+        let errMsg = `Server error: ${response.status}`;
+        try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
+        catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
+        throw new Error(errMsg);
+      }
+      const data = await response.json();
+      const d = data?.data ?? data;
+      const newStatus = d?.status ?? null;
+
+      setStatus(newStatus);
+      setJobMessage(data?.message || "");
+      setLastChecked(new Date());
+      setStatusError("");
+
+      const lower = (newStatus || "").toLowerCase();
+      if (DONE_STATUSES.includes(lower)) {
+        setResultData(d);
+      }
+      if (FAILED_STATUSES.includes(lower)) {
+        setStatusError(d?.error || data?.message || "Remediation failed.");
+      }
+      if (DONE_STATUSES.includes(lower) || FAILED_STATUSES.includes(lower)) {
+        setPolling(false);
+        if (pollRef.current) {
+          clearInterval(pollRef.current);
+          pollRef.current = null;
+        }
+      }
+    } catch (err) {
+      setStatusError(err.message || "Could not fetch remediation status.");
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
@@ -131,9 +180,85 @@ export default function RemediateWord() {
   }, []);
 
   // ── Submit — Remediate Word ────────────────────────────────────
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!wordFile) { setSubmitError("Please upload a Word document first."); return; }
-    setSubmitError("Word API is not connected yet.");
+    setSubmitting(true);
+    setSubmitError("");
+    resetJobState();
+
+    try {
+      const orgId     = sessionStorage.getItem("organization_id") || 1;
+      const projectId = sessionStorage.getItem("project_id")      || 1;
+      const userId    = sessionStorage.getItem("token")           || 1;
+      const response  = await orionRemediateWord(wordFile, orgId, projectId, userId);
+
+      if (!response.ok) {
+        let errMsg = `Server error: ${response.status}`;
+        try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
+        catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
+        throw new Error(errMsg);
+      }
+
+      const data = await response.json();
+      const d = data?.data ?? data;
+      const id = d?.job_id ?? null;
+
+      if (!id) throw new Error("No job ID was returned by the server.");
+
+      setJobId(id);
+      setStatus(d?.status ?? "pending");
+      setJobMessage(data?.message || "");
+      setSubmittedAt(new Date());
+      setPolling(true);
+
+      // Poll immediately, then on an interval
+      checkStatusOnce(id);
+      pollRef.current = setInterval(() => checkStatusOnce(id), POLL_INTERVAL_MS);
+    } catch (err) {
+      setSubmitError(err.message || "Unexpected error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ── Download remediated Word document ─────────────────────────
+  const handleDownload = async () => {
+    if (!jobId) return;
+    setDownloading(true);
+    setDownloadError("");
+    try {
+      const response = await downloadRemediatedWord(jobId);
+      if (!response.ok) {
+        let errMsg = `Server error: ${response.status}`;
+        try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
+        catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
+        throw new Error(errMsg);
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = wordFile?.name ? `remediated_${wordFile.name}` : `remediated_${jobId}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      setDownloaded(true);
+    } catch (err) {
+      setDownloadError(err.message || "Could not download the remediated Word document. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  // ── Show remediation report (comes with the completed status) ──
+  const handleViewReport = () => {
+    if (!resultData) {
+      setReportError("Report is not available yet. Please try again.");
+      return;
+    }
+    setReportError("");
+    setReportData(resultData);
   };
 
   const handleDownloadReport = () => {
@@ -144,10 +269,31 @@ export default function RemediateWord() {
     setDownloadingReport(false);
   };
 
-  const copyJobId = async () => {
-    if (!jobId) return;
-    try { await navigator.clipboard.writeText(jobId); } catch { /* clipboard not available */ }
+  const severityClass = (sev) => {
+    const lower = (sev || "").toLowerCase();
+    return lower === "critical" ? "high" : lower;
   };
+
+  const prettify = (txt) => (txt || "—").replace(/_/g, " ");
+
+  const statusBadgeClass = (st) => {
+    const v = (st || "").toUpperCase();
+    if (v === "PASS") return "res-ok";
+    if (v === "FAIL") return "res-fail";
+    if (v === "NOT_APPLICABLE") return "sev-low";
+    return "sev-medium";
+  };
+
+  const allResults = Array.isArray(reportData?.remediation_results) ? reportData.remediation_results : [];
+
+  const manualReviewItems = allResults.filter((r) => r.remediation_outcome === "manual_review_required");
+
+  const resultsByCategory = allResults.reduce((acc, r) => {
+    const key = r.category || "OTHER";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(r);
+    return acc;
+  }, {});
 
   const statusLabel = () => {
     if (isFailed) return "Failed";
@@ -331,28 +477,11 @@ export default function RemediateWord() {
                 </div>
               )}
 
-              {/* ── 4 result cards ── */}
+              {/* ── result cards ── */}
               {jobId && (
                 <div className="rwd-cards-grid">
 
-                  {/* Card 1 — Job ID */}
-                  <div className="rwd-card rwd-card-job">
-                    <div className="rwd-card-icon-wrap ic-job">
-                      <span>🆔</span>
-                    </div>
-                    <div className="rwd-card-body">
-                      <span className="rwd-card-label">Job ID</span>
-                      <div className="rwd-card-value-row">
-                        <code className="rwd-job-id-value" title={jobId}>{jobId}</code>
-                        <button className="rwd-copy-btn" onClick={copyJobId} title="Copy job ID">⧉</button>
-                      </div>
-                      {submittedAt && (
-                        <span className="rwd-card-sub">Started {submittedAt.toLocaleTimeString()}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Card 2 — Status */}
+                  {/* Card 1 — Status */}
                   <div className={`rwd-card rwd-card-status st-${(status || "pending").toLowerCase()}`}>
                     <div className={`rwd-card-icon-wrap ${isDone ? "ic-done" : isFailed ? "ic-failed" : "ic-pending"}`}>
                       {polling && !isDone && !isFailed
@@ -365,6 +494,9 @@ export default function RemediateWord() {
                         {statusLabel()}
                       </span>
                       {jobMessage && <span className="rwd-card-sub">{jobMessage}</span>}
+                      {submittedAt && (
+                        <span className="rwd-card-sub">Started {submittedAt.toLocaleTimeString()}</span>
+                      )}
                       {lastChecked && (
                         <span className="rwd-card-sub">Last checked {lastChecked.toLocaleTimeString()}</span>
                       )}
@@ -372,7 +504,7 @@ export default function RemediateWord() {
                     </div>
                   </div>
 
-                  {/* Card 3 — Download */}
+                  {/* Card 2 — Download */}
                   <div className="rwd-card rwd-card-action">
                     <div className={`rwd-card-icon-wrap ${isDone ? "ic-done" : "ic-locked"}`}>
                       <span>⬇️</span>
@@ -384,6 +516,7 @@ export default function RemediateWord() {
                       </span>
                       <button
                         className="rwd-card-btn"
+                        onClick={handleDownload}
                         disabled={!isDone || downloading}
                       >
                         {downloading
@@ -394,7 +527,7 @@ export default function RemediateWord() {
                     </div>
                   </div>
 
-                  {/* Card 4 — Report */}
+                  {/* Card 3 — Report */}
                   <div className="rwd-card rwd-card-action">
                     <div className={`rwd-card-icon-wrap ${isDone ? "ic-done" : "ic-locked"}`}>
                       <span>📄</span>
@@ -407,6 +540,7 @@ export default function RemediateWord() {
                       {!reportData ? (
                         <button
                           className="rwd-card-btn"
+                          onClick={handleViewReport}
                           disabled={!isDone || reportLoading}
                         >
                           {reportLoading
@@ -426,7 +560,7 @@ export default function RemediateWord() {
                     </div>
                   </div>
 
-                  {/* Card 5 — Word Dashboard */}
+                  {/* Card 4 — Word Dashboard */}
                   <div className="rwd-card rwd-card-action">
                     <div className={`rwd-card-icon-wrap ${isDone ? "ic-done" : "ic-locked"}`}>
                       <span>📊</span>
@@ -470,8 +604,7 @@ export default function RemediateWord() {
                     <h3>Word Accessibility Dashboard</h3>
                   </div>
                   <p className="rwd-report-preview-msg">
-                    {dashboardData?.document?.name ? `${dashboardData.document.name} · ` : ""}
-                    Job <code className="rwd-inline-code">{dashboardData?.job_id || jobId}</code>
+                    {dashboardData?.document?.name || ""}
                   </p>
 
                   <div className="rwd-kpi-grid">
@@ -549,13 +682,22 @@ export default function RemediateWord() {
                         <span className="rwd-kpi-value">{reportData.summary.issues_remaining ?? "—"}</span>
                       </div>
                       <div className="rwd-kpi-tile kpi-before">
-                        <span className="rwd-kpi-label">Agents Run</span>
-                        <span className="rwd-kpi-value">{reportData.summary.agents_run ?? "—"}</span>
+                        <span className="rwd-kpi-label">Manual Review</span>
+                        <span className="rwd-kpi-value">{reportData.summary.manual_review_required ?? "—"}</span>
                       </div>
                       <div className="rwd-kpi-tile kpi-failed">
-                        <span className="rwd-kpi-label">Agents Errored</span>
-                        <span className="rwd-kpi-value">{reportData.summary.agents_errored ?? "—"}</span>
+                        <span className="rwd-kpi-label">Regressions</span>
+                        <span className="rwd-kpi-value">{reportData.summary.regressions ?? "—"}</span>
                       </div>
+                    </div>
+                  )}
+
+                  {reportData?.summary && (
+                    <div className="rwd-dashboard-subrow">
+                      <span><strong>{reportData.summary.issues_before ?? "—"}</strong> issues before</span>
+                      <span><strong>{reportData.summary.changes_to_review ?? "—"}</strong> changes to review</span>
+                      <span><strong>{reportData.summary.duration_ms ?? "—"}</strong> ms duration</span>
+                      <span><strong>{allResults.length}</strong> rules checked</span>
                     </div>
                   )}
 
@@ -568,12 +710,24 @@ export default function RemediateWord() {
                       <div className="rwd-issue-list">
                         {reportData.issues_fixed.map((issue, i) => (
                           <div className="rwd-issue-row" key={`fixed-${issue.rule_id}-${i}`}>
-                            <span className={`rwd-severity-badge sev-${(issue.severity || "").toLowerCase()}`}>
+                            <span className={`rwd-severity-badge sev-${severityClass(issue.severity)}`}>
                               {issue.severity}
                             </span>
                             <div className="rwd-issue-body">
                               <span className="rwd-issue-rule">{issue.rule_id} · {issue.category}</span>
-                              <span className="rwd-issue-msg">{issue.message}</span>
+                              <span className="rwd-issue-msg">{issue.title}</span>
+                              <span className="rwd-issue-msg">
+                                {issue.status_before} → {issue.status_after} · Affected {issue.affected_before} → {issue.affected_after}
+                                {issue.remediator ? ` · ${issue.remediator}` : ""}
+                                {issue.fix_status ? ` · ${prettify(issue.fix_status)}` : ""}
+                              </span>
+                              {Array.isArray(issue.actions) && issue.actions.map((act, j) => (
+                                <span className="rwd-issue-msg" key={`fixed-act-${issue.rule_id}-${j}`}>
+                                  {act.location ? `${act.location}: ` : ""}{act.action}
+                                  {act.detail ? ` — ${act.detail}` : ""}
+                                  {act.review_recommended ? " (review recommended)" : ""}
+                                </span>
+                              ))}
                             </div>
                           </div>
                         ))}
@@ -585,19 +739,22 @@ export default function RemediateWord() {
                     <div className="rwd-report-section">
                       <h4 className="rwd-report-section-title">
                         <span className="rwd-report-section-dot dot-failed"></span>
-                        Issue remaining ({reportData.issues_failed.length})
+                        Issues Failed ({reportData.issues_failed.length})
                       </h4>
                       <div className="rwd-issue-list">
                         {reportData.issues_failed.map((issue, i) => (
                           <div className="rwd-issue-row" key={`failed-${issue.rule_id}-${i}`}>
-                            <span className={`rwd-severity-badge sev-${(issue.severity || "").toLowerCase()}`}>
+                            <span className={`rwd-severity-badge sev-${severityClass(issue.severity)}`}>
                               {issue.severity}
                             </span>
                             <div className="rwd-issue-body">
                               <span className="rwd-issue-rule">{issue.rule_id} · {issue.category}</span>
-                              <span className="rwd-issue-msg">{issue.message}</span>
-                              {issue.remediation_error && (
-                                <span className="rwd-issue-error">{issue.remediation_error}</span>
+                              <span className="rwd-issue-msg">{issue.title}</span>
+                              <span className="rwd-issue-msg">
+                                {issue.status_before} → {issue.status_after} · Affected {issue.affected_before} → {issue.affected_after}
+                              </span>
+                              {issue.reason && (
+                                <span className="rwd-issue-error">{issue.reason}</span>
                               )}
                             </div>
                           </div>
@@ -606,28 +763,67 @@ export default function RemediateWord() {
                     </div>
                   )}
 
-                  {Array.isArray(reportData?.remediation_results) && reportData.remediation_results.length > 0 && (
+                  {manualReviewItems.length > 0 && (
                     <div className="rwd-report-section">
                       <h4 className="rwd-report-section-title">
                         <span className="rwd-report-section-dot dot-agent"></span>
-                        Remediation Actions ({reportData.remediation_results.length})
+                        Manual Review Required ({manualReviewItems.length})
                       </h4>
                       <div className="rwd-issue-list">
-                        {reportData.remediation_results.map((res, i) => (
-                          <div className="rwd-issue-row" key={`res-${res.rule_id}-${i}`}>
-                            <span className={`rwd-result-icon ${res.success ? "res-ok" : "res-fail"}`}>
-                              {res.success ? "✓" : "✕"}
+                        {manualReviewItems.map((item, i) => (
+                          <div className="rwd-issue-row" key={`manual-${item.rule_id}-${i}`}>
+                            <span className={`rwd-severity-badge sev-${severityClass(item.severity)}`}>
+                              {item.severity}
                             </span>
                             <div className="rwd-issue-body">
-                              <span className="rwd-issue-rule">{res.rule_id} · {res.agent_name}</span>
-                              {res.changes_made && res.changes_made.length > 0 && (
-                                <span className="rwd-issue-msg">{res.changes_made.join("; ")}</span>
-                              )}
-                              {res.error && <span className="rwd-issue-error">{res.error}</span>}
+                              <span className="rwd-issue-rule">{item.rule_id} · {item.category}</span>
+                              <span className="rwd-issue-msg">{item.title}</span>
+                              <span className="rwd-issue-msg">
+                                {prettify(item.status_after)} · Affected {item.affected_before} → {item.affected_after}
+                              </span>
                             </div>
                           </div>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {allResults.length > 0 && (
+                    <div className="rwd-report-section">
+                      <h4 className="rwd-report-section-title">
+                        <span className="rwd-report-section-dot dot-agent"></span>
+                        All Rule Results ({allResults.length})
+                      </h4>
+                      {Object.entries(resultsByCategory).map(([category, items]) => (
+                        <div className="rwd-report-section" key={`cat-${category}`}>
+                          <h4 className="rwd-report-section-title">
+                            {prettify(category)} ({items.length})
+                          </h4>
+                          <div className="rwd-issue-list">
+                            {items.map((res, i) => (
+                              <div className="rwd-issue-row" key={`res-${res.rule_id}-${i}`}>
+                                <span className={`rwd-severity-badge ${statusBadgeClass(res.status_after)}`}>
+                                  {prettify(res.status_after)}
+                                </span>
+                                <div className="rwd-issue-body">
+                                  <span className="rwd-issue-rule">{res.rule_id} · {res.severity}</span>
+                                  <span className="rwd-issue-msg">{res.title}</span>
+                                  <span className="rwd-issue-msg">
+                                    {prettify(res.status_before)} → {prettify(res.status_after)} · Affected {res.affected_before} → {res.affected_after} · {prettify(res.remediation_outcome)}
+                                  </span>
+                                  {res.reason && <span className="rwd-issue-error">{res.reason}</span>}
+                                  {Array.isArray(res.actions) && res.actions.map((act, j) => (
+                                    <span className="rwd-issue-msg" key={`res-act-${res.rule_id}-${j}`}>
+                                      {act.location ? `${act.location}: ` : ""}{act.action}
+                                      {act.detail ? ` — ${act.detail}` : ""}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
