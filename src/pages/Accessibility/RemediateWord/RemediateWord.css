@@ -508,6 +508,38 @@
   text-align: center;
 }
 
+/* ─── Live status line ─────────────────────────────────────── */
+.rwd-live-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: var(--rwd-radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  animation: rwd-fade-up 0.3s ease both;
+}
+
+.rwd-live-line.live-running {
+  background: var(--rwd-blue-50);
+  border: 1px solid var(--rwd-blue-100);
+  color: var(--rwd-blue-600);
+}
+
+.rwd-live-line.live-done {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #15803d;
+}
+
+.rwd-live-ico { font-size: 15px; }
+
+.rwd-live-line.live-running .rwd-mini-spin {
+  border-color: var(--rwd-blue-200);
+  border-top-color: var(--rwd-blue-600);
+}
+
 /* ─── Result cards grid ────────────────────────────────────── */
 .rwd-cards-grid {
   display: grid;

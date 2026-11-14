@@ -1,6 +1,7 @@
 
 
 
+
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 // // ── Auth ─────────────────────────────────────────────────────
@@ -154,6 +155,50 @@
 //     method: "POST",
 //     body: formData,
 //     // Do NOT set Content-Type — browser sets it with boundary automatically
+//   });
+//   return response;
+// };
+
+// // ── Orion Remediate Word ────────────────────────────────────────
+// // POST /api/v1/word-accessibility/orion-remediate-word
+// // Query params: organization_id, project_id, user_id
+// // Body: multipart/form-data with "file"
+// // Returns: response_code 202, message, data { job_id, status, status_url, download_url, report_url }, errors
+// export const orionRemediateWord = async (wordFile, organizationId = 1, projectId = 1, userId = 1) => {
+//   const formData = new FormData();
+//   formData.append("file", wordFile, wordFile.name);
+
+//   const url = `${BASE_URL}/word-accessibility/orion-remediate-word?organization_id=${organizationId}&project_id=${projectId}&user_id=${userId}`;
+
+//   const response = await fetch(url, {
+//     method: "POST",
+//     body: formData,
+//     // Do NOT set Content-Type — browser sets it with boundary automatically
+//   });
+//   return response;
+// };
+
+// // ── Word Remediation Status ─────────────────────────────────────
+// // GET /api/v1/word-accessibility/word-remediation-status/{job_id}
+// // Path param: job_id (string, required)
+// // pending / running -> job_id, status, status_url, hint
+// // completed -> document, summary, issues_fixed, issues_failed, remediation_results, download_url
+// // failed -> job_id, status, error, status_url
+// export const getWordRemediationStatus = async (jobId) => {
+//   const response = await fetch(`${BASE_URL}/word-accessibility/word-remediation-status/${jobId}`, {
+//     method: "GET",
+//     headers: { "Accept": "application/json" },
+//   });
+//   return response;
+// };
+
+// // ── Download Remediated Word ────────────────────────────────────
+// // GET /api/v1/word-accessibility/download-remediated-word/{job_id}
+// // Path param: job_id (string, required)
+// // Returns: the remediated Word file (binary)
+// export const downloadRemediatedWord = async (jobId) => {
+//   const response = await fetch(`${BASE_URL}/word-accessibility/download-remediated-word/${jobId}`, {
+//     method: "GET",
 //   });
 //   return response;
 // };
@@ -1086,9 +1131,6 @@
 //   return response.json();
 // };
 
-
-
-
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 // ── Auth ─────────────────────────────────────────────────────
@@ -1286,6 +1328,18 @@ export const getWordRemediationStatus = async (jobId) => {
 export const downloadRemediatedWord = async (jobId) => {
   const response = await fetch(`${BASE_URL}/word-accessibility/download-remediated-word/${jobId}`, {
     method: "GET",
+  });
+  return response;
+};
+
+// ── Word Accessibility Dashboard ────────────────────────────────
+// GET /api/v1/word-accessibility/dashboard/word/{job_id}
+// Path param: job_id (string, required)
+// Returns: response_code, message, data { job_id, status, created_at, document, dashboard, summary }
+export const getWordAccessibilityDashboard = async (jobId) => {
+  const response = await fetch(`${BASE_URL}/word-accessibility/dashboard/word/${jobId}`, {
+    method: "GET",
+    headers: { "Accept": "application/json" },
   });
   return response;
 };
