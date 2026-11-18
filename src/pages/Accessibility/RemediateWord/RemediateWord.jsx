@@ -1,32 +1,22 @@
 
 
 
+
 // import { useState, useRef, useEffect, useCallback } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
 //   orionRemediateWord,
 //   getWordRemediationStatus,
 //   downloadRemediatedWord,
+//   getWordAccessibilityDashboard,
 // } from "../../../services/apiServices";
 // import "./RemediateWord.css";
 
 // const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200 MB
 // const POLL_INTERVAL_MS = 4000;
+// const COMPLETED_NOTICE_MS = 4500;
 // const DONE_STATUSES = ["completed", "done", "success", "succeeded"];
 // const FAILED_STATUSES = ["failed", "error", "errored"];
-
-// const downloadAsJson = (data, filename) => {
-//   const jsonStr = JSON.stringify(data, null, 2);
-//   const blob = new Blob([jsonStr], { type: "application/json" });
-//   const url = URL.createObjectURL(blob);
-//   const link = document.createElement("a");
-//   link.href = url;
-//   link.download = filename;
-//   document.body.appendChild(link);
-//   link.click();
-//   document.body.removeChild(link);
-//   URL.revokeObjectURL(url);
-// };
 
 // export default function RemediateWord() {
 //   const navigate = useNavigate();
@@ -39,11 +29,9 @@
 //   // ── Job / status polling state ──────────────────────────────
 //   const [jobId, setJobId]             = useState(null);
 //   const [status, setStatus]           = useState(null);     // "pending" | "processing" | "completed" | "failed"
-//   const [jobMessage, setJobMessage]   = useState("");
 //   const [statusError, setStatusError] = useState("");
 //   const [polling, setPolling]         = useState(false);
-//   const [lastChecked, setLastChecked] = useState(null);
-//   const [submittedAt, setSubmittedAt] = useState(null);
+//   const [showCompleted, setShowCompleted] = useState(false);
 //   const [resultData, setResultData]   = useState(null);
 
 //   // ── Download state ───────────────────────────────────────────
@@ -55,7 +43,6 @@
 //   const [reportLoading, setReportLoading] = useState(false);
 //   const [reportData, setReportData]       = useState(null);
 //   const [reportError, setReportError]     = useState("");
-//   const [downloadingReport, setDownloadingReport] = useState(false);
 
 //   // ── Dashboard (KPI) state ──────────────────────────────────────
 //   const [dashboardLoading, setDashboardLoading] = useState(false);
@@ -64,6 +51,7 @@
 
 //   const wordInputRef = useRef(null);
 //   const pollRef = useRef(null);
+//   const noticeRef = useRef(null);
 
 //   const isDone   = DONE_STATUSES.includes((status || "").toLowerCase());
 //   const isFailed = FAILED_STATUSES.includes((status || "").toLowerCase());
@@ -79,11 +67,9 @@
 //   const resetJobState = () => {
 //     setJobId(null);
 //     setStatus(null);
-//     setJobMessage("");
 //     setStatusError("");
 //     setPolling(false);
-//     setLastChecked(null);
-//     setSubmittedAt(null);
+//     setShowCompleted(false);
 //     setResultData(null);
 //     setDownloading(false);
 //     setDownloadError("");
@@ -91,13 +77,16 @@
 //     setReportLoading(false);
 //     setReportData(null);
 //     setReportError("");
-//     setDownloadingReport(false);
 //     setDashboardLoading(false);
 //     setDashboardData(null);
 //     setDashboardError("");
 //     if (pollRef.current) {
 //       clearInterval(pollRef.current);
 //       pollRef.current = null;
+//     }
+//     if (noticeRef.current) {
+//       clearTimeout(noticeRef.current);
+//       noticeRef.current = null;
 //     }
 //   };
 
@@ -135,6 +124,27 @@
 //     resetJobState();
 //   };
 
+//   // ── Load dashboard KPIs for a completed job ──────────────────
+//   const loadDashboard = useCallback(async (id) => {
+//     setDashboardLoading(true);
+//     setDashboardError("");
+//     try {
+//       const response = await getWordAccessibilityDashboard(id);
+//       if (!response.ok) {
+//         let errMsg = `Server error: ${response.status}`;
+//         try { const e = await response.json(); errMsg = e.detail || e.message || e.error || JSON.stringify(e); }
+//         catch { try { const t = await response.text(); if (t) errMsg = t; } catch {} }
+//         throw new Error(errMsg);
+//       }
+//       const data = await response.json();
+//       setDashboardData(data?.data ?? data);
+//     } catch (err) {
+//       setDashboardError(err.message || "Could not load the dashboard.");
+//     } finally {
+//       setDashboardLoading(false);
+//     }
+//   }, []);
+
 //   // ── Poll status until completed / failed ─────────────────────
 //   const checkStatusOnce = useCallback(async (id) => {
 //     try {
@@ -150,13 +160,12 @@
 //       const newStatus = d?.status ?? null;
 
 //       setStatus(newStatus);
-//       setJobMessage(data?.message || "");
-//       setLastChecked(new Date());
 //       setStatusError("");
 
 //       const lower = (newStatus || "").toLowerCase();
 //       if (DONE_STATUSES.includes(lower)) {
 //         setResultData(d);
+//         loadDashboard(id);
 //       }
 //       if (FAILED_STATUSES.includes(lower)) {
 //         setStatusError(d?.error || data?.message || "Remediation failed.");
@@ -171,13 +180,30 @@
 //     } catch (err) {
 //       setStatusError(err.message || "Could not fetch remediation status.");
 //     }
-//   }, []);
+//   }, [loadDashboard]);
 
 //   useEffect(() => {
 //     return () => {
 //       if (pollRef.current) clearInterval(pollRef.current);
+//       if (noticeRef.current) clearTimeout(noticeRef.current);
 //     };
 //   }, []);
+
+//   // ── "Remediation completed" notice — vanishes after a few seconds ──
+//   useEffect(() => {
+//     if (!isDone) return undefined;
+//     setShowCompleted(true);
+//     noticeRef.current = setTimeout(() => {
+//       setShowCompleted(false);
+//       noticeRef.current = null;
+//     }, COMPLETED_NOTICE_MS);
+//     return () => {
+//       if (noticeRef.current) {
+//         clearTimeout(noticeRef.current);
+//         noticeRef.current = null;
+//       }
+//     };
+//   }, [isDone]);
 
 //   // ── Submit — Remediate Word ────────────────────────────────────
 //   const handleSubmit = async () => {
@@ -207,8 +233,6 @@
 
 //       setJobId(id);
 //       setStatus(d?.status ?? "pending");
-//       setJobMessage(data?.message || "");
-//       setSubmittedAt(new Date());
 //       setPolling(true);
 
 //       // Poll immediately, then on an interval
@@ -261,12 +285,9 @@
 //     setReportData(resultData);
 //   };
 
-//   const handleDownloadReport = () => {
-//     if (!reportData) return;
-//     setDownloadingReport(true);
-//     const timestamp = new Date().toISOString().split("T")[0];
-//     downloadAsJson(reportData, `word-remediation-report-${jobId}-${timestamp}.json`);
-//     setDownloadingReport(false);
+//   const handleHideReport = () => {
+//     setReportError("");
+//     setReportData(null);
 //   };
 
 //   const severityClass = (sev) => {
@@ -294,14 +315,6 @@
 //     acc[key].push(r);
 //     return acc;
 //   }, {});
-
-//   const statusLabel = () => {
-//     if (isFailed) return "Failed";
-//     if (isDone) return "Completed";
-//     if (status === "processing") return "Processing";
-//     if (status) return status.charAt(0).toUpperCase() + status.slice(1);
-//     return "Pending";
-//   };
 
 //   return (
 //     <div className="rwd-page">
@@ -358,7 +371,7 @@
 //           </div>
 //         </div>
 
-//         <div className="rwd-content">
+//         <div className={`rwd-content${jobId ? " rwd-compact" : ""}`}>
 
 //           {/* ══ STEP 1 — Upload ══ */}
 //           <section className="rwd-step-card">
@@ -454,10 +467,13 @@
 //               <div className="rwd-step-head">
 //                 <div>
 //                   <h2 className="rwd-step-title">Remediation Result</h2>
-//                   <p className="rwd-step-desc">
-//                     Live job status, remediated file and detailed report.
-//                   </p>
 //                 </div>
+//                 {jobId && isDone && showCompleted && (
+//                   <div className="rwd-live-line live-done">
+//                     <span className="rwd-live-ico">✅</span>
+//                     Remediation completed
+//                   </div>
+//                 )}
 //               </div>
 
 //               {/* Empty state */}
@@ -477,126 +493,118 @@
 //                 </div>
 //               )}
 
-//               {/* ── result cards ── */}
-//               {jobId && (
-//                 <div className="rwd-cards-grid">
-
-//                   {/* Card 1 — Status */}
-//                   <div className={`rwd-card rwd-card-status st-${(status || "pending").toLowerCase()}`}>
-//                     <div className={`rwd-card-icon-wrap ${isDone ? "ic-done" : isFailed ? "ic-failed" : "ic-pending"}`}>
-//                       {polling && !isDone && !isFailed
-//                         ? <span className="rwd-mini-spin"></span>
-//                         : <span>{isDone ? "✅" : isFailed ? "⚠️" : "⏳"}</span>}
-//                     </div>
-//                     <div className="rwd-card-body">
-//                       <span className="rwd-card-label">Status</span>
-//                       <span className={`rwd-status-pill ${isDone ? "pill-done" : isFailed ? "pill-failed" : "pill-pending"}`}>
-//                         {statusLabel()}
-//                       </span>
-//                       {jobMessage && <span className="rwd-card-sub">{jobMessage}</span>}
-//                       {submittedAt && (
-//                         <span className="rwd-card-sub">Started {submittedAt.toLocaleTimeString()}</span>
-//                       )}
-//                       {lastChecked && (
-//                         <span className="rwd-card-sub">Last checked {lastChecked.toLocaleTimeString()}</span>
-//                       )}
-//                       {statusError && <span className="rwd-card-sub rwd-card-sub-error">{statusError}</span>}
-//                     </div>
+//               {/* ── status line ── */}
+//               {jobId && !isDone && !isFailed && (
+//                 <div className="rwd-live-line live-running">
+//                   <span className="rwd-mini-spin"></span>
+//                   Remediation in progress…
+//                 </div>
+//               )}
+//               {jobId && isFailed && (
+//                 <div className="rwd-error-banner">
+//                   <span className="rwd-error-ico">⚠</span>
+//                   <div>
+//                     <p className="rwd-error-ttl">Remediation Failed</p>
+//                     <p className="rwd-error-msg">{statusError || "Remediation failed."}</p>
 //                   </div>
-
-//                   {/* Card 2 — Download */}
-//                   <div className="rwd-card rwd-card-action">
-//                     <div className={`rwd-card-icon-wrap ${isDone ? "ic-done" : "ic-locked"}`}>
-//                       <span>⬇️</span>
-//                     </div>
-//                     <div className="rwd-card-body">
-//                       <span className="rwd-card-label">Remediated File</span>
-//                       <span className="rwd-card-sub">
-//                         {isDone ? "Your fixed Word document is ready to download." : "Available once remediation completes."}
-//                       </span>
-//                       <button
-//                         className="rwd-card-btn"
-//                         onClick={handleDownload}
-//                         disabled={!isDone || downloading}
-//                       >
-//                         {downloading
-//                           ? <><span className="rwd-btn-spin"></span> Downloading…</>
-//                           : downloaded ? "Downloaded ✓ — Download Again" : "Download Word Document"}
-//                       </button>
-//                       {downloadError && <span className="rwd-card-sub rwd-card-sub-error">{downloadError}</span>}
-//                     </div>
-//                   </div>
-
-//                   {/* Card 3 — Report */}
-//                   <div className="rwd-card rwd-card-action">
-//                     <div className={`rwd-card-icon-wrap ${isDone ? "ic-done" : "ic-locked"}`}>
-//                       <span>📄</span>
-//                     </div>
-//                     <div className="rwd-card-body">
-//                       <span className="rwd-card-label">Remediation Report</span>
-//                       <span className="rwd-card-sub">
-//                         {isDone ? "View what was fixed and download the full report." : "Available once remediation completes."}
-//                       </span>
-//                       {!reportData ? (
-//                         <button
-//                           className="rwd-card-btn"
-//                           onClick={handleViewReport}
-//                           disabled={!isDone || reportLoading}
-//                         >
-//                           {reportLoading
-//                             ? <><span className="rwd-btn-spin"></span> Loading…</>
-//                             : "View Report"}
-//                         </button>
-//                       ) : (
-//                         <button
-//                           className="rwd-card-btn rwd-card-btn-secondary"
-//                           onClick={handleDownloadReport}
-//                           disabled={downloadingReport}
-//                         >
-//                           {downloadingReport ? "Downloading…" : "Download Report JSON"}
-//                         </button>
-//                       )}
-//                       {reportError && <span className="rwd-card-sub rwd-card-sub-error">{reportError}</span>}
-//                     </div>
-//                   </div>
-
-//                   {/* Card 4 — Word Dashboard */}
-//                   <div className="rwd-card rwd-card-action">
-//                     <div className={`rwd-card-icon-wrap ${isDone ? "ic-done" : "ic-locked"}`}>
-//                       <span>📊</span>
-//                     </div>
-//                     <div className="rwd-card-body">
-//                       <span className="rwd-card-label">Word Dashboard</span>
-//                       <span className="rwd-card-sub">
-//                         {isDone ? "See headline accessibility KPIs for this job." : "Available once remediation completes."}
-//                       </span>
-//                       {!dashboardData ? (
-//                         <button
-//                           className="rwd-card-btn"
-//                           disabled={!isDone || dashboardLoading}
-//                         >
-//                           {dashboardLoading
-//                             ? <><span className="rwd-btn-spin"></span> Loading…</>
-//                             : "View Dashboard"}
-//                         </button>
-//                       ) : (
-//                         <button
-//                           className="rwd-card-btn rwd-card-btn-secondary"
-//                           disabled={dashboardLoading}
-//                         >
-//                           {dashboardLoading
-//                             ? <><span className="rwd-btn-spin"></span> Refreshing…</>
-//                             : "Refresh Dashboard"}
-//                         </button>
-//                       )}
-//                       {dashboardError && <span className="rwd-card-sub rwd-card-sub-error">{dashboardError}</span>}
-//                     </div>
-//                   </div>
-
 //                 </div>
 //               )}
 
-//               {/* ── Word Dashboard preview (KPIs) ── */}
+//               {/* ── result cards ── */}
+//               {jobId && isDone && (
+//                 <>
+//                   <div className="rwd-cards-grid">
+
+//                     {/* Card 1 — Download (icon) */}
+//                     <div className="rwd-card rwd-card-download">
+//                       <button
+//                         type="button"
+//                         className={`rwd-download-icon-btn${downloaded ? " is-downloaded" : ""}`}
+//                         onClick={handleDownload}
+//                         disabled={downloading}
+//                         aria-label="Download remediated Word"
+//                       >
+//                         {downloading ? (
+//                           <span className="rwd-btn-spin"></span>
+//                         ) : (
+//                           <svg
+//                             width="22"
+//                             height="22"
+//                             viewBox="0 0 24 24"
+//                             fill="none"
+//                             stroke="currentColor"
+//                             strokeWidth="2.2"
+//                             strokeLinecap="round"
+//                             strokeLinejoin="round"
+//                             aria-hidden="true"
+//                           >
+//                             <path d="M12 3v12" />
+//                             <path d="M7 10l5 5 5-5" />
+//                             <path d="M5 21h14" />
+//                           </svg>
+//                         )}
+//                         {downloaded && !downloading && (
+//                           <span className="rwd-download-check" aria-hidden="true">✓</span>
+//                         )}
+//                         <span className="rwd-tooltip" aria-hidden="true">Download remediated Word</span>
+//                       </button>
+//                     </div>
+
+//                     {/* Card 2 — Report */}
+//                     <div className="rwd-card rwd-card-action">
+//                       <div className="rwd-card-icon-wrap ic-done">
+//                         <span>📄</span>
+//                       </div>
+//                       <div className="rwd-card-body">
+//                         <span className="rwd-card-label">Remediation Report</span>
+//                         <span className="rwd-card-sub">
+//                           {reportData ? "The full report is shown below." : "View what was fixed in this document."}
+//                         </span>
+//                         {!reportData ? (
+//                           <button
+//                             className="rwd-card-btn"
+//                             onClick={handleViewReport}
+//                             disabled={reportLoading}
+//                           >
+//                             {reportLoading
+//                               ? <><span className="rwd-btn-spin"></span> Loading…</>
+//                               : "View Report"}
+//                           </button>
+//                         ) : (
+//                           <button
+//                             className="rwd-card-btn rwd-card-btn-secondary"
+//                             onClick={handleHideReport}
+//                           >
+//                             Hide Report
+//                           </button>
+//                         )}
+//                         {reportError && <span className="rwd-card-sub rwd-card-sub-error">{reportError}</span>}
+//                       </div>
+//                     </div>
+
+//                   </div>
+//                   {downloadError && (
+//                     <p className="rwd-card-sub rwd-card-sub-error rwd-download-error">{downloadError}</p>
+//                   )}
+//                 </>
+//               )}
+
+//               {/* ── Word Dashboard (auto-loaded on completion) ── */}
+//               {isDone && dashboardLoading && !dashboardData && (
+//                 <div className="rwd-live-line live-running">
+//                   <span className="rwd-mini-spin"></span>
+//                   Loading dashboard…
+//                 </div>
+//               )}
+//               {isDone && dashboardError && !dashboardData && (
+//                 <div className="rwd-error-banner">
+//                   <span className="rwd-error-ico">⚠</span>
+//                   <div>
+//                     <p className="rwd-error-ttl">Could Not Load Dashboard</p>
+//                     <p className="rwd-error-msg">{dashboardError}</p>
+//                   </div>
+//                 </div>
+//               )}
 //               {dashboardData && (
 //                 <div className="rwd-dashboard-preview">
 //                   <div className="rwd-report-preview-head">
@@ -638,9 +646,9 @@
 //                     <div className="rwd-dashboard-subrow">
 //                       <span><strong>{dashboardData.summary.issues_before ?? "—"}</strong> issues before</span>
 //                       <span><strong>{dashboardData.summary.issues_failed ?? "—"}</strong> failed to fix</span>
-//                       <span><strong>{dashboardData.summary.agents_run ?? "—"}</strong> agents run</span>
-//                       <span><strong>{dashboardData.summary.agents_errored ?? "—"}</strong> agents errored</span>
-//                       <span><strong>{dashboardData.summary.regressions?.length ?? 0}</strong> regressions</span>
+//                       <span><strong>{dashboardData.summary.manual_review_required ?? "—"}</strong> manual review</span>
+//                       <span><strong>{dashboardData.summary.changes_to_review ?? "—"}</strong> changes to review</span>
+//                       <span><strong>{dashboardData.summary.regressions ?? 0}</strong> regressions</span>
 //                     </div>
 //                   )}
 //                 </div>
@@ -855,19 +863,6 @@ const COMPLETED_NOTICE_MS = 4500;
 const DONE_STATUSES = ["completed", "done", "success", "succeeded"];
 const FAILED_STATUSES = ["failed", "error", "errored"];
 
-const downloadAsJson = (data, filename) => {
-  const jsonStr = JSON.stringify(data, null, 2);
-  const blob = new Blob([jsonStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
-
 export default function RemediateWord() {
   const navigate = useNavigate();
 
@@ -893,7 +888,6 @@ export default function RemediateWord() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportData, setReportData]       = useState(null);
   const [reportError, setReportError]     = useState("");
-  const [downloadingReport, setDownloadingReport] = useState(false);
 
   // ── Dashboard (KPI) state ──────────────────────────────────────
   const [dashboardLoading, setDashboardLoading] = useState(false);
@@ -928,7 +922,6 @@ export default function RemediateWord() {
     setReportLoading(false);
     setReportData(null);
     setReportError("");
-    setDownloadingReport(false);
     setDashboardLoading(false);
     setDashboardData(null);
     setDashboardError("");
@@ -1137,12 +1130,9 @@ export default function RemediateWord() {
     setReportData(resultData);
   };
 
-  const handleDownloadReport = () => {
-    if (!reportData) return;
-    setDownloadingReport(true);
-    const timestamp = new Date().toISOString().split("T")[0];
-    downloadAsJson(reportData, `word-remediation-report-${jobId}-${timestamp}.json`);
-    setDownloadingReport(false);
+  const handleHideReport = () => {
+    setReportError("");
+    setReportData(null);
   };
 
   const severityClass = (sev) => {
@@ -1226,7 +1216,7 @@ export default function RemediateWord() {
           </div>
         </div>
 
-        <div className="rwd-content">
+        <div className={`rwd-content${jobId ? " rwd-compact" : ""}`}>
 
           {/* ══ STEP 1 — Upload ══ */}
           <section className="rwd-step-card">
@@ -1323,6 +1313,12 @@ export default function RemediateWord() {
                 <div>
                   <h2 className="rwd-step-title">Remediation Result</h2>
                 </div>
+                {jobId && isDone && showCompleted && (
+                  <div className="rwd-live-line live-done">
+                    <span className="rwd-live-ico">✅</span>
+                    Remediation completed
+                  </div>
+                )}
               </div>
 
               {/* Empty state */}
@@ -1349,12 +1345,6 @@ export default function RemediateWord() {
                   Remediation in progress…
                 </div>
               )}
-              {jobId && isDone && showCompleted && (
-                <div className="rwd-live-line live-done">
-                  <span className="rwd-live-ico">✅</span>
-                  Remediation completed
-                </div>
-              )}
               {jobId && isFailed && (
                 <div className="rwd-error-banner">
                   <span className="rwd-error-ico">⚠</span>
@@ -1367,61 +1357,81 @@ export default function RemediateWord() {
 
               {/* ── result cards ── */}
               {jobId && isDone && (
-                <div className="rwd-cards-grid">
+                <>
+                  <div className="rwd-cards-grid">
 
-                  {/* Card 1 — Download */}
-                  <div className="rwd-card rwd-card-action">
-                    <div className="rwd-card-icon-wrap ic-done">
-                      <span>⬇️</span>
-                    </div>
-                    <div className="rwd-card-body">
-                      <span className="rwd-card-label">Remediated File</span>
-                      <span className="rwd-card-sub">Your fixed Word document is ready to download.</span>
+                    {/* Card 1 — Download (icon) */}
+                    <div className="rwd-card rwd-card-download">
                       <button
-                        className="rwd-card-btn"
+                        type="button"
+                        className={`rwd-download-icon-btn${downloaded ? " is-downloaded" : ""}`}
                         onClick={handleDownload}
                         disabled={downloading}
+                        aria-label="Download remediated Word"
                       >
-                        {downloading
-                          ? <><span className="rwd-btn-spin"></span> Downloading…</>
-                          : downloaded ? "Downloaded ✓ — Download Again" : "Download Word Document"}
+                        {downloading ? (
+                          <span className="rwd-btn-spin"></span>
+                        ) : (
+                          <svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M12 3v12" />
+                            <path d="M7 10l5 5 5-5" />
+                            <path d="M5 21h14" />
+                          </svg>
+                        )}
+                        {downloaded && !downloading && (
+                          <span className="rwd-download-check" aria-hidden="true">✓</span>
+                        )}
+                        <span className="rwd-tooltip" aria-hidden="true">Download remediated Word</span>
                       </button>
-                      {downloadError && <span className="rwd-card-sub rwd-card-sub-error">{downloadError}</span>}
                     </div>
-                  </div>
 
-                  {/* Card 2 — Report */}
-                  <div className="rwd-card rwd-card-action">
-                    <div className="rwd-card-icon-wrap ic-done">
-                      <span>📄</span>
+                    {/* Card 2 — Report */}
+                    <div className="rwd-card rwd-card-action">
+                      <div className="rwd-card-icon-wrap ic-done">
+                        <span>📄</span>
+                      </div>
+                      <div className="rwd-card-body">
+                        <span className="rwd-card-label">Remediation Report</span>
+                        <span className="rwd-card-sub">
+                          {reportData ? "The full report is shown below." : "View what was fixed in this document."}
+                        </span>
+                        {!reportData ? (
+                          <button
+                            className="rwd-card-btn"
+                            onClick={handleViewReport}
+                            disabled={reportLoading}
+                          >
+                            {reportLoading
+                              ? <><span className="rwd-btn-spin"></span> Loading…</>
+                              : "View Report"}
+                          </button>
+                        ) : (
+                          <button
+                            className="rwd-card-btn rwd-card-btn-secondary"
+                            onClick={handleHideReport}
+                          >
+                            Hide Report
+                          </button>
+                        )}
+                        {reportError && <span className="rwd-card-sub rwd-card-sub-error">{reportError}</span>}
+                      </div>
                     </div>
-                    <div className="rwd-card-body">
-                      <span className="rwd-card-label">Remediation Report</span>
-                      <span className="rwd-card-sub">View what was fixed and download the full report.</span>
-                      {!reportData ? (
-                        <button
-                          className="rwd-card-btn"
-                          onClick={handleViewReport}
-                          disabled={reportLoading}
-                        >
-                          {reportLoading
-                            ? <><span className="rwd-btn-spin"></span> Loading…</>
-                            : "View Report"}
-                        </button>
-                      ) : (
-                        <button
-                          className="rwd-card-btn rwd-card-btn-secondary"
-                          onClick={handleDownloadReport}
-                          disabled={downloadingReport}
-                        >
-                          {downloadingReport ? "Downloading…" : "Download Report JSON"}
-                        </button>
-                      )}
-                      {reportError && <span className="rwd-card-sub rwd-card-sub-error">{reportError}</span>}
-                    </div>
-                  </div>
 
-                </div>
+                  </div>
+                  {downloadError && (
+                    <p className="rwd-card-sub rwd-card-sub-error rwd-download-error">{downloadError}</p>
+                  )}
+                </>
               )}
 
               {/* ── Word Dashboard (auto-loaded on completion) ── */}
@@ -1501,48 +1511,6 @@ export default function RemediateWord() {
                     Status: <strong>{reportData?.status || "—"}</strong>
                     {reportData?.created_at ? ` · ${new Date(reportData.created_at).toLocaleString()}` : ""}
                   </p>
-
-                  {reportData?.summary && (
-                    <div className="rwd-kpi-grid rwd-kpi-grid-7">
-                      <div className="rwd-kpi-tile kpi-before">
-                        <span className="rwd-kpi-label">Score Before</span>
-                        <span className="rwd-kpi-value">{reportData.summary.score_before ?? "—"}</span>
-                      </div>
-                      <div className="rwd-kpi-tile kpi-after">
-                        <span className="rwd-kpi-label">Score After</span>
-                        <span className="rwd-kpi-value">{reportData.summary.score_after ?? "—"}</span>
-                      </div>
-                      <div className="rwd-kpi-tile kpi-fixed">
-                        <span className="rwd-kpi-label">Fixed</span>
-                        <span className="rwd-kpi-value">{reportData.summary.issues_fixed ?? "—"}</span>
-                      </div>
-                      <div className="rwd-kpi-tile kpi-failed">
-                        <span className="rwd-kpi-label">Failed</span>
-                        <span className="rwd-kpi-value">{reportData.summary.issues_failed ?? "—"}</span>
-                      </div>
-                      <div className="rwd-kpi-tile kpi-remaining">
-                        <span className="rwd-kpi-label">Remaining</span>
-                        <span className="rwd-kpi-value">{reportData.summary.issues_remaining ?? "—"}</span>
-                      </div>
-                      <div className="rwd-kpi-tile kpi-before">
-                        <span className="rwd-kpi-label">Manual Review</span>
-                        <span className="rwd-kpi-value">{reportData.summary.manual_review_required ?? "—"}</span>
-                      </div>
-                      <div className="rwd-kpi-tile kpi-failed">
-                        <span className="rwd-kpi-label">Regressions</span>
-                        <span className="rwd-kpi-value">{reportData.summary.regressions ?? "—"}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {reportData?.summary && (
-                    <div className="rwd-dashboard-subrow">
-                      <span><strong>{reportData.summary.issues_before ?? "—"}</strong> issues before</span>
-                      <span><strong>{reportData.summary.changes_to_review ?? "—"}</strong> changes to review</span>
-                      <span><strong>{reportData.summary.duration_ms ?? "—"}</strong> ms duration</span>
-                      <span><strong>{allResults.length}</strong> rules checked</span>
-                    </div>
-                  )}
 
                   {Array.isArray(reportData?.issues_fixed) && reportData.issues_fixed.length > 0 && (
                     <div className="rwd-report-section">

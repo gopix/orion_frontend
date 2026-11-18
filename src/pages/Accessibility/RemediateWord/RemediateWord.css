@@ -704,6 +704,106 @@
   background: var(--rwd-blue-50);
 }
 
+/* ─── Download icon card (remediated Word) ─────────────────── */
+.rwd-card-download {
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.rwd-card-download:hover,
+.rwd-card-download:focus-within {
+  position: relative;
+  z-index: 5;
+}
+
+.rwd-download-icon-btn {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--rwd-white);
+  background: linear-gradient(135deg, var(--rwd-blue-500), var(--rwd-blue-600));
+  box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+  transition: var(--rwd-transition);
+}
+
+.rwd-download-icon-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+}
+
+.rwd-download-icon-btn:focus-visible {
+  outline: 2px solid var(--rwd-blue-400);
+  outline-offset: 3px;
+}
+
+.rwd-download-icon-btn:disabled {
+  opacity: 0.75;
+  cursor: progress;
+  box-shadow: none;
+}
+
+.rwd-download-check {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #16a34a;
+  border: 2px solid var(--rwd-white);
+  color: var(--rwd-white);
+  font-size: 9px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rwd-tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  padding: 6px 11px;
+  background: var(--rwd-slate-900);
+  color: var(--rwd-white);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: nowrap;
+  border-radius: 6px;
+  box-shadow: var(--rwd-shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.rwd-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 18px;
+  border: 5px solid transparent;
+  border-bottom-color: var(--rwd-slate-900);
+}
+
+.rwd-download-icon-btn:hover .rwd-tooltip,
+.rwd-download-icon-btn:focus-visible .rwd-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.rwd-download-error {
+  margin-top: 8px;
+}
+
 /* ─── Report preview ───────────────────────────────────────── */
 .rwd-report-preview {
   margin-top: 18px;
@@ -926,12 +1026,127 @@
 
 .rwd-empty-scan { display: none; }
 
+/* ─── Compact layout (once a job has started) ──────────────── */
+.rwd-content.rwd-compact {
+  padding: 16px 28px 20px;
+  gap: 14px;
+}
+
+.rwd-compact .rwd-step-badge {
+  width: 52px;
+  min-width: 52px;
+  padding-top: 20px;
+}
+
+.rwd-compact .rwd-step-badge span { font-size: 20px; }
+
+.rwd-compact .rwd-step-body { padding: 16px 22px 18px; }
+
+.rwd-compact .rwd-step-head { margin-bottom: 12px; }
+
+.rwd-compact .rwd-step-title {
+  font-size: 16px;
+  margin-bottom: 0;
+}
+
+.rwd-compact .rwd-step-desc { display: none; }
+
+.rwd-compact .rwd-upload-row { gap: 16px; }
+
+.rwd-compact .rwd-dropzone.has-file { padding: 14px 18px; }
+
+.rwd-compact .rwd-run-panel {
+  gap: 12px;
+  padding: 14px 18px;
+}
+
+.rwd-compact .rwd-run-label { margin-bottom: 6px; }
+
+.rwd-compact .rwd-run-checks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 14px;
+}
+
+.rwd-compact .rwd-run-btn { padding: 10px 20px; }
+
+.rwd-compact .rwd-live-line {
+  margin-bottom: 10px;
+  padding: 7px 12px;
+}
+
+.rwd-compact .rwd-step-head { position: relative; }
+
+.rwd-compact .rwd-step-head .rwd-live-line {
+  position: absolute;
+  top: -4px;
+  right: 0;
+  margin-bottom: 0;
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.rwd-compact .rwd-cards-grid {
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+}
+
+.rwd-compact .rwd-card-action {
+  align-items: center;
+  padding: 14px 18px;
+}
+
+.rwd-compact .rwd-card-action .rwd-card-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 14px;
+  row-gap: 3px;
+  align-items: center;
+}
+
+.rwd-compact .rwd-card-action .rwd-card-label,
+.rwd-compact .rwd-card-action .rwd-card-sub { grid-column: 1; }
+
+.rwd-compact .rwd-card-action .rwd-card-btn {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: auto;
+  margin-top: 0;
+  padding: 9px 20px;
+  white-space: nowrap;
+}
+
+.rwd-compact .rwd-dashboard-preview,
+.rwd-compact .rwd-report-preview {
+  margin-top: 14px;
+  padding: 14px 18px;
+}
+
+.rwd-compact .rwd-report-preview-head { margin-bottom: 4px; }
+
+.rwd-compact .rwd-kpi-grid {
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.rwd-compact .rwd-kpi-tile { padding: 10px 14px; }
+
+.rwd-compact .rwd-kpi-value { font-size: 18px; }
+
+.rwd-compact .rwd-dashboard-subrow {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
 /* ─── Responsive ───────────────────────────────────────────── */
 @media (max-width: 900px) {
   .rwd-upload-row { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
-  .rwd-cards-grid { grid-template-columns: 1fr; }
-  .rwd-content { padding: 16px 14px 32px; }
+  .rwd-cards-grid,
+  .rwd-compact .rwd-cards-grid { grid-template-columns: 1fr; }
+  .rwd-content,
+  .rwd-content.rwd-compact { padding: 16px 14px 32px; }
+  .rwd-tooltip { display: none; }
 }
