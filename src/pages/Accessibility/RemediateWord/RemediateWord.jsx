@@ -1,7 +1,5 @@
 
 
-
-
 // import { useState, useRef, useEffect, useCallback } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
@@ -382,10 +380,6 @@
 //               <div className="rwd-step-head">
 //                 <div>
 //                   <h2 className="rwd-step-title">Upload Word Document</h2>
-//                   <p className="rwd-step-desc">
-//                     Upload a Word document to automatically fix accessibility issues —
-//                     missing alt text, heading structure, table headers, contrast and more.
-//                   </p>
 //                 </div>
 //               </div>
 
@@ -422,17 +416,8 @@
 //                   )}
 //                 </div>
 
-//                 {/* Run panel */}
-//                 <div className="rwd-run-panel">
-//                   <div className="rwd-run-info">
-//                     <p className="rwd-run-label">What gets fixed</p>
-//                     <ul className="rwd-run-checks">
-//                       <li><span className="rwd-check-icon">🏷️</span> Document metadata &amp; language</li>
-//                       <li><span className="rwd-check-icon">🖼️</span> Missing image alt-text</li>
-//                       <li><span className="rwd-check-icon">🧩</span> Heading &amp; table structure</li>
-//                       <li><span className="rwd-check-icon">🎨</span> Colour contrast issues</li>
-//                     </ul>
-//                   </div>
+//                 {/* Start button */}
+//                 <div className="rwd-run-actions">
 //                   <button
 //                     className="rwd-run-btn"
 //                     onClick={handleSubmit}
@@ -666,48 +651,6 @@
 //                     Status: <strong>{reportData?.status || "—"}</strong>
 //                     {reportData?.created_at ? ` · ${new Date(reportData.created_at).toLocaleString()}` : ""}
 //                   </p>
-
-//                   {reportData?.summary && (
-//                     <div className="rwd-kpi-grid rwd-kpi-grid-7">
-//                       <div className="rwd-kpi-tile kpi-before">
-//                         <span className="rwd-kpi-label">Score Before</span>
-//                         <span className="rwd-kpi-value">{reportData.summary.score_before ?? "—"}</span>
-//                       </div>
-//                       <div className="rwd-kpi-tile kpi-after">
-//                         <span className="rwd-kpi-label">Score After</span>
-//                         <span className="rwd-kpi-value">{reportData.summary.score_after ?? "—"}</span>
-//                       </div>
-//                       <div className="rwd-kpi-tile kpi-fixed">
-//                         <span className="rwd-kpi-label">Fixed</span>
-//                         <span className="rwd-kpi-value">{reportData.summary.issues_fixed ?? "—"}</span>
-//                       </div>
-//                       <div className="rwd-kpi-tile kpi-failed">
-//                         <span className="rwd-kpi-label">Failed</span>
-//                         <span className="rwd-kpi-value">{reportData.summary.issues_failed ?? "—"}</span>
-//                       </div>
-//                       <div className="rwd-kpi-tile kpi-remaining">
-//                         <span className="rwd-kpi-label">Remaining</span>
-//                         <span className="rwd-kpi-value">{reportData.summary.issues_remaining ?? "—"}</span>
-//                       </div>
-//                       <div className="rwd-kpi-tile kpi-before">
-//                         <span className="rwd-kpi-label">Manual Review</span>
-//                         <span className="rwd-kpi-value">{reportData.summary.manual_review_required ?? "—"}</span>
-//                       </div>
-//                       <div className="rwd-kpi-tile kpi-failed">
-//                         <span className="rwd-kpi-label">Regressions</span>
-//                         <span className="rwd-kpi-value">{reportData.summary.regressions ?? "—"}</span>
-//                       </div>
-//                     </div>
-//                   )}
-
-//                   {reportData?.summary && (
-//                     <div className="rwd-dashboard-subrow">
-//                       <span><strong>{reportData.summary.issues_before ?? "—"}</strong> issues before</span>
-//                       <span><strong>{reportData.summary.changes_to_review ?? "—"}</strong> changes to review</span>
-//                       <span><strong>{reportData.summary.duration_ms ?? "—"}</strong> ms duration</span>
-//                       <span><strong>{allResults.length}</strong> rules checked</span>
-//                     </div>
-//                   )}
 
 //                   {Array.isArray(reportData?.issues_fixed) && reportData.issues_fixed.length > 0 && (
 //                     <div className="rwd-report-section">
@@ -1227,10 +1170,6 @@ export default function RemediateWord() {
               <div className="rwd-step-head">
                 <div>
                   <h2 className="rwd-step-title">Upload Word Document</h2>
-                  <p className="rwd-step-desc">
-                    Upload a Word document to automatically fix accessibility issues —
-                    missing alt text, heading structure, table headers, contrast and more.
-                  </p>
                 </div>
               </div>
 
@@ -1267,17 +1206,8 @@ export default function RemediateWord() {
                   )}
                 </div>
 
-                {/* Run panel */}
-                <div className="rwd-run-panel">
-                  <div className="rwd-run-info">
-                    <p className="rwd-run-label">What gets fixed</p>
-                    <ul className="rwd-run-checks">
-                      <li><span className="rwd-check-icon">🏷️</span> Document metadata &amp; language</li>
-                      <li><span className="rwd-check-icon">🖼️</span> Missing image alt-text</li>
-                      <li><span className="rwd-check-icon">🧩</span> Heading &amp; table structure</li>
-                      <li><span className="rwd-check-icon">🎨</span> Colour contrast issues</li>
-                    </ul>
-                  </div>
+                {/* Start button */}
+                <div className="rwd-run-actions">
                   <button
                     className="rwd-run-btn"
                     onClick={handleSubmit}
@@ -1397,14 +1327,8 @@ export default function RemediateWord() {
 
                     {/* Card 2 — Report */}
                     <div className="rwd-card rwd-card-action">
-                      <div className="rwd-card-icon-wrap ic-done">
-                        <span>📄</span>
-                      </div>
                       <div className="rwd-card-body">
                         <span className="rwd-card-label">Remediation Report</span>
-                        <span className="rwd-card-sub">
-                          {reportData ? "The full report is shown below." : "View what was fixed in this document."}
-                        </span>
                         {!reportData ? (
                           <button
                             className="rwd-card-btn"
