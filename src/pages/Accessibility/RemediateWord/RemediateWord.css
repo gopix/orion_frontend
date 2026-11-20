@@ -820,7 +820,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
-  margin-top: 12px;
+  margin-bottom: 14px;
 }
 
 .rwd-kpi-grid-7 {
@@ -976,6 +976,95 @@
   font-weight: 600;
 }
 
+/* ─── Report — category accordion ──────────────────────────── */
+.rwd-report-empty {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--rwd-slate-500);
+}
+
+.rwd-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.rwd-accordion {
+  background: var(--rwd-white);
+  border: 1px solid var(--rwd-slate-200);
+  border-radius: var(--rwd-radius-sm);
+  overflow: hidden;
+  transition: var(--rwd-transition);
+}
+
+.rwd-accordion.is-open {
+  border-color: var(--rwd-blue-200);
+  box-shadow: var(--rwd-shadow-sm);
+}
+
+.rwd-accordion-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: var(--rwd-transition);
+}
+
+.rwd-accordion-head:hover { background: var(--rwd-blue-50); }
+
+.rwd-accordion-head:focus-visible {
+  outline: 2px solid var(--rwd-blue-400);
+  outline-offset: -2px;
+}
+
+.rwd-accordion-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-transform: capitalize;
+  color: var(--rwd-slate-900);
+}
+
+.rwd-accordion-count {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--rwd-blue-50);
+  border: 1px solid var(--rwd-blue-100);
+  color: var(--rwd-blue-600);
+}
+
+.rwd-accordion-count--issues {
+  background: #fef9c3;
+  border-color: #fde68a;
+  color: #a16207;
+}
+
+.rwd-accordion-chevron {
+  flex: none;
+  display: flex;
+  color: var(--rwd-slate-500);
+  transition: transform 0.2s ease;
+}
+
+.rwd-accordion.is-open .rwd-accordion-chevron { transform: rotate(180deg); }
+
+.rwd-accordion-body {
+  padding: 12px 14px 14px;
+  border-top: 1px dashed var(--rwd-blue-100);
+  animation: rwd-fade-up 0.25s ease both;
+}
+
 /* ─── Animations ───────────────────────────────────────────── */
 @keyframes rwd-spin {
   to { transform: rotate(360deg); }
@@ -1035,7 +1124,7 @@
 
 .rwd-compact .rwd-cards-grid {
   grid-template-columns: auto auto;
-  justify-content: start;
+  justify-content: end;
   gap: 14px;
 }
 
@@ -1071,7 +1160,7 @@
 
 .rwd-compact .rwd-kpi-grid {
   gap: 12px;
-  margin-top: 10px;
+  margin-bottom: 14px;
 }
 
 .rwd-compact .rwd-kpi-tile { padding: 10px 14px; }

@@ -1,5 +1,6 @@
 
 
+
 // import { useState, useRef, useEffect, useCallback } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
@@ -41,6 +42,7 @@
 //   const [reportLoading, setReportLoading] = useState(false);
 //   const [reportData, setReportData]       = useState(null);
 //   const [reportError, setReportError]     = useState("");
+//   const [openCategories, setOpenCategories] = useState({});
 
 //   // ── Dashboard (KPI) state ──────────────────────────────────────
 //   const [dashboardLoading, setDashboardLoading] = useState(false);
@@ -75,6 +77,7 @@
 //     setReportLoading(false);
 //     setReportData(null);
 //     setReportError("");
+//     setOpenCategories({});
 //     setDashboardLoading(false);
 //     setDashboardData(null);
 //     setDashboardError("");
@@ -286,6 +289,11 @@
 //   const handleHideReport = () => {
 //     setReportError("");
 //     setReportData(null);
+//     setOpenCategories({});
+//   };
+
+//   const toggleCategory = (category) => {
+//     setOpenCategories((prev) => ({ ...prev, [category]: !prev[category] }));
 //   };
 
 //   const severityClass = (sev) => {
@@ -303,11 +311,15 @@
 //     return "sev-medium";
 //   };
 
+//   const NON_ISSUE_STATUSES = ["PASS", "NOT_APPLICABLE"];
+
 //   const allResults = Array.isArray(reportData?.remediation_results) ? reportData.remediation_results : [];
 
-//   const manualReviewItems = allResults.filter((r) => r.remediation_outcome === "manual_review_required");
+//   const issueResults = allResults.filter(
+//     (r) => !NON_ISSUE_STATUSES.includes((r.status_before || "").toUpperCase())
+//   );
 
-//   const resultsByCategory = allResults.reduce((acc, r) => {
+//   const issuesByCategory = issueResults.reduce((acc, r) => {
 //     const key = r.category || "OTHER";
 //     if (!acc[key]) acc[key] = [];
 //     acc[key].push(r);
@@ -495,6 +507,51 @@
 //                 </div>
 //               )}
 
+//               {/* ── Score cards (auto-loaded on completion) ── */}
+//               {isDone && dashboardLoading && !dashboardData && (
+//                 <div className="rwd-live-line live-running">
+//                   <span className="rwd-mini-spin"></span>
+//                   Loading dashboard…
+//                 </div>
+//               )}
+//               {isDone && dashboardError && !dashboardData && (
+//                 <div className="rwd-error-banner">
+//                   <span className="rwd-error-ico">⚠</span>
+//                   <div>
+//                     <p className="rwd-error-ttl">Could Not Load Dashboard</p>
+//                     <p className="rwd-error-msg">{dashboardError}</p>
+//                   </div>
+//                 </div>
+//               )}
+//               {dashboardData && (
+//                 <div className="rwd-kpi-grid">
+//                   <div className="rwd-kpi-tile kpi-before">
+//                     <span className="rwd-kpi-label">Score Before</span>
+//                     <span className="rwd-kpi-value">
+//                       {dashboardData?.dashboard?.accessibility_score_before ?? "—"}
+//                     </span>
+//                   </div>
+//                   <div className="rwd-kpi-tile kpi-after">
+//                     <span className="rwd-kpi-label">Score After</span>
+//                     <span className="rwd-kpi-value">
+//                       {dashboardData?.dashboard?.accessibility_score_after ?? "—"}
+//                     </span>
+//                   </div>
+//                   <div className="rwd-kpi-tile kpi-fixed">
+//                     <span className="rwd-kpi-label">Issues Fixed</span>
+//                     <span className="rwd-kpi-value">
+//                       {dashboardData?.dashboard?.issues_fixed ?? "—"}
+//                     </span>
+//                   </div>
+//                   <div className="rwd-kpi-tile kpi-remaining">
+//                     <span className="rwd-kpi-label">Issues Remaining</span>
+//                     <span className="rwd-kpi-value">
+//                       {dashboardData?.dashboard?.issues_remaining ?? "—"}
+//                     </span>
+//                   </div>
+//                 </div>
+//               )}
+
 //               {/* ── result cards ── */}
 //               {jobId && isDone && (
 //                 <>
@@ -537,14 +594,8 @@
 
 //                     {/* Card 2 — Report */}
 //                     <div className="rwd-card rwd-card-action">
-//                       <div className="rwd-card-icon-wrap ic-done">
-//                         <span>📄</span>
-//                       </div>
 //                       <div className="rwd-card-body">
 //                         <span className="rwd-card-label">Remediation Report</span>
-//                         <span className="rwd-card-sub">
-//                           {reportData ? "The full report is shown below." : "View what was fixed in this document."}
-//                         </span>
 //                         {!reportData ? (
 //                           <button
 //                             className="rwd-card-btn"
@@ -574,72 +625,7 @@
 //                 </>
 //               )}
 
-//               {/* ── Word Dashboard (auto-loaded on completion) ── */}
-//               {isDone && dashboardLoading && !dashboardData && (
-//                 <div className="rwd-live-line live-running">
-//                   <span className="rwd-mini-spin"></span>
-//                   Loading dashboard…
-//                 </div>
-//               )}
-//               {isDone && dashboardError && !dashboardData && (
-//                 <div className="rwd-error-banner">
-//                   <span className="rwd-error-ico">⚠</span>
-//                   <div>
-//                     <p className="rwd-error-ttl">Could Not Load Dashboard</p>
-//                     <p className="rwd-error-msg">{dashboardError}</p>
-//                   </div>
-//                 </div>
-//               )}
-//               {dashboardData && (
-//                 <div className="rwd-dashboard-preview">
-//                   <div className="rwd-report-preview-head">
-//                     <span className="rwd-report-preview-icon">📊</span>
-//                     <h3>Word Accessibility Dashboard</h3>
-//                   </div>
-//                   <p className="rwd-report-preview-msg">
-//                     {dashboardData?.document?.name || ""}
-//                   </p>
-
-//                   <div className="rwd-kpi-grid">
-//                     <div className="rwd-kpi-tile kpi-before">
-//                       <span className="rwd-kpi-label">Score Before</span>
-//                       <span className="rwd-kpi-value">
-//                         {dashboardData?.dashboard?.accessibility_score_before ?? "—"}
-//                       </span>
-//                     </div>
-//                     <div className="rwd-kpi-tile kpi-after">
-//                       <span className="rwd-kpi-label">Score After</span>
-//                       <span className="rwd-kpi-value">
-//                         {dashboardData?.dashboard?.accessibility_score_after ?? "—"}
-//                       </span>
-//                     </div>
-//                     <div className="rwd-kpi-tile kpi-fixed">
-//                       <span className="rwd-kpi-label">Issues Fixed</span>
-//                       <span className="rwd-kpi-value">
-//                         {dashboardData?.dashboard?.issues_fixed ?? "—"}
-//                       </span>
-//                     </div>
-//                     <div className="rwd-kpi-tile kpi-remaining">
-//                       <span className="rwd-kpi-label">Issues Remaining</span>
-//                       <span className="rwd-kpi-value">
-//                         {dashboardData?.dashboard?.issues_remaining ?? "—"}
-//                       </span>
-//                     </div>
-//                   </div>
-
-//                   {dashboardData?.summary && (
-//                     <div className="rwd-dashboard-subrow">
-//                       <span><strong>{dashboardData.summary.issues_before ?? "—"}</strong> issues before</span>
-//                       <span><strong>{dashboardData.summary.issues_failed ?? "—"}</strong> failed to fix</span>
-//                       <span><strong>{dashboardData.summary.manual_review_required ?? "—"}</strong> manual review</span>
-//                       <span><strong>{dashboardData.summary.changes_to_review ?? "—"}</strong> changes to review</span>
-//                       <span><strong>{dashboardData.summary.regressions ?? 0}</strong> regressions</span>
-//                     </div>
-//                   )}
-//                 </div>
-//               )}
-
-//               {/* ── Report preview (full breakdown) ── */}
+//               {/* ── Report preview (issues grouped by category) ── */}
 //               {reportData && (
 //                 <div className="rwd-report-preview">
 //                   <div className="rwd-report-preview-head">
@@ -652,129 +638,61 @@
 //                     {reportData?.created_at ? ` · ${new Date(reportData.created_at).toLocaleString()}` : ""}
 //                   </p>
 
-//                   {Array.isArray(reportData?.issues_fixed) && reportData.issues_fixed.length > 0 && (
-//                     <div className="rwd-report-section">
-//                       <h4 className="rwd-report-section-title">
-//                         <span className="rwd-report-section-dot dot-fixed"></span>
-//                         Issues Fixed ({reportData.issues_fixed.length})
-//                       </h4>
-//                       <div className="rwd-issue-list">
-//                         {reportData.issues_fixed.map((issue, i) => (
-//                           <div className="rwd-issue-row" key={`fixed-${issue.rule_id}-${i}`}>
-//                             <span className={`rwd-severity-badge sev-${severityClass(issue.severity)}`}>
-//                               {issue.severity}
-//                             </span>
-//                             <div className="rwd-issue-body">
-//                               <span className="rwd-issue-rule">{issue.rule_id} · {issue.category}</span>
-//                               <span className="rwd-issue-msg">{issue.title}</span>
-//                               <span className="rwd-issue-msg">
-//                                 {issue.status_before} → {issue.status_after} · Affected {issue.affected_before} → {issue.affected_after}
-//                                 {issue.remediator ? ` · ${issue.remediator}` : ""}
-//                                 {issue.fix_status ? ` · ${prettify(issue.fix_status)}` : ""}
+//                   {Object.keys(issuesByCategory).length === 0 ? (
+//                     <p className="rwd-report-empty">No issues were found in this document.</p>
+//                   ) : (
+//                     <div className="rwd-accordion-list">
+//                       {Object.entries(issuesByCategory).map(([category, items]) => {
+//                         const isOpen = !!openCategories[category];
+//                         return (
+//                           <div className={`rwd-accordion${isOpen ? " is-open" : ""}`} key={`cat-${category}`}>
+//                             <button
+//                               type="button"
+//                               className="rwd-accordion-head"
+//                               onClick={() => toggleCategory(category)}
+//                               aria-expanded={isOpen}
+//                             >
+//                               <span className="rwd-accordion-title">{prettify(category)}</span>
+//                               <span className="rwd-accordion-count">
+//                                 {items.length} {items.length === 1 ? "issue" : "issues"}
 //                               </span>
-//                               {Array.isArray(issue.actions) && issue.actions.map((act, j) => (
-//                                 <span className="rwd-issue-msg" key={`fixed-act-${issue.rule_id}-${j}`}>
-//                                   {act.location ? `${act.location}: ` : ""}{act.action}
-//                                   {act.detail ? ` — ${act.detail}` : ""}
-//                                   {act.review_recommended ? " (review recommended)" : ""}
-//                                 </span>
-//                               ))}
-//                             </div>
-//                           </div>
-//                         ))}
-//                       </div>
-//                     </div>
-//                   )}
-
-//                   {Array.isArray(reportData?.issues_failed) && reportData.issues_failed.length > 0 && (
-//                     <div className="rwd-report-section">
-//                       <h4 className="rwd-report-section-title">
-//                         <span className="rwd-report-section-dot dot-failed"></span>
-//                         Issues Failed ({reportData.issues_failed.length})
-//                       </h4>
-//                       <div className="rwd-issue-list">
-//                         {reportData.issues_failed.map((issue, i) => (
-//                           <div className="rwd-issue-row" key={`failed-${issue.rule_id}-${i}`}>
-//                             <span className={`rwd-severity-badge sev-${severityClass(issue.severity)}`}>
-//                               {issue.severity}
-//                             </span>
-//                             <div className="rwd-issue-body">
-//                               <span className="rwd-issue-rule">{issue.rule_id} · {issue.category}</span>
-//                               <span className="rwd-issue-msg">{issue.title}</span>
-//                               <span className="rwd-issue-msg">
-//                                 {issue.status_before} → {issue.status_after} · Affected {issue.affected_before} → {issue.affected_after}
+//                               <span className="rwd-accordion-chevron" aria-hidden="true">
+//                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+//                                   <path d="M6 9l6 6 6-6" />
+//                                 </svg>
 //                               </span>
-//                               {issue.reason && (
-//                                 <span className="rwd-issue-error">{issue.reason}</span>
-//                               )}
-//                             </div>
-//                           </div>
-//                         ))}
-//                       </div>
-//                     </div>
-//                   )}
+//                             </button>
 
-//                   {manualReviewItems.length > 0 && (
-//                     <div className="rwd-report-section">
-//                       <h4 className="rwd-report-section-title">
-//                         <span className="rwd-report-section-dot dot-agent"></span>
-//                         Manual Review Required ({manualReviewItems.length})
-//                       </h4>
-//                       <div className="rwd-issue-list">
-//                         {manualReviewItems.map((item, i) => (
-//                           <div className="rwd-issue-row" key={`manual-${item.rule_id}-${i}`}>
-//                             <span className={`rwd-severity-badge sev-${severityClass(item.severity)}`}>
-//                               {item.severity}
-//                             </span>
-//                             <div className="rwd-issue-body">
-//                               <span className="rwd-issue-rule">{item.rule_id} · {item.category}</span>
-//                               <span className="rwd-issue-msg">{item.title}</span>
-//                               <span className="rwd-issue-msg">
-//                                 {prettify(item.status_after)} · Affected {item.affected_before} → {item.affected_after}
-//                               </span>
-//                             </div>
-//                           </div>
-//                         ))}
-//                       </div>
-//                     </div>
-//                   )}
-
-//                   {allResults.length > 0 && (
-//                     <div className="rwd-report-section">
-//                       <h4 className="rwd-report-section-title">
-//                         <span className="rwd-report-section-dot dot-agent"></span>
-//                         All Rule Results ({allResults.length})
-//                       </h4>
-//                       {Object.entries(resultsByCategory).map(([category, items]) => (
-//                         <div className="rwd-report-section" key={`cat-${category}`}>
-//                           <h4 className="rwd-report-section-title">
-//                             {prettify(category)} ({items.length})
-//                           </h4>
-//                           <div className="rwd-issue-list">
-//                             {items.map((res, i) => (
-//                               <div className="rwd-issue-row" key={`res-${res.rule_id}-${i}`}>
-//                                 <span className={`rwd-severity-badge ${statusBadgeClass(res.status_after)}`}>
-//                                   {prettify(res.status_after)}
-//                                 </span>
-//                                 <div className="rwd-issue-body">
-//                                   <span className="rwd-issue-rule">{res.rule_id} · {res.severity}</span>
-//                                   <span className="rwd-issue-msg">{res.title}</span>
-//                                   <span className="rwd-issue-msg">
-//                                     {prettify(res.status_before)} → {prettify(res.status_after)} · Affected {res.affected_before} → {res.affected_after} · {prettify(res.remediation_outcome)}
-//                                   </span>
-//                                   {res.reason && <span className="rwd-issue-error">{res.reason}</span>}
-//                                   {Array.isArray(res.actions) && res.actions.map((act, j) => (
-//                                     <span className="rwd-issue-msg" key={`res-act-${res.rule_id}-${j}`}>
-//                                       {act.location ? `${act.location}: ` : ""}{act.action}
-//                                       {act.detail ? ` — ${act.detail}` : ""}
-//                                     </span>
+//                             {isOpen && (
+//                               <div className="rwd-accordion-body">
+//                                 <div className="rwd-issue-list">
+//                                   {items.map((res, i) => (
+//                                     <div className="rwd-issue-row" key={`res-${res.rule_id}-${i}`}>
+//                                       <span className={`rwd-severity-badge ${statusBadgeClass(res.status_after)}`}>
+//                                         {prettify(res.status_after)}
+//                                       </span>
+//                                       <div className="rwd-issue-body">
+//                                         <span className="rwd-issue-rule">{res.rule_id} · {res.severity}</span>
+//                                         <span className="rwd-issue-msg">{res.title}</span>
+//                                         <span className="rwd-issue-msg">
+//                                           {prettify(res.status_before)} → {prettify(res.status_after)} · Affected {res.affected_before} → {res.affected_after} · {prettify(res.remediation_outcome)}
+//                                         </span>
+//                                         {res.reason && <span className="rwd-issue-error">{res.reason}</span>}
+//                                         {Array.isArray(res.actions) && res.actions.map((act, j) => (
+//                                           <span className="rwd-issue-msg" key={`res-act-${res.rule_id}-${j}`}>
+//                                             {act.location ? `${act.location}: ` : ""}{act.action}
+//                                             {act.detail ? ` — ${act.detail}` : ""}
+//                                           </span>
+//                                         ))}
+//                                       </div>
+//                                     </div>
 //                                   ))}
 //                                 </div>
 //                               </div>
-//                             ))}
+//                             )}
 //                           </div>
-//                         </div>
-//                       ))}
+//                         );
+//                       })}
 //                     </div>
 //                   )}
 //                 </div>
@@ -831,6 +749,7 @@ export default function RemediateWord() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportData, setReportData]       = useState(null);
   const [reportError, setReportError]     = useState("");
+  const [openCategories, setOpenCategories] = useState({});
 
   // ── Dashboard (KPI) state ──────────────────────────────────────
   const [dashboardLoading, setDashboardLoading] = useState(false);
@@ -865,6 +784,7 @@ export default function RemediateWord() {
     setReportLoading(false);
     setReportData(null);
     setReportError("");
+    setOpenCategories({});
     setDashboardLoading(false);
     setDashboardData(null);
     setDashboardError("");
@@ -1076,6 +996,11 @@ export default function RemediateWord() {
   const handleHideReport = () => {
     setReportError("");
     setReportData(null);
+    setOpenCategories({});
+  };
+
+  const toggleCategory = (category) => {
+    setOpenCategories((prev) => ({ ...prev, [category]: !prev[category] }));
   };
 
   const severityClass = (sev) => {
@@ -1093,9 +1018,11 @@ export default function RemediateWord() {
     return "sev-medium";
   };
 
+  const NON_ISSUE_STATUSES = ["PASS", "NOT_APPLICABLE"];
+
   const allResults = Array.isArray(reportData?.remediation_results) ? reportData.remediation_results : [];
 
-  const manualReviewItems = allResults.filter((r) => r.remediation_outcome === "manual_review_required");
+  const isIssue = (r) => !NON_ISSUE_STATUSES.includes((r.status_before || "").toUpperCase());
 
   const resultsByCategory = allResults.reduce((acc, r) => {
     const key = r.category || "OTHER";
@@ -1285,6 +1212,51 @@ export default function RemediateWord() {
                 </div>
               )}
 
+              {/* ── Score cards (auto-loaded on completion) ── */}
+              {isDone && dashboardLoading && !dashboardData && (
+                <div className="rwd-live-line live-running">
+                  <span className="rwd-mini-spin"></span>
+                  Loading dashboard…
+                </div>
+              )}
+              {isDone && dashboardError && !dashboardData && (
+                <div className="rwd-error-banner">
+                  <span className="rwd-error-ico">⚠</span>
+                  <div>
+                    <p className="rwd-error-ttl">Could Not Load Dashboard</p>
+                    <p className="rwd-error-msg">{dashboardError}</p>
+                  </div>
+                </div>
+              )}
+              {dashboardData && (
+                <div className="rwd-kpi-grid">
+                  <div className="rwd-kpi-tile kpi-before">
+                    <span className="rwd-kpi-label">Score Before</span>
+                    <span className="rwd-kpi-value">
+                      {dashboardData?.dashboard?.accessibility_score_before ?? "—"}
+                    </span>
+                  </div>
+                  <div className="rwd-kpi-tile kpi-after">
+                    <span className="rwd-kpi-label">Score After</span>
+                    <span className="rwd-kpi-value">
+                      {dashboardData?.dashboard?.accessibility_score_after ?? "—"}
+                    </span>
+                  </div>
+                  <div className="rwd-kpi-tile kpi-fixed">
+                    <span className="rwd-kpi-label">Issues Fixed</span>
+                    <span className="rwd-kpi-value">
+                      {dashboardData?.dashboard?.issues_fixed ?? "—"}
+                    </span>
+                  </div>
+                  <div className="rwd-kpi-tile kpi-remaining">
+                    <span className="rwd-kpi-label">Issues Remaining</span>
+                    <span className="rwd-kpi-value">
+                      {dashboardData?.dashboard?.issues_remaining ?? "—"}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* ── result cards ── */}
               {jobId && isDone && (
                 <>
@@ -1358,72 +1330,7 @@ export default function RemediateWord() {
                 </>
               )}
 
-              {/* ── Word Dashboard (auto-loaded on completion) ── */}
-              {isDone && dashboardLoading && !dashboardData && (
-                <div className="rwd-live-line live-running">
-                  <span className="rwd-mini-spin"></span>
-                  Loading dashboard…
-                </div>
-              )}
-              {isDone && dashboardError && !dashboardData && (
-                <div className="rwd-error-banner">
-                  <span className="rwd-error-ico">⚠</span>
-                  <div>
-                    <p className="rwd-error-ttl">Could Not Load Dashboard</p>
-                    <p className="rwd-error-msg">{dashboardError}</p>
-                  </div>
-                </div>
-              )}
-              {dashboardData && (
-                <div className="rwd-dashboard-preview">
-                  <div className="rwd-report-preview-head">
-                    <span className="rwd-report-preview-icon">📊</span>
-                    <h3>Word Accessibility Dashboard</h3>
-                  </div>
-                  <p className="rwd-report-preview-msg">
-                    {dashboardData?.document?.name || ""}
-                  </p>
-
-                  <div className="rwd-kpi-grid">
-                    <div className="rwd-kpi-tile kpi-before">
-                      <span className="rwd-kpi-label">Score Before</span>
-                      <span className="rwd-kpi-value">
-                        {dashboardData?.dashboard?.accessibility_score_before ?? "—"}
-                      </span>
-                    </div>
-                    <div className="rwd-kpi-tile kpi-after">
-                      <span className="rwd-kpi-label">Score After</span>
-                      <span className="rwd-kpi-value">
-                        {dashboardData?.dashboard?.accessibility_score_after ?? "—"}
-                      </span>
-                    </div>
-                    <div className="rwd-kpi-tile kpi-fixed">
-                      <span className="rwd-kpi-label">Issues Fixed</span>
-                      <span className="rwd-kpi-value">
-                        {dashboardData?.dashboard?.issues_fixed ?? "—"}
-                      </span>
-                    </div>
-                    <div className="rwd-kpi-tile kpi-remaining">
-                      <span className="rwd-kpi-label">Issues Remaining</span>
-                      <span className="rwd-kpi-value">
-                        {dashboardData?.dashboard?.issues_remaining ?? "—"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {dashboardData?.summary && (
-                    <div className="rwd-dashboard-subrow">
-                      <span><strong>{dashboardData.summary.issues_before ?? "—"}</strong> issues before</span>
-                      <span><strong>{dashboardData.summary.issues_failed ?? "—"}</strong> failed to fix</span>
-                      <span><strong>{dashboardData.summary.manual_review_required ?? "—"}</strong> manual review</span>
-                      <span><strong>{dashboardData.summary.changes_to_review ?? "—"}</strong> changes to review</span>
-                      <span><strong>{dashboardData.summary.regressions ?? 0}</strong> regressions</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ── Report preview (full breakdown) ── */}
+              {/* ── Report preview (issues grouped by category) ── */}
               {reportData && (
                 <div className="rwd-report-preview">
                   <div className="rwd-report-preview-head">
@@ -1436,129 +1343,67 @@ export default function RemediateWord() {
                     {reportData?.created_at ? ` · ${new Date(reportData.created_at).toLocaleString()}` : ""}
                   </p>
 
-                  {Array.isArray(reportData?.issues_fixed) && reportData.issues_fixed.length > 0 && (
-                    <div className="rwd-report-section">
-                      <h4 className="rwd-report-section-title">
-                        <span className="rwd-report-section-dot dot-fixed"></span>
-                        Issues Fixed ({reportData.issues_fixed.length})
-                      </h4>
-                      <div className="rwd-issue-list">
-                        {reportData.issues_fixed.map((issue, i) => (
-                          <div className="rwd-issue-row" key={`fixed-${issue.rule_id}-${i}`}>
-                            <span className={`rwd-severity-badge sev-${severityClass(issue.severity)}`}>
-                              {issue.severity}
-                            </span>
-                            <div className="rwd-issue-body">
-                              <span className="rwd-issue-rule">{issue.rule_id} · {issue.category}</span>
-                              <span className="rwd-issue-msg">{issue.title}</span>
-                              <span className="rwd-issue-msg">
-                                {issue.status_before} → {issue.status_after} · Affected {issue.affected_before} → {issue.affected_after}
-                                {issue.remediator ? ` · ${issue.remediator}` : ""}
-                                {issue.fix_status ? ` · ${prettify(issue.fix_status)}` : ""}
-                              </span>
-                              {Array.isArray(issue.actions) && issue.actions.map((act, j) => (
-                                <span className="rwd-issue-msg" key={`fixed-act-${issue.rule_id}-${j}`}>
-                                  {act.location ? `${act.location}: ` : ""}{act.action}
-                                  {act.detail ? ` — ${act.detail}` : ""}
-                                  {act.review_recommended ? " (review recommended)" : ""}
+                  {Object.keys(resultsByCategory).length === 0 ? (
+                    <p className="rwd-report-empty">No report details were returned for this document.</p>
+                  ) : (
+                    <div className="rwd-accordion-list">
+                      {Object.entries(resultsByCategory).map(([category, items]) => {
+                        const issueCount = items.filter(isIssue).length;
+                        const isOpen = !!openCategories[category];
+                        return (
+                          <div className={`rwd-accordion${isOpen ? " is-open" : ""}`} key={`cat-${category}`}>
+                            <button
+                              type="button"
+                              className="rwd-accordion-head"
+                              onClick={() => toggleCategory(category)}
+                              aria-expanded={isOpen}
+                            >
+                              <span className="rwd-accordion-title">{prettify(category)}</span>
+                              {issueCount > 0 && (
+                                <span className="rwd-accordion-count rwd-accordion-count--issues">
+                                  {issueCount} {issueCount === 1 ? "issue" : "issues"}
                                 </span>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {Array.isArray(reportData?.issues_failed) && reportData.issues_failed.length > 0 && (
-                    <div className="rwd-report-section">
-                      <h4 className="rwd-report-section-title">
-                        <span className="rwd-report-section-dot dot-failed"></span>
-                        Issues Failed ({reportData.issues_failed.length})
-                      </h4>
-                      <div className="rwd-issue-list">
-                        {reportData.issues_failed.map((issue, i) => (
-                          <div className="rwd-issue-row" key={`failed-${issue.rule_id}-${i}`}>
-                            <span className={`rwd-severity-badge sev-${severityClass(issue.severity)}`}>
-                              {issue.severity}
-                            </span>
-                            <div className="rwd-issue-body">
-                              <span className="rwd-issue-rule">{issue.rule_id} · {issue.category}</span>
-                              <span className="rwd-issue-msg">{issue.title}</span>
-                              <span className="rwd-issue-msg">
-                                {issue.status_before} → {issue.status_after} · Affected {issue.affected_before} → {issue.affected_after}
-                              </span>
-                              {issue.reason && (
-                                <span className="rwd-issue-error">{issue.reason}</span>
                               )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {manualReviewItems.length > 0 && (
-                    <div className="rwd-report-section">
-                      <h4 className="rwd-report-section-title">
-                        <span className="rwd-report-section-dot dot-agent"></span>
-                        Manual Review Required ({manualReviewItems.length})
-                      </h4>
-                      <div className="rwd-issue-list">
-                        {manualReviewItems.map((item, i) => (
-                          <div className="rwd-issue-row" key={`manual-${item.rule_id}-${i}`}>
-                            <span className={`rwd-severity-badge sev-${severityClass(item.severity)}`}>
-                              {item.severity}
-                            </span>
-                            <div className="rwd-issue-body">
-                              <span className="rwd-issue-rule">{item.rule_id} · {item.category}</span>
-                              <span className="rwd-issue-msg">{item.title}</span>
-                              <span className="rwd-issue-msg">
-                                {prettify(item.status_after)} · Affected {item.affected_before} → {item.affected_after}
+                              <span className="rwd-accordion-count">
+                                {items.length} {items.length === 1 ? "check" : "checks"}
                               </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                              <span className="rwd-accordion-chevron" aria-hidden="true">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M6 9l6 6 6-6" />
+                                </svg>
+                              </span>
+                            </button>
 
-                  {allResults.length > 0 && (
-                    <div className="rwd-report-section">
-                      <h4 className="rwd-report-section-title">
-                        <span className="rwd-report-section-dot dot-agent"></span>
-                        All Rule Results ({allResults.length})
-                      </h4>
-                      {Object.entries(resultsByCategory).map(([category, items]) => (
-                        <div className="rwd-report-section" key={`cat-${category}`}>
-                          <h4 className="rwd-report-section-title">
-                            {prettify(category)} ({items.length})
-                          </h4>
-                          <div className="rwd-issue-list">
-                            {items.map((res, i) => (
-                              <div className="rwd-issue-row" key={`res-${res.rule_id}-${i}`}>
-                                <span className={`rwd-severity-badge ${statusBadgeClass(res.status_after)}`}>
-                                  {prettify(res.status_after)}
-                                </span>
-                                <div className="rwd-issue-body">
-                                  <span className="rwd-issue-rule">{res.rule_id} · {res.severity}</span>
-                                  <span className="rwd-issue-msg">{res.title}</span>
-                                  <span className="rwd-issue-msg">
-                                    {prettify(res.status_before)} → {prettify(res.status_after)} · Affected {res.affected_before} → {res.affected_after} · {prettify(res.remediation_outcome)}
-                                  </span>
-                                  {res.reason && <span className="rwd-issue-error">{res.reason}</span>}
-                                  {Array.isArray(res.actions) && res.actions.map((act, j) => (
-                                    <span className="rwd-issue-msg" key={`res-act-${res.rule_id}-${j}`}>
-                                      {act.location ? `${act.location}: ` : ""}{act.action}
-                                      {act.detail ? ` — ${act.detail}` : ""}
-                                    </span>
+                            {isOpen && (
+                              <div className="rwd-accordion-body">
+                                <div className="rwd-issue-list">
+                                  {items.map((res, i) => (
+                                    <div className="rwd-issue-row" key={`res-${res.rule_id}-${i}`}>
+                                      <span className={`rwd-severity-badge ${statusBadgeClass(res.status_after)}`}>
+                                        {prettify(res.status_after)}
+                                      </span>
+                                      <div className="rwd-issue-body">
+                                        <span className="rwd-issue-rule">{res.rule_id} · {res.severity}</span>
+                                        <span className="rwd-issue-msg">{res.title}</span>
+                                        <span className="rwd-issue-msg">
+                                          {prettify(res.status_before)} → {prettify(res.status_after)} · Affected {res.affected_before} → {res.affected_after} · {prettify(res.remediation_outcome)}
+                                        </span>
+                                        {res.reason && <span className="rwd-issue-error">{res.reason}</span>}
+                                        {Array.isArray(res.actions) && res.actions.map((act, j) => (
+                                          <span className="rwd-issue-msg" key={`res-act-${res.rule_id}-${j}`}>
+                                            {act.location ? `${act.location}: ` : ""}{act.action}
+                                            {act.detail ? ` — ${act.detail}` : ""}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
                                   ))}
                                 </div>
                               </div>
-                            ))}
+                            )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
