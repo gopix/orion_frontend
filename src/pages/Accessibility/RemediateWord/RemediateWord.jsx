@@ -1,6 +1,5 @@
 
 
-
 // import { useState, useRef, useEffect, useCallback } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
@@ -315,11 +314,9 @@
 
 //   const allResults = Array.isArray(reportData?.remediation_results) ? reportData.remediation_results : [];
 
-//   const issueResults = allResults.filter(
-//     (r) => !NON_ISSUE_STATUSES.includes((r.status_before || "").toUpperCase())
-//   );
+//   const isIssue = (r) => !NON_ISSUE_STATUSES.includes((r.status_before || "").toUpperCase());
 
-//   const issuesByCategory = issueResults.reduce((acc, r) => {
+//   const resultsByCategory = allResults.reduce((acc, r) => {
 //     const key = r.category || "OTHER";
 //     if (!acc[key]) acc[key] = [];
 //     acc[key].push(r);
@@ -638,11 +635,12 @@
 //                     {reportData?.created_at ? ` · ${new Date(reportData.created_at).toLocaleString()}` : ""}
 //                   </p>
 
-//                   {Object.keys(issuesByCategory).length === 0 ? (
-//                     <p className="rwd-report-empty">No issues were found in this document.</p>
+//                   {Object.keys(resultsByCategory).length === 0 ? (
+//                     <p className="rwd-report-empty">No report details were returned for this document.</p>
 //                   ) : (
 //                     <div className="rwd-accordion-list">
-//                       {Object.entries(issuesByCategory).map(([category, items]) => {
+//                       {Object.entries(resultsByCategory).map(([category, items]) => {
+//                         const issueCount = items.filter(isIssue).length;
 //                         const isOpen = !!openCategories[category];
 //                         return (
 //                           <div className={`rwd-accordion${isOpen ? " is-open" : ""}`} key={`cat-${category}`}>
@@ -653,8 +651,13 @@
 //                               aria-expanded={isOpen}
 //                             >
 //                               <span className="rwd-accordion-title">{prettify(category)}</span>
+//                               {issueCount > 0 && (
+//                                 <span className="rwd-accordion-count rwd-accordion-count--issues">
+//                                   {issueCount} {issueCount === 1 ? "issue" : "issues"}
+//                                 </span>
+//                               )}
 //                               <span className="rwd-accordion-count">
-//                                 {items.length} {items.length === 1 ? "issue" : "issues"}
+//                                 {items.length} {items.length === 1 ? "check" : "checks"}
 //                               </span>
 //                               <span className="rwd-accordion-chevron" aria-hidden="true">
 //                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -1024,6 +1027,11 @@ export default function RemediateWord() {
 
   const isIssue = (r) => !NON_ISSUE_STATUSES.includes((r.status_before || "").toUpperCase());
 
+  const isManual = (r) =>
+    /MANUAL/i.test(r.status_after || "") || /MANUAL/i.test(r.remediation_outcome || "");
+
+  const isPassed = (r) => (r.status_after || "").toUpperCase() === "PASS" && !isManual(r);
+
   const resultsByCategory = allResults.reduce((acc, r) => {
     const key = r.category || "OTHER";
     if (!acc[key]) acc[key] = [];
@@ -1262,7 +1270,33 @@ export default function RemediateWord() {
                 <>
                   <div className="rwd-cards-grid">
 
-                    {/* Card 1 — Download (icon) */}
+                    {/* Card 1 — Report */}
+                    <div className="rwd-card rwd-card-action">
+                      <div className="rwd-card-body">
+                        <span className="rwd-card-label">Remediation Report</span>
+                        {!reportData ? (
+                          <button
+                            className="rwd-card-btn"
+                            onClick={handleViewReport}
+                            disabled={reportLoading}
+                          >
+                            {reportLoading
+                              ? <><span className="rwd-btn-spin"></span> Loading…</>
+                              : "View Report"}
+                          </button>
+                        ) : (
+                          <button
+                            className="rwd-card-btn rwd-card-btn-secondary"
+                            onClick={handleHideReport}
+                          >
+                            Hide Report
+                          </button>
+                        )}
+                        {reportError && <span className="rwd-card-sub rwd-card-sub-error">{reportError}</span>}
+                      </div>
+                    </div>
+
+                    {/* Card 2 — Download (icon) */}
                     <div className="rwd-card rwd-card-download">
                       <button
                         type="button"
@@ -1297,32 +1331,6 @@ export default function RemediateWord() {
                       </button>
                     </div>
 
-                    {/* Card 2 — Report */}
-                    <div className="rwd-card rwd-card-action">
-                      <div className="rwd-card-body">
-                        <span className="rwd-card-label">Remediation Report</span>
-                        {!reportData ? (
-                          <button
-                            className="rwd-card-btn"
-                            onClick={handleViewReport}
-                            disabled={reportLoading}
-                          >
-                            {reportLoading
-                              ? <><span className="rwd-btn-spin"></span> Loading…</>
-                              : "View Report"}
-                          </button>
-                        ) : (
-                          <button
-                            className="rwd-card-btn rwd-card-btn-secondary"
-                            onClick={handleHideReport}
-                          >
-                            Hide Report
-                          </button>
-                        )}
-                        {reportError && <span className="rwd-card-sub rwd-card-sub-error">{reportError}</span>}
-                      </div>
-                    </div>
-
                   </div>
                   {downloadError && (
                     <p className="rwd-card-sub rwd-card-sub-error rwd-download-error">{downloadError}</p>
@@ -1349,6 +1357,8 @@ export default function RemediateWord() {
                     <div className="rwd-accordion-list">
                       {Object.entries(resultsByCategory).map(([category, items]) => {
                         const issueCount = items.filter(isIssue).length;
+                        const passedCount = items.filter(isPassed).length;
+                        const manualCount = items.filter(isManual).length;
                         const isOpen = !!openCategories[category];
                         return (
                           <div className={`rwd-accordion${isOpen ? " is-open" : ""}`} key={`cat-${category}`}>
@@ -1366,6 +1376,12 @@ export default function RemediateWord() {
                               )}
                               <span className="rwd-accordion-count">
                                 {items.length} {items.length === 1 ? "check" : "checks"}
+                              </span>
+                              <span className="rwd-accordion-count rwd-accordion-count--passed">
+                                {passedCount} passed
+                              </span>
+                              <span className="rwd-accordion-count rwd-accordion-count--manual">
+                                {manualCount} manual review
                               </span>
                               <span className="rwd-accordion-chevron" aria-hidden="true">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">

@@ -731,7 +731,7 @@
 .rwd-tooltip {
   position: absolute;
   top: calc(100% + 10px);
-  left: 0;
+  right: 0;
   padding: 6px 11px;
   background: var(--rwd-slate-900);
   color: var(--rwd-white);
@@ -751,7 +751,7 @@
   content: '';
   position: absolute;
   bottom: 100%;
-  left: 18px;
+  right: 18px;
   border: 5px solid transparent;
   border-bottom-color: var(--rwd-slate-900);
 }
@@ -1048,6 +1048,18 @@
   background: #fef9c3;
   border-color: #fde68a;
   color: #a16207;
+}
+
+.rwd-accordion-count--passed {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.rwd-accordion-count--manual {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #c2410c;
 }
 
 .rwd-accordion-chevron {
