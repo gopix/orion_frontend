@@ -1122,6 +1122,7 @@
 .vwd-issue-row.issue-warning { background: #fffdf5; }
 .vwd-issue-row.issue-pass    { background: #fafff5; }
 .vwd-issue-row.issue-info    { background: var(--slate-50); }
+.vwd-issue-row.issue-not_applicable { background: var(--slate-50); }
 
 .vwd-issue-row-top {
   display: flex;
@@ -1320,6 +1321,7 @@
 .sum-fail { background: #fee2e2; color: #dc2626; }
 .sum-warn { background: #fff7ed; color: #c2410c; }
 .sum-pass { background: #dcfce7; color: #15803d; }
+.sum-na   { background: var(--slate-100); color: var(--slate-500); }
 
 /* Progress bar at bottom of row */
 .vwd-sum-bar-wrap {
@@ -1379,21 +1381,38 @@
 
 .vwd-detail-card {
   background: var(--white);
-  border: 1px solid var(--blue-200);
+  border: 1px solid var(--slate-200);
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
   overflow: hidden;
   scroll-margin-top: 16px;
+  transition: var(--transition);
+}
+
+.vwd-detail-card.is-open {
+  border-color: var(--blue-200);
+  box-shadow: var(--shadow-sm);
 }
 
 .vwd-detail-head {
+  width: 100%;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
   padding: 11px 14px;
-  border-bottom: 1px dashed var(--blue-100);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: var(--transition);
+}
+
+.vwd-detail-head:hover { background: var(--blue-50); }
+
+.vwd-detail-head:focus-visible {
+  outline: 2px solid var(--blue-400);
+  outline-offset: -2px;
 }
 
 .vwd-detail-icon {
@@ -1445,8 +1464,30 @@
   color: #c2410c;
 }
 
+.vwd-detail-count--na {
+  background: var(--slate-100);
+  border-color: var(--slate-200);
+  color: var(--slate-500);
+}
+
+.vwd-detail-chevron {
+  flex: none;
+  display: flex;
+  color: var(--slate-500);
+  transition: transform 0.2s ease;
+}
+
+.vwd-detail-card.is-open .vwd-detail-chevron { transform: rotate(180deg); }
+
 .vwd-detail-body {
   padding: 12px 14px 14px;
+  border-top: 1px dashed var(--blue-100);
+  animation: vwd-fade-up 0.25s ease both;
+}
+
+@keyframes vwd-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .vwd-detail-body .vwd-issues-list {

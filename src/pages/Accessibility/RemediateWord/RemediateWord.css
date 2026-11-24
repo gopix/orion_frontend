@@ -1062,6 +1062,12 @@
   color: #c2410c;
 }
 
+.rwd-accordion-count--na {
+  background: var(--rwd-slate-100);
+  border-color: var(--rwd-slate-200);
+  color: var(--rwd-slate-500);
+}
+
 .rwd-accordion-chevron {
   flex: none;
   display: flex;
