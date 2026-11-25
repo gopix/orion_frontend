@@ -1,6 +1,5 @@
 
 
-
 // import { useState, useRef, useEffect, useCallback } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
@@ -743,7 +742,7 @@
 //                     <div className="rpp-report-section">
 //                       <h4 className="rpp-report-section-title">
 //                         <span className="rpp-report-section-dot dot-failed"></span>
-//                         Needs Manual Review ({reportData.issues_failed.length})
+//                         Issue remaining ({reportData.issues_failed.length})
 //                       </h4>
 //                       <div className="rpp-issue-list">
 //                         {reportData.issues_failed.map((issue, i) => (
@@ -799,7 +798,6 @@
 //     </div>
 //   );
 // }
-
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -1177,10 +1175,6 @@ export default function RemediatePpt() {
               <div className="rpp-step-head">
                 <div>
                   <h2 className="rpp-step-title">Upload PPT</h2>
-                  <p className="rpp-step-desc">
-                    Upload a PowerPoint file to automatically fix accessibility issues —
-                    missing alt text, heading structure, contrast, reading order and more.
-                  </p>
                 </div>
               </div>
 
@@ -1217,17 +1211,8 @@ export default function RemediatePpt() {
                   )}
                 </div>
 
-                {/* Run panel */}
-                <div className="rpp-run-panel">
-                  <div className="rpp-run-info">
-                    <p className="rpp-run-label">What gets fixed</p>
-                    <ul className="rpp-run-checks">
-                      <li><span className="rpp-check-icon">🏷️</span> Document metadata &amp; language</li>
-                      <li><span className="rpp-check-icon">🖼️</span> Missing image alt-text</li>
-                      <li><span className="rpp-check-icon">🧩</span> Heading &amp; reading order</li>
-                      <li><span className="rpp-check-icon">🎨</span> Colour contrast issues</li>
-                    </ul>
-                  </div>
+                {/* Start button */}
+                <div className="rpp-run-actions">
                   <button
                     className="rpp-run-btn"
                     onClick={handleSubmit}

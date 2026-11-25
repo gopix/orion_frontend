@@ -1,6 +1,5 @@
 
 
-
 // import { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { orionValidateWord } from "../../../services/apiServices";
@@ -39,11 +38,12 @@
 //   "Screen Reader Compatibility": { icon: "🔊", color: "#2563eb", bg: "#eff6ff" },
 // };
 
-// const STATUS_RANK = { FAIL: 0, WARNING: 1, PASS: 2 };
+// const STATUS_RANK = { FAIL: 0, WARNING: 1, PASS: 2, NOT_APPLICABLE: 3 };
 
 // const STATUS_LABELS = {
-//   MANUAL_REVIEW: "MANUAL REVIEW",
-//   NOT_TESTED:    "NOT TESTED",
+//   MANUAL_REVIEW:  "MANUAL REVIEW",
+//   NOT_TESTED:     "NOT TESTED",
+//   NOT_APPLICABLE: "NOT APPLICABLE",
 // };
 
 // const SEVERITY_ORDER = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, INFO: 4 };
@@ -79,6 +79,7 @@
 //   const [submitting, setSubmitting]   = useState(false);
 //   const [rawResult, setRawResult]     = useState(null);
 //   const [submitError, setSubmitError] = useState("");
+//   const [openCategories, setOpenCategories] = useState({});
 
 //   const wordInputRef = useRef(null);
 
@@ -107,7 +108,7 @@
 
 //   const handleSubmit = async () => {
 //     if (!wordFile) { alert("Please upload a Word document first."); return; }
-//     setSubmitting(true); setRawResult(null); setSubmitError("");
+//     setSubmitting(true); setRawResult(null); setSubmitError(""); setOpenCategories({});
 //     try {
 //       const orgId     = sessionStorage.getItem("organization_id") || 1;
 //       const projectId = sessionStorage.getItem("project_id")      || 1;
@@ -184,10 +185,9 @@
 //       for (const f of cat.findings ?? []) findingByRule[f.rule_id] = f;
 
 //       const issues = (cat.checks ?? [])
-//         .filter((c) => c.status !== "NOT_APPLICABLE")
 //         .map((c) => {
 //           const finding = findingByRule[c.rule_id];
-//           const status = c.status === "FAIL" || c.status === "PASS" ? c.status : "WARNING";
+//           const status = ["FAIL", "PASS", "NOT_APPLICABLE"].includes(c.status) ? c.status : "WARNING";
 //           return {
 //             rule_id:        c.rule_id,
 //             severity:       c.severity,
@@ -205,20 +205,20 @@
 //         );
 
 //       const failCount = issues.filter(i => i.status === "FAIL").length;
-//       const warnCount = issues.filter(i => i.status === "WARNING").length;
+//       const manualCount = issues.filter(i => i.status === "WARNING").length;
 //       const passCount = issues.filter(i => i.status === "PASS").length;
-//       const manualCount = issues.filter(i => i.status_label === STATUS_LABELS.MANUAL_REVIEW).length;
+//       const naCount = issues.filter(i => i.status === "NOT_APPLICABLE").length;
 //       const agentMeta = AGENT_META[name] ?? { icon: "🔍", color: "#6366f1", bg: "#eef2ff" };
 
 //       return {
 //         name,
 //         ...agentMeta,
 //         success:    cat.status === "completed",
-//         issueCount: issues.length,
+//         totalCount: issues.length,
 //         failCount,
-//         warnCount,
 //         passCount,
 //         manualCount,
+//         naCount,
 //         allIssues: issues,
 //       };
 //     });
@@ -232,6 +232,10 @@
 //   const scrollToAgent = (name) => {
 //     const el = document.getElementById(agentAnchorId(name));
 //     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+//   };
+
+//   const toggleCategory = (name) => {
+//     setOpenCategories((prev) => ({ ...prev, [name]: !prev[name] }));
 //   };
 
 //   const isFail = parsed?.meta?.overall_status === "FAIL";
@@ -629,76 +633,89 @@
 //                     </div>
 //                   )}
 
-//                   {/* ── Category detail cards ── */}
+//                   {/* ── Category detail cards (dropdown rows) ── */}
 //                   <div className="vwd-detail-list">
 //                     {parsed.agents.map((agent) => {
-//                       const issueCount = agent.failCount + agent.warnCount;
+//                       const isOpen = !!openCategories[agent.name];
 
 //                       return (
 //                         <div
 //                           key={agent.name}
 //                           id={agentAnchorId(agent.name)}
-//                           className="vwd-detail-card"
+//                           className={`vwd-detail-card${isOpen ? " is-open" : ""}`}
 //                           style={{ "--agent-color": agent.color, "--agent-bg": agent.bg }}
 //                         >
-//                           <div className="vwd-detail-head">
+//                           <button
+//                             type="button"
+//                             className="vwd-detail-head"
+//                             onClick={() => toggleCategory(agent.name)}
+//                             aria-expanded={isOpen}
+//                           >
 //                             <span className="vwd-detail-icon">{agent.icon}</span>
 //                             <span className="vwd-detail-title">{agent.name}</span>
-//                             {issueCount > 0 && (
-//                               <span className="vwd-detail-count vwd-detail-count--issues">
-//                                 {issueCount} {issueCount === 1 ? "issue" : "issues"}
-//                               </span>
-//                             )}
 //                             <span className="vwd-detail-count">
-//                               {agent.issueCount} {agent.issueCount === 1 ? "check" : "checks"}
+//                               {agent.totalCount} {agent.totalCount === 1 ? "check" : "checks"}
 //                             </span>
 //                             <span className="vwd-detail-count vwd-detail-count--passed">
 //                               {agent.passCount} passed
 //                             </span>
+//                             <span className="vwd-detail-count vwd-detail-count--issues">
+//                               {agent.failCount} {agent.failCount === 1 ? "issue" : "issues"}
+//                             </span>
 //                             <span className="vwd-detail-count vwd-detail-count--manual">
 //                               {agent.manualCount} manual review
 //                             </span>
-//                           </div>
+//                             <span className="vwd-detail-count vwd-detail-count--na">
+//                               {agent.naCount} not applicable
+//                             </span>
+//                             <span className="vwd-detail-chevron" aria-hidden="true">
+//                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+//                                 <path d="M6 9l6 6 6-6" />
+//                               </svg>
+//                             </span>
+//                           </button>
 
-//                           <div className="vwd-detail-body">
-//                             <div className="vwd-issues-list">
-//                               {agent.allIssues.length === 0 && (
-//                                 <div className="vwd-no-issues">
-//                                   <span>✅</span>
-//                                   <p>No checks in this category</p>
-//                                 </div>
-//                               )}
-//                               {agent.allIssues.map((issue, ri) => (
-//                                 <div
-//                                   key={`${issue.rule_id}-${ri}`}
-//                                   className={`vwd-issue-row issue-${issue.status.toLowerCase()}`}
-//                                 >
-//                                   <div className="vwd-issue-row-top">
-//                                     <div className="vwd-issue-left">
-//                                       <span className={`vwd-sev-dot-sm ${severityClass(issue.severity)}`} title={`${issue.severity} severity`}></span>
-//                                       <code className="vwd-rule-id">{issue.rule_id}</code>
-//                                     </div>
-//                                     <div className="vwd-issue-right">
-//                                       <span className={`vwd-status-badge ${statusClass(issue.status)}`}>{issue.status_label}</span>
-//                                       {issue.auto_fixable && (
-//                                         <span className="vwd-autofixable" title="Auto-fixable">⚡</span>
-//                                       )}
-//                                     </div>
+//                           {isOpen && (
+//                             <div className="vwd-detail-body">
+//                               <div className="vwd-issues-list">
+//                                 {agent.allIssues.length === 0 && (
+//                                   <div className="vwd-no-issues">
+//                                     <span>✅</span>
+//                                     <p>No checks in this category</p>
 //                                   </div>
-//                                   <p className="vwd-issue-msg">{issue.message}</p>
-//                                   {(issue.status === "FAIL" || issue.status === "WARNING") && issue.recommendation && (
-//                                     <div className="vwd-issue-rec">
-//                                       <span className="vwd-rec-bulb">💡</span>
-//                                       <p>{issue.recommendation}</p>
+//                                 )}
+//                                 {agent.allIssues.map((issue, ri) => (
+//                                   <div
+//                                     key={`${issue.rule_id}-${ri}`}
+//                                     className={`vwd-issue-row issue-${issue.status.toLowerCase()}`}
+//                                   >
+//                                     <div className="vwd-issue-row-top">
+//                                       <div className="vwd-issue-left">
+//                                         <span className={`vwd-sev-dot-sm ${severityClass(issue.severity)}`} title={`${issue.severity} severity`}></span>
+//                                         <code className="vwd-rule-id">{issue.rule_id}</code>
+//                                       </div>
+//                                       <div className="vwd-issue-right">
+//                                         <span className={`vwd-status-badge ${statusClass(issue.status)}`}>{issue.status_label}</span>
+//                                         {issue.auto_fixable && (
+//                                           <span className="vwd-autofixable" title="Auto-fixable">⚡</span>
+//                                         )}
+//                                       </div>
 //                                     </div>
-//                                   )}
-//                                   {issue.wcag?.length > 0 && (
-//                                     <span className="vwd-page-tag">WCAG {issue.wcag.join(", ")}</span>
-//                                   )}
-//                                 </div>
-//                               ))}
+//                                     <p className="vwd-issue-msg">{issue.message}</p>
+//                                     {(issue.status === "FAIL" || issue.status === "WARNING") && issue.recommendation && (
+//                                       <div className="vwd-issue-rec">
+//                                         <span className="vwd-rec-bulb">💡</span>
+//                                         <p>{issue.recommendation}</p>
+//                                       </div>
+//                                     )}
+//                                     {issue.wcag?.length > 0 && (
+//                                       <span className="vwd-page-tag">WCAG {issue.wcag.join(", ")}</span>
+//                                     )}
+//                                   </div>
+//                                 ))}
+//                               </div>
 //                             </div>
-//                           </div>
+//                           )}
 //                         </div>
 //                       );
 //                     })}
@@ -712,7 +729,7 @@
 //                     </div>
 //                     <div className="vwd-summary-rows">
 //                       {parsed.agents.map((agent) => {
-//                         const total = agent.issueCount;
+//                         const total = agent.totalCount;
 //                         const failPct = total > 0 ? Math.round((agent.failCount / total) * 100) : 0;
 //                         return (
 //                           <div
@@ -740,11 +757,14 @@
 //                               {agent.failCount > 0 && (
 //                                 <span className="vwd-sum-badge sum-fail">{agent.failCount} Failed</span>
 //                               )}
-//                               {agent.warnCount > 0 && (
-//                                 <span className="vwd-sum-badge sum-warn">{agent.warnCount} Warnings</span>
+//                               {agent.manualCount > 0 && (
+//                                 <span className="vwd-sum-badge sum-warn">{agent.manualCount} Manual review</span>
 //                               )}
 //                               {agent.passCount > 0 && (
 //                                 <span className="vwd-sum-badge sum-pass">{agent.passCount} Passed</span>
+//                               )}
+//                               {agent.naCount > 0 && (
+//                                 <span className="vwd-sum-badge sum-na">{agent.naCount} N/A</span>
 //                               )}
 //                             </div>
 //                             <div className="vwd-sum-bar-wrap">
@@ -1072,12 +1092,6 @@ export default function ValidateWord() {
                 Validating…
               </div>
             )}
-            {rawResult && !submitting && (
-              <div className={`vwd-status-chip ${isFail ? "chip-fail" : "chip-pass"}`}>
-                <span className={`vwd-chip-dot ${isFail ? "dot-red" : "dot-green"}`}></span>
-                {isFail ? `${parsed.meta.total_issues} Issues Found` : "All Checks Passed"}
-              </div>
-            )}
           </div>
         </div>
 
@@ -1092,14 +1106,6 @@ export default function ValidateWord() {
               <div className="vwd-step-head">
                 <div>
                   <h2 className="vwd-step-title">Upload Word Document</h2>
-                  <p className="vwd-step-desc">Drop your Word document for multi-agent accessibility validation — Metadata, Structure, Images, Contrast and more.</p>
-                </div>
-                <div className="vwd-agent-pills">
-                  {Object.entries(AGENT_META).slice(0, 6).map(([name, m]) => (
-                    <span key={name} className="vwd-agent-pill" style={{ "--pill-color": m.color, "--pill-bg": m.bg }}>
-                      {m.icon} {name.split(" ")[0]}
-                    </span>
-                  ))}
                 </div>
               </div>
 
@@ -1138,17 +1144,8 @@ export default function ValidateWord() {
                   )}
                 </div>
 
-                {/* Run panel */}
-                <div className="vwd-run-panel">
-                  <div className="vwd-run-info">
-                    <p className="vwd-run-label">What gets checked</p>
-                    <ul className="vwd-run-checks">
-                      <li><span className="vwd-check-icon">🏷️</span> Document metadata &amp; language</li>
-                      <li><span className="vwd-check-icon">🧩</span> Document &amp; heading structure</li>
-                      <li><span className="vwd-check-icon">🖼️</span> Image alt-text &amp; contrast</li>
-                      <li><span className="vwd-check-icon">📊</span> Tables, links &amp; reading order</li>
-                    </ul>
-                  </div>
+                {/* Start button */}
+                <div className="vwd-run-actions">
                   <button
                     className="vwd-run-btn"
                     onClick={handleSubmit}

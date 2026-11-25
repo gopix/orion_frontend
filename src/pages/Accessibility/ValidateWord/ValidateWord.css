@@ -163,10 +163,13 @@
 /* ─── Content ──────────────────────────────────────────────── */
 .vwd-content {
   flex: 1;
-  padding: 24px 28px;
+  padding: 24px 28px 48px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* ─── Step Cards ───────────────────────────────────────────── */
@@ -252,40 +255,18 @@
   line-height: 1.6;
 }
 
-/* Agent pills in header */
-.vwd-agent-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.vwd-agent-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--pill-color, #6366f1);
-  background: var(--pill-bg, #eef2ff);
-  border: 1px solid color-mix(in srgb, var(--pill-color, #6366f1) 20%, transparent);
-}
-
 /* ─── Upload Row ───────────────────────────────────────────── */
 .vwd-upload-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 /* ─── Drop Zone ────────────────────────────────────────────── */
 .vwd-dropzone {
   border: 2px dashed var(--blue-200);
   border-radius: var(--radius);
-  padding: 32px 20px;
+  padding: 26px 20px;
   text-align: center;
   background: var(--blue-50);
   cursor: pointer;
@@ -415,43 +396,12 @@
 
 .vwd-remove-btn:hover { background: #fef2f2; }
 
-/* ─── Run Panel ────────────────────────────────────────────── */
-.vwd-run-panel {
+/* ─── Run Button ───────────────────────────────────────────── */
+.vwd-run-actions {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 20px 22px;
-  background: linear-gradient(135deg, #f8faff, #eff6ff);
-  border: 1.5px solid var(--blue-100);
-  border-radius: var(--radius);
+  gap: 12px;
 }
-
-.vwd-run-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--slate-500);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-}
-
-.vwd-run-checks {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.vwd-run-checks li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  color: var(--slate-700);
-  font-weight: 500;
-}
-
-.vwd-check-icon { font-size: 14px; }
 
 .vwd-run-btn {
   display: flex;
@@ -1518,9 +1468,7 @@
 }
 
 @media (max-width: 900px) {
-  .vwd-upload-row { grid-template-columns: 1fr; }
   .vwd-step-head  { flex-direction: column; }
-  .vwd-agent-pills { display: none; }
 }
 
 @media (max-width: 700px) {

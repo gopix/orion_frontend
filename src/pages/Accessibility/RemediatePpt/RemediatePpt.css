@@ -222,17 +222,16 @@
 
 /* ─── Upload Row ───────────────────────────────────────────── */
 .rpp-upload-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 /* ─── Drop Zone ────────────────────────────────────────────── */
 .rpp-dropzone {
   border: 2px dashed var(--rpp-blue-200);
   border-radius: var(--rpp-radius);
-  padding: 32px 20px;
+  padding: 26px 20px;
   text-align: center;
   background: var(--rpp-blue-50);
   cursor: pointer;
@@ -362,43 +361,12 @@
 
 .rpp-remove-btn:hover { background: #fef2f2; }
 
-/* ─── Run Panel ────────────────────────────────────────────── */
-.rpp-run-panel {
+/* ─── Run Button ───────────────────────────────────────────── */
+.rpp-run-actions {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 20px 22px;
-  background: linear-gradient(135deg, #f8faff, #eff6ff);
-  border: 1.5px solid var(--rpp-blue-100);
-  border-radius: var(--rpp-radius);
+  gap: 12px;
 }
-
-.rpp-run-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--rpp-slate-500);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-}
-
-.rpp-run-checks {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.rpp-run-checks li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  color: var(--rpp-slate-700);
-  font-weight: 500;
-}
-
-.rpp-check-icon { font-size: 14px; }
 
 .rpp-run-btn {
   display: flex;
@@ -895,10 +863,6 @@
 .rpp-empty-scan { display: none; }
 
 /* ─── Responsive ───────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .rpp-upload-row { grid-template-columns: 1fr; }
-}
-
 @media (max-width: 560px) {
   .rpp-cards-grid { grid-template-columns: 1fr; }
   .rpp-content { padding: 16px 14px 32px; }
