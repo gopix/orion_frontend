@@ -1,6 +1,5 @@
 
 
-
 // import { useState, useRef, useEffect, useCallback } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
@@ -311,16 +310,23 @@
 //     return "sev-medium";
 //   };
 
-//   const NON_ISSUE_STATUSES = ["PASS", "NOT_APPLICABLE"];
-
 //   const allResults = Array.isArray(reportData?.remediation_results) ? reportData.remediation_results : [];
 
-//   const isIssue = (r) => !NON_ISSUE_STATUSES.includes((r.status_before || "").toUpperCase());
+//   // Each check lands in exactly one bucket (by its final status), so
+//   // total = pass + issue + manual review + not applicable.
+//   const bucketOf = (r) => {
+//     const v = (r.status_after || r.status_before || "").toUpperCase();
+//     if (v === "PASS") return "pass";
+//     if (v === "FAIL") return "issue";
+//     if (v === "NOT_APPLICABLE") return "na";
+//     return "manual";
+//   };
 
-//   const isManual = (r) =>
-//     /MANUAL/i.test(r.status_after || "") || /MANUAL/i.test(r.remediation_outcome || "");
-
-//   const isPassed = (r) => (r.status_after || "").toUpperCase() === "PASS" && !isManual(r);
+//   const countBuckets = (items) => {
+//     const counts = { pass: 0, issue: 0, manual: 0, na: 0 };
+//     items.forEach((r) => { counts[bucketOf(r)] += 1; });
+//     return counts;
+//   };
 
 //   const resultsByCategory = allResults.reduce((acc, r) => {
 //     const key = r.category || "OTHER";
@@ -646,9 +652,7 @@
 //                   ) : (
 //                     <div className="rwd-accordion-list">
 //                       {Object.entries(resultsByCategory).map(([category, items]) => {
-//                         const issueCount = items.filter(isIssue).length;
-//                         const passedCount = items.filter(isPassed).length;
-//                         const manualCount = items.filter(isManual).length;
+//                         const counts = countBuckets(items);
 //                         const isOpen = !!openCategories[category];
 //                         return (
 //                           <div className={`rwd-accordion${isOpen ? " is-open" : ""}`} key={`cat-${category}`}>
@@ -659,19 +663,20 @@
 //                               aria-expanded={isOpen}
 //                             >
 //                               <span className="rwd-accordion-title">{prettify(category)}</span>
-//                               {issueCount > 0 && (
-//                                 <span className="rwd-accordion-count rwd-accordion-count--issues">
-//                                   {issueCount} {issueCount === 1 ? "issue" : "issues"}
-//                                 </span>
-//                               )}
 //                               <span className="rwd-accordion-count">
 //                                 {items.length} {items.length === 1 ? "check" : "checks"}
 //                               </span>
 //                               <span className="rwd-accordion-count rwd-accordion-count--passed">
-//                                 {passedCount} passed
+//                                 {counts.pass} passed
+//                               </span>
+//                               <span className="rwd-accordion-count rwd-accordion-count--issues">
+//                                 {counts.issue} {counts.issue === 1 ? "issue" : "issues"}
 //                               </span>
 //                               <span className="rwd-accordion-count rwd-accordion-count--manual">
-//                                 {manualCount} manual review
+//                                 {counts.manual} manual review
+//                               </span>
+//                               <span className="rwd-accordion-count rwd-accordion-count--na">
+//                                 {counts.na} not applicable
 //                               </span>
 //                               <span className="rwd-accordion-chevron" aria-hidden="true">
 //                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -723,6 +728,7 @@
 //     </div>
 //   );
 // }
+
 
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -1389,19 +1395,19 @@ export default function RemediateWord() {
                             >
                               <span className="rwd-accordion-title">{prettify(category)}</span>
                               <span className="rwd-accordion-count">
-                                {items.length} {items.length === 1 ? "check" : "checks"}
+                                Checks - {items.length}
                               </span>
                               <span className="rwd-accordion-count rwd-accordion-count--passed">
-                                {counts.pass} passed
+                                Passed - {counts.pass}
                               </span>
                               <span className="rwd-accordion-count rwd-accordion-count--issues">
-                                {counts.issue} {counts.issue === 1 ? "issue" : "issues"}
+                                Issue - {counts.issue}
                               </span>
                               <span className="rwd-accordion-count rwd-accordion-count--manual">
-                                {counts.manual} manual review
+                                Manual Review - {counts.manual}
                               </span>
                               <span className="rwd-accordion-count rwd-accordion-count--na">
-                                {counts.na} not applicable
+                                N/A - {counts.na}
                               </span>
                               <span className="rwd-accordion-chevron" aria-hidden="true">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
